@@ -1,0 +1,22 @@
+{
+  "id": "feishu-plus",
+  "name": "Feishu Plus",
+  "version": "1.0.0",
+  "description": "飞书增强插件 - 支持消息、云文档、云空间",
+  "channels": ["feishu"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "appId": {
+        "type": "string",
+        "description": "飞书应用 App ID"
+      },
+      "appSecret": {
+        "type": "string",
+        "description": "飞书应用 App Secret"
+      }
+    },
+    "required": ["appId", "appSecret"],
+    "additionalProperties": true
+  }
+}

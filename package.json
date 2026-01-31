@@ -1,57 +1,36 @@
 {
-  "name": "openclaw-feishu",
-  "version": "0.1.0",
-  "description": "飞书插件 for OpenClaw - 聊天、云文档、云空间管理",
+  "name": "@anthropic/feishu-plus",
+  "version": "1.0.0",
+  "description": "飞书增强插件 for Clawdbot - 支持消息、云文档、云空间",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "bin": {
-    "openclaw-feishu": "./dist/demo.js"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./server": {
-      "import": "./dist/server.js",
-      "types": "./dist/server.d.ts"
-    }
-  },
+  "main": "index.ts",
   "scripts": {
-    "dev": "tsx watch src/demo.ts",
-    "start": "node dist/demo.js",
-    "build": "tsup",
-    "test": "vitest",
-    "test:run": "vitest run",
-    "lint": "eslint src --ext .ts",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "clawdbot": {
+    "extensions": ["./index.ts"]
   },
   "keywords": [
+    "clawdbot",
     "feishu",
     "lark",
-    "openclaw",
     "bot",
-    "飞书"
+    "document",
+    "drive"
   ],
   "author": "",
   "license": "MIT",
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.46.0"
+  },
   "devDependencies": {
     "@types/node": "^22.0.0",
-    "eslint": "^9.0.0",
-    "tsup": "^8.0.0",
-    "tsx": "^4.21.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   },
-  "dependencies": {
-    "@hono/node-server": "^1.19.9",
-    "hono": "^4.11.7",
-    "ofetch": "^1.4.0",
-    "zod": "^3.23.0"
-  },
-  "engines": {
-    "node": ">=20.0.0"
+  "peerDependencies": {
+    "clawdbot": "*"
   }
 }

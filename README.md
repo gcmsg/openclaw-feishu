@@ -1,332 +1,173 @@
-# OpenClaw Feishu Plugin
+# Feishu Plus - Clawdbot 飞书增强插件
 
-飞书机器人控制插件，用于 [OpenClaw](https://github.com/clawdbot/openclaw)。
+飞书机器人增强插件，支持消息、云文档、云空间操作。
 
 ## ✨ 功能
 
-- **💬 聊天** - 发送/接收消息、管理群组
-- **📄 云文档** - 创建/编辑/读取飞书文档
-- **📁 云空间** - 文件/文件夹管理
-- **🔐 安全** - AES-256-CBC 解密、签名验证
+| 类别 | 功能 | 说明 |
+|------|------|------|
+| **消息** | 文本消息 | 发送/接收文本 |
+| | 富文本消息 | 支持 Post 格式 |
+| | 卡片消息 | Interactive Card |
+| | 图片消息 | 自动上传发送 |
+| | 文件消息 | 自动上传发送 |
+| **云文档** | 创建文档 | 创建飞书云文档 |
+| | 读取文档 | 获取文档内容 |
+| | 追加内容 | 向文档追加文本/Markdown |
+| **云空间** | 文件夹管理 | 创建、列出 |
+| | 文件操作 | 上传、下载、搜索 |
 
 ## 📦 安装
 
 ```bash
-npm install openclaw-feishu
-# or
-pnpm add openclaw-feishu
-```
+# 通过 Clawdbot 安装
+clawdbot extensions add https://github.com/gcmsg/openclaw-feishu
 
-## 🚀 快速开始（5 分钟接入）
-
-### 1. 创建飞书应用
-
-1. 访问 [飞书开放平台](https://open.feishu.cn/app)
-2. 创建企业自建应用
-3. 获取 **App ID** 和 **App Secret**
-4. 开启机器人能力
-5. 添加权限：`im:message`、`im:message.group_at_msg`、`im:chat`
-
-### 2. 配置环境变量
-
-```bash
-export FEISHU_APP_ID=cli_xxxxxx
-export FEISHU_APP_SECRET=xxxxxx
-
-# 可选：加密配置（推荐）
-export FEISHU_ENCRYPT_KEY=your_encrypt_key
-export FEISHU_VERIFICATION_TOKEN=your_token
-```
-
-### 3. 启动 Demo 服务器
-
-```bash
-# 克隆项目
-git clone https://github.com/gcmsg/openclaw-feishu.git
-cd openclaw-feishu
-
-# 安装依赖
+# 或手动克隆
+git clone https://github.com/gcmsg/openclaw-feishu ~/.clawdbot/extensions/feishu-plus
+cd ~/.clawdbot/extensions/feishu-plus
 npm install
-
-# 开发模式运行
-npm run dev
-```
-
-### 4. 暴露公网地址
-
-```bash
-# 使用 ngrok
-ngrok http 3000
-
-# 或使用其他内网穿透工具
-```
-
-### 5. 配置 Webhook
-
-1. 在飞书开放平台 → 事件订阅
-2. 设置请求地址: `https://your-ngrok-url/webhook`
-3. 订阅事件: `接收消息 v2.0`
-4. 发布应用版本
-
-### 6. 测试
-
-在飞书中给机器人发消息，应该会收到自动回复 🎉
-
----
-
-## 📖 代码使用
-
-```typescript
-import { createPlugin, loadConfigFromEnv } from 'openclaw-feishu'
-
-// 从环境变量加载配置
-const config = loadConfigFromEnv()
-const feishu = createPlugin(config)
-
-// 发送消息
-await feishu.sendText('oc_xxx', 'Hello from OpenClaw!')
-
-// 创建文档
-const doc = await feishu.createDocument('会议纪要')
-console.log('文档链接:', doc.url)
-
-// 监听消息
-feishu.onMessage(async (event) => {
-  const { message, sender } = event
-  console.log(`收到消息: ${message.content}`)
-  
-  // 回复
-  await feishu.reply(message.message_id, {
-    type: 'text',
-    text: '收到！'
-  })
-})
 ```
 
 ## ⚙️ 配置
 
-设置环境变量：
+### 1. 创建飞书应用
+
+1. 访问 [飞书开放平台](https://open.feishu.cn/app)
+2. 创建「企业自建应用」
+3. 获取 **App ID** 和 **App Secret**
+4. 开启「机器人」能力
+5. 消息接收方式选择「**使用长连接接收消息**」
+
+### 2. 添加权限
+
+在应用的「权限管理」中添加以下权限：
+
+**消息相关：**
+- `im:message` - 获取与发送单聊、群组消息
+- `im:message.group_at_msg` - 接收群聊中@机器人消息
+- `im:chat` - 获取群组信息
+
+**云文档相关：**
+- `docx:document` - 查看、评论和编辑新版文档
+- `docx:document:readonly` - 查看新版文档
+
+**云空间相关：**
+- `drive:drive` - 查看、评论、编辑和管理云空间中所有文件
+- `drive:drive:readonly` - 查看云空间中文件
+
+### 3. 发布应用
+
+在「版本管理与发布」中创建版本并发布。
+
+### 4. 配置 Clawdbot
 
 ```bash
-# 必需
-FEISHU_APP_ID=cli_xxxxx
-FEISHU_APP_SECRET=xxxxx
-
-# 可选
-FEISHU_ENCRYPT_KEY=xxxxx       # 事件加密密钥
-FEISHU_VERIFICATION_TOKEN=xxx  # 事件验证 Token
-FEISHU_DEBUG=true              # 调试模式
+clawdbot onboard feishu
 ```
 
-或代码配置：
+按提示输入 App ID 和 App Secret。
+
+## 🚀 使用
+
+配置完成后，你可以通过飞书与 Clawdbot 对话，并使用以下功能：
+
+### 让 AI 操作云文档
+
+> "帮我创建一个飞书文档，标题是《会议纪要》"
+> 
+> "把刚才的调查结果写入那个文档"
+> 
+> "在文档末尾追加一段总结"
+
+### 让 AI 管理云空间
+
+> "在云空间创建一个叫'项目资料'的文件夹"
+> 
+> "把这份报告上传到那个文件夹"
+> 
+> "搜索一下云空间里有哪些 PDF 文件"
+
+## 📖 API 参考
+
+### Message Actions
+
+通过 `message` tool 可以调用以下 actions：
+
+| Action | 参数 | 说明 |
+|--------|------|------|
+| `send` | `target`, `message` | 发送文本消息 |
+| `send_card` | `target`, `card` | 发送卡片消息 |
+| `send_image` | `target`, `filePath` | 发送图片 |
+| `send_file` | `target`, `filePath` | 发送文件 |
+| `doc_create` | `title`, `folderId?` | 创建文档 |
+| `doc_get` | `documentId` | 获取文档信息 |
+| `doc_read` | `documentId` | 读取文档内容 |
+| `doc_append` | `documentId`, `content` | 追加文本 |
+| `doc_append_md` | `documentId`, `markdown` | 追加 Markdown |
+| `folder_create` | `name`, `parentToken?` | 创建文件夹 |
+| `folder_list` | `folderToken` | 列出文件夹 |
+| `file_upload` | `filePath`, `folderToken` | 上传文件 |
+| `file_download` | `fileToken`, `savePath` | 下载文件 |
+| `file_search` | `query` | 搜索文件 |
+
+### 编程接口
 
 ```typescript
-import { createPlugin } from 'openclaw-feishu'
+import {
+  createDocument,
+  appendMarkdown,
+  uploadFile,
+  searchFiles,
+} from "feishu-plus";
 
-const feishu = createPlugin({
-  appId: 'cli_xxxxx',
-  appSecret: 'xxxxx',
-  debug: true,
-})
-```
-
-## 📖 API
-
-### 消息
-
-```typescript
-// 发送文本
-await feishu.sendText(chatId, '消息内容')
-
-// 发送卡片
-await feishu.sendCard(chatId, {
-  header: { title: { content: '标题' } },
-  elements: [{ tag: 'div', text: { content: '内容' } }]
-})
-
-// 回复消息
-await feishu.reply(messageId, { type: 'text', text: '回复内容' })
-
-// 底层 API
-await feishu.message.send(chatId, content)
-await feishu.message.recall(messageId)
-```
-
-### 群组
-
-```typescript
-// 获取群信息
-const chat = await feishu.chat.get(chatId)
-
-// 创建群
-const newChat = await feishu.chat.create({ name: '新群' })
-
-// 添加成员
-await feishu.chat.addMembers(chatId, ['user1', 'user2'])
-```
-
-### 文档
-
-```typescript
 // 创建文档
-const { id, url } = await feishu.createDocument('标题')
+const doc = await createDocument(account, "周报");
+console.log(doc.data?.url);
 
-// 追加内容
-await feishu.appendToDocument(docId, [
-  { blockType: 'heading1', content: { text: [{ text: '章节' }] } },
-  { blockType: 'text', content: { text: [{ text: '段落内容' }] } },
-])
+// 追加 Markdown
+await appendMarkdown(account, doc.data.documentId, `
+# 本周工作
+- 完成了 A 功能
+- 修复了 B bug
+`);
 
-// 读取内容
-const content = await feishu.readDocument(docId)
-```
-
-### 云空间
-
-```typescript
-// 创建文件夹
-const folder = await feishu.createFolder('新文件夹')
-
-// 列出文件
-const { items } = await feishu.listFiles(folderId)
+// 上传文件
+await uploadFile(account, "./report.pdf", folderToken);
 
 // 搜索
-const results = await feishu.searchFiles('关键词')
+const result = await searchFiles(account, "季度报告");
 ```
 
-### 事件监听
-
-```typescript
-// 监听消息
-feishu.onMessage(async (event, header) => {
-  console.log('收到消息:', event.message.content)
-  console.log('事件ID:', header?.event_id)
-})
-
-// 监听机器人进群
-feishu.onBotAdded(async (event) => {
-  console.log('机器人被添加到群:', event.chat_id)
-})
-
-// 监听机器人出群
-feishu.onBotRemoved(async (event) => {
-  console.log('机器人被移出群:', event.chat_id)
-})
-
-// 监听消息撤回
-feishu.onMessageRecalled(async (event) => {
-  console.log('消息被撤回:', event.message_id)
-})
-
-// 监听任意事件
-feishu.on('im.chat.updated_v1', (event) => {
-  console.log('群信息更新')
-})
-```
-
-### Webhook 处理
-
-支持飞书 v1/v2 schema，自动处理加密事件：
-
-```typescript
-// Express
-import express from 'express'
-
-const app = express()
-app.use(express.json())
-
-// 方式1: 简单处理
-app.post('/webhook', async (req, res) => {
-  const result = await feishu.handleWebhook(req.body)
-  res.json(result.challenge ? { challenge: result.challenge } : {})
-})
-
-// 方式2: 带签名验证 (推荐)
-app.post('/webhook', express.text({ type: '*/*' }), async (req, res) => {
-  const result = await feishu.handleWebhook(
-    JSON.parse(req.body),
-    {
-      timestamp: req.headers['x-lark-request-timestamp'] as string,
-      nonce: req.headers['x-lark-request-nonce'] as string,
-      signature: req.headers['x-lark-signature'] as string,
-      rawBody: req.body,
-    }
-  )
-  res.json(result.challenge ? { challenge: result.challenge } : {})
-})
-```
-
-```typescript
-// Hono
-import { Hono } from 'hono'
-
-const app = new Hono()
-
-app.post('/webhook', async (c) => {
-  const rawBody = await c.req.text()
-  const result = await feishu.handleWebhook(
-    JSON.parse(rawBody),
-    {
-      timestamp: c.req.header('x-lark-request-timestamp'),
-      nonce: c.req.header('x-lark-request-nonce'),
-      signature: c.req.header('x-lark-signature'),
-      rawBody,
-    }
-  )
-  return c.json(result.challenge ? { challenge: result.challenge } : {})
-})
-```
-
-```typescript
-// 使用 createWebhookHandler 工厂函数
-const handler = feishu.createWebhookHandler()
-
-app.post('/webhook', async (req, res) => {
-  const result = await handler(
-    req.body,
-    req.headers as Record<string, string>,
-    JSON.stringify(req.body)
-  )
-  res.json(result.challenge ? { challenge: result.challenge } : {})
-})
-```
-
-## 🏗️ 架构
-
-本项目采用 DDD（领域驱动设计）架构：
+## 🏗️ 项目结构
 
 ```
-src/
-├── domain/          # 领域层 - 核心业务模型
-│   ├── chat/        # 聊天领域
-│   ├── document/    # 文档领域
-│   └── space/       # 空间领域
-├── application/     # 应用层 - 用例编排
-├── infrastructure/  # 基础设施 - API 实现
-│   └── feishu/      # 飞书 API 封装
-├── interfaces/      # 接口层 - 对外暴露
-│   └── webhook/     # 事件回调处理
-└── shared/          # 共享内核
+feishu-plus/
+├── index.ts           # 插件入口
+├── clawdbot.plugin.json  # 插件配置
+├── src/
+│   ├── channel.ts     # 通道插件定义
+│   ├── client.ts      # 消息 API
+│   ├── document.ts    # 云文档 API
+│   ├── space.ts       # 云空间 API
+│   ├── gateway.ts     # 长连接网关
+│   ├── runtime.ts     # 运行时
+│   └── types.ts       # 类型定义
+└── package.json
 ```
 
-## 📋 开发
+## 📋 与现有插件的区别
 
-```bash
-# 安装依赖
-pnpm install
-
-# 开发模式
-pnpm dev
-
-# 构建
-pnpm build
-
-# 测试
-pnpm test
-
-# 类型检查
-pnpm typecheck
-```
+| 功能 | 原飞书插件 | Feishu Plus |
+|------|-----------|-------------|
+| 文本消息 | ✅ | ✅ |
+| 富文本消息 | ❌ | ✅ |
+| 卡片消息 | ❌ | ✅ |
+| 图片消息 | ❌ | ✅ |
+| 文件消息 | ❌ | ✅ |
+| 云文档操作 | ❌ | ✅ |
+| 云空间操作 | ❌ | ✅ |
+| Message Actions | ❌ | ✅ |
 
 ## 📄 License
 

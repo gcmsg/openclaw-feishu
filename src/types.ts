@@ -1,0 +1,139 @@
+/**
+ * 飞书插件类型定义
+ */
+
+/**
+ * 飞书通道配置
+ */
+export interface FeishuChannelConfig {
+  /** 是否启用 */
+  enabled?: boolean;
+  /** 飞书应用 App ID */
+  appId: string;
+  /** 飞书应用 App Secret */
+  appSecret: string;
+  /** DM 策略 */
+  dmPolicy?: "open" | "pairing" | "allowlist";
+  /** 允许的用户列表 */
+  allowFrom?: string[];
+  /** 群组配置 */
+  groups?: Record<string, { requireMention?: boolean }>;
+}
+
+/**
+ * 解析后的飞书账号
+ */
+export interface ResolvedFeishuAccount {
+  accountId: string;
+  appId: string;
+  appSecret: string;
+  config: FeishuChannelConfig;
+}
+
+/**
+ * 飞书消息
+ */
+export interface FeishuMessage {
+  messageId: string;
+  chatId: string;
+  chatType: "p2p" | "group";
+  senderId: string;
+  senderName?: string;
+  messageType: string;
+  content: string;
+  text?: string;
+  mentions?: FeishuMention[];
+  createTime?: number;
+}
+
+/**
+ * 飞书 @ 提及
+ */
+export interface FeishuMention {
+  key: string;
+  id: {
+    open_id: string;
+    user_id?: string;
+    union_id?: string;
+  };
+  name: string;
+}
+
+/**
+ * 消息上下文
+ */
+export interface MsgContext {
+  From: string;
+  Body: string;
+  AccountId: string;
+  Provider: string;
+  Surface: string;
+  SessionKey: string;
+  To: string;
+  ChatType: "direct" | "group";
+  MessageId?: string;
+  ReplyToId?: string;
+  SenderName?: string;
+  Mentions?: string[];
+  MediaUrls?: string[];
+}
+
+/**
+ * 文档信息
+ */
+export interface DocumentInfo {
+  documentId: string;
+  title: string;
+  url: string;
+  ownerId?: string;
+}
+
+/**
+ * 文档块类型
+ */
+export type BlockType =
+  | "page" | "text" | "heading1" | "heading2" | "heading3"
+  | "bullet" | "ordered" | "todo" | "code" | "quote" | "divider";
+
+/**
+ * 文档块
+ */
+export interface DocumentBlock {
+  blockType: BlockType;
+  text?: string;
+  checked?: boolean;
+  language?: string;
+}
+
+/**
+ * 文件信息
+ */
+export interface FileInfo {
+  token: string;
+  name: string;
+  type: string;
+  url?: string;
+  parentToken?: string;
+  size?: number;
+  createdTime?: number;
+  modifiedTime?: number;
+}
+
+/**
+ * 文件夹信息
+ */
+export interface FolderInfo {
+  token: string;
+  name: string;
+  url?: string;
+  parentToken?: string;
+}
+
+/**
+ * API 结果
+ */
+export interface ApiResult<T = void> {
+  ok: boolean;
+  data?: T;
+  error?: string;
+}
