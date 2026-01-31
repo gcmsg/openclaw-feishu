@@ -5,14 +5,22 @@
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "bin": {
+    "openclaw-feishu": "./dist/demo.js"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./server": {
+      "import": "./dist/server.js",
+      "types": "./dist/server.d.ts"
     }
   },
   "scripts": {
-    "dev": "tsup --watch",
+    "dev": "tsx watch src/demo.ts",
+    "start": "node dist/demo.js",
     "build": "tsup",
     "test": "vitest",
     "test:run": "vitest run",
@@ -33,12 +41,15 @@
     "@types/node": "^22.0.0",
     "eslint": "^9.0.0",
     "tsup": "^8.0.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   },
   "dependencies": {
-    "zod": "^3.23.0",
-    "ofetch": "^1.4.0"
+    "@hono/node-server": "^1.19.9",
+    "hono": "^4.11.7",
+    "ofetch": "^1.4.0",
+    "zod": "^3.23.0"
   },
   "engines": {
     "node": ">=20.0.0"

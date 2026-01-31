@@ -7,6 +7,7 @@
 - **💬 聊天** - 发送/接收消息、管理群组
 - **📄 云文档** - 创建/编辑/读取飞书文档
 - **📁 云空间** - 文件/文件夹管理
+- **🔐 安全** - AES-256-CBC 解密、签名验证
 
 ## 📦 安装
 
@@ -16,7 +17,64 @@ npm install openclaw-feishu
 pnpm add openclaw-feishu
 ```
 
-## 🚀 快速开始
+## 🚀 快速开始（5 分钟接入）
+
+### 1. 创建飞书应用
+
+1. 访问 [飞书开放平台](https://open.feishu.cn/app)
+2. 创建企业自建应用
+3. 获取 **App ID** 和 **App Secret**
+4. 开启机器人能力
+5. 添加权限：`im:message`、`im:message.group_at_msg`、`im:chat`
+
+### 2. 配置环境变量
+
+```bash
+export FEISHU_APP_ID=cli_xxxxxx
+export FEISHU_APP_SECRET=xxxxxx
+
+# 可选：加密配置（推荐）
+export FEISHU_ENCRYPT_KEY=your_encrypt_key
+export FEISHU_VERIFICATION_TOKEN=your_token
+```
+
+### 3. 启动 Demo 服务器
+
+```bash
+# 克隆项目
+git clone https://github.com/gcmsg/openclaw-feishu.git
+cd openclaw-feishu
+
+# 安装依赖
+npm install
+
+# 开发模式运行
+npm run dev
+```
+
+### 4. 暴露公网地址
+
+```bash
+# 使用 ngrok
+ngrok http 3000
+
+# 或使用其他内网穿透工具
+```
+
+### 5. 配置 Webhook
+
+1. 在飞书开放平台 → 事件订阅
+2. 设置请求地址: `https://your-ngrok-url/webhook`
+3. 订阅事件: `接收消息 v2.0`
+4. 发布应用版本
+
+### 6. 测试
+
+在飞书中给机器人发消息，应该会收到自动回复 🎉
+
+---
+
+## 📖 代码使用
 
 ```typescript
 import { createPlugin, loadConfigFromEnv } from 'openclaw-feishu'
