@@ -1,0 +1,46 @@
+{
+  "name": "openclaw-feishu",
+  "version": "0.1.0",
+  "description": "飞书插件 for OpenClaw - 聊天、云文档、云空间管理",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "feishu",
+    "lark",
+    "openclaw",
+    "bot",
+    "飞书"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0",
+    "vitest": "^2.0.0"
+  },
+  "dependencies": {
+    "zod": "^3.23.0",
+    "ofetch": "^1.4.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
