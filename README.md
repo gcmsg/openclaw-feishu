@@ -140,22 +140,96 @@ const results = await feishu.searchFiles('关键词')
 
 ```typescript
 // 监听消息
-feishu.onMessage(async (event) => {
-  console.log(event.message.content)
+feishu.onMessage(async (event, header) => {
+  console.log('收到消息:', event.message.content)
+  console.log('事件ID:', header?.event_id)
+})
+
+// 监听机器人进群
+feishu.onBotAdded(async (event) => {
+  console.log('机器人被添加到群:', event.chat_id)
+})
+
+// 监听机器人出群
+feishu.onBotRemoved(async (event) => {
+  console.log('机器人被移出群:', event.chat_id)
+})
+
+// 监听消息撤回
+feishu.onMessageRecalled(async (event) => {
+  console.log('消息被撤回:', event.message_id)
 })
 
 // 监听任意事件
-feishu.on('im.chat.member.bot.added_v1', (event) => {
-  console.log('机器人被添加到群')
+feishu.on('im.chat.updated_v1', (event) => {
+  console.log('群信息更新')
 })
+```
 
-// Webhook 处理（用于 HTTP 服务器）
+### Webhook 处理
+
+支持飞书 v1/v2 schema，自动处理加密事件：
+
+```typescript
+// Express
+import express from 'express'
+
+const app = express()
+app.use(express.json())
+
+// 方式1: 简单处理
 app.post('/webhook', async (req, res) => {
   const result = await feishu.handleWebhook(req.body)
-  if (result?.challenge) {
-    return res.json(result)
-  }
-  res.send('ok')
+  res.json(result.challenge ? { challenge: result.challenge } : {})
+})
+
+// 方式2: 带签名验证 (推荐)
+app.post('/webhook', express.text({ type: '*/*' }), async (req, res) => {
+  const result = await feishu.handleWebhook(
+    JSON.parse(req.body),
+    {
+      timestamp: req.headers['x-lark-request-timestamp'] as string,
+      nonce: req.headers['x-lark-request-nonce'] as string,
+      signature: req.headers['x-lark-signature'] as string,
+      rawBody: req.body,
+    }
+  )
+  res.json(result.challenge ? { challenge: result.challenge } : {})
+})
+```
+
+```typescript
+// Hono
+import { Hono } from 'hono'
+
+const app = new Hono()
+
+app.post('/webhook', async (c) => {
+  const rawBody = await c.req.text()
+  const result = await feishu.handleWebhook(
+    JSON.parse(rawBody),
+    {
+      timestamp: c.req.header('x-lark-request-timestamp'),
+      nonce: c.req.header('x-lark-request-nonce'),
+      signature: c.req.header('x-lark-signature'),
+      rawBody,
+    }
+  )
+  return c.json(result.challenge ? { challenge: result.challenge } : {})
+})
+```
+
+```typescript
+// 使用 createWebhookHandler 工厂函数
+const handler = feishu.createWebhookHandler()
+
+app.post('/webhook', async (req, res) => {
+  const result = await handler(
+    req.body,
+    req.headers as Record<string, string>,
+    JSON.stringify(req.body)
+  )
+  res.json(result.challenge ? { challenge: result.challenge } : {})
 })
 ```
 

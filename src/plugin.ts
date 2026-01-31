@@ -4,8 +4,22 @@ import { MessageApi } from './infrastructure/feishu/api/message-api.js'
 import { ChatApi } from './infrastructure/feishu/api/chat-api.js'
 import { DocumentApi } from './infrastructure/feishu/api/document-api.js'
 import { SpaceApi } from './infrastructure/feishu/api/space-api.js'
-import { EventHandlerRegistry, handleWebhook } from './interfaces/webhook/event-handler.js'
-import type { EventCallback, MessageEvent, EventType, EventHandler } from './interfaces/webhook/event-handler.js'
+import { 
+  EventHandlerRegistry, 
+  handleWebhook,
+  createWebhookHandler,
+} from './interfaces/webhook/event-handler.js'
+import type { 
+  EventCallback, 
+  MessageEvent, 
+  BotAddedEvent,
+  BotRemovedEvent,
+  MessageRecalledEvent,
+  EventType, 
+  EventHandler,
+  WebhookOptions,
+  WebhookResult,
+} from './interfaces/webhook/event-handler.js'
 import type { MessageContent } from './domain/chat/entities/message.js'
 import type { Block } from './domain/document/entities/document.js'
 import type { ChatId, DocumentId, FolderId } from './shared/types/index.js'
@@ -142,10 +156,59 @@ export class OpenClawFeishuPlugin {
   }
 
   /**
-   * 处理 Webhook 回调
+   * 监听机器人进群事件
    */
-  async handleWebhook(body: EventCallback): Promise<{ challenge?: string } | void> {
-    return handleWebhook(body, this.config, this.eventRegistry)
+  onBotAdded(handler: EventHandler<BotAddedEvent>): void {
+    this.eventRegistry.on('im.chat.member.bot.added_v1', handler)
+  }
+
+  /**
+   * 监听机器人出群事件
+   */
+  onBotRemoved(handler: EventHandler<BotRemovedEvent>): void {
+    this.eventRegistry.on('im.chat.member.bot.deleted_v1', handler)
+  }
+
+  /**
+   * 监听消息撤回事件
+   */
+  onMessageRecalled(handler: EventHandler<MessageRecalledEvent>): void {
+    this.eventRegistry.on('im.message.recalled_v1', handler)
+  }
+
+  /**
+   * 处理 Webhook 回调
+   * 
+   * @param body 请求体 (JSON 解析后)
+   * @param options 额外选项 (签名验证等)
+   */
+  async handleWebhook(body: EventCallback, options?: WebhookOptions): Promise<WebhookResult> {
+    return handleWebhook(body, this.config, this.eventRegistry, options)
+  }
+
+  /**
+   * 创建 Webhook 处理器 (用于 HTTP 框架集成)
+   * 
+   * @example
+   * ```typescript
+   * // Express
+   * const handler = feishu.createWebhookHandler()
+   * app.post('/webhook', express.json(), async (req, res) => {
+   *   const result = await handler(req.body, req.headers)
+   *   res.json(result.challenge ? { challenge: result.challenge } : {})
+   * })
+   * 
+   * // Hono
+   * app.post('/webhook', async (c) => {
+   *   const body = await c.req.json()
+   *   const handler = feishu.createWebhookHandler()
+   *   const result = await handler(body, c.req.header())
+   *   return c.json(result.challenge ? { challenge: result.challenge } : {})
+   * })
+   * ```
+   */
+  createWebhookHandler() {
+    return createWebhookHandler(this.config, this.eventRegistry)
   }
 }
 
