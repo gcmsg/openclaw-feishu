@@ -1,5 +1,5 @@
 /**
- * 飞书 Plus 通道插件定义
+ * 飞书通道插件定义
  */
 
 import type {
@@ -56,7 +56,7 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
     return {
       channel: CHANNEL_ID,
       configured,
-      statusLines: [`Feishu Plus: ${configured ? "configured ✓" : "needs App ID & Secret"}`],
+      statusLines: [`Feishu: ${configured ? "configured ✓" : "needs App ID & Secret"}`],
       selectionHint: configured ? "configured" : "needs credentials",
     };
   },
@@ -236,15 +236,15 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
 // ========== Channel Plugin ==========
 
-export const feishuPlusPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
+export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
   id: "feishu",
 
   meta: {
     id: "feishu",
-    label: "Feishu Plus",
-    selectionLabel: "飞书 Plus (消息/文档/云空间)",
+    label: "Feishu",
+    selectionLabel: "飞书 (消息/文档/云空间)",
     docsPath: "https://github.com/gcmsg/openclaw-feishu",
-    blurb: "飞书增强插件 - 支持消息、云文档、云空间操作",
+    blurb: "飞书通道插件 - 支持消息、云文档、云空间操作",
   },
 
   capabilities: {
@@ -310,7 +310,7 @@ export const feishuPlusPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             return;
           }
 
-          console.log(`[feishu-plus:${account.accountId}] 收到消息: ${message.text}`);
+          console.log(`[feishu:${account.accountId}] 收到消息: ${message.text}`);
 
           const msgCtx: MsgContext = {
             From: message.senderId,
@@ -339,8 +339,8 @@ export const feishuPlusPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
           });
         },
         logger: {
-          info: (msg) => console.log(`[feishu-plus:${account.accountId}] ${msg}`),
-          error: (msg) => console.error(`[feishu-plus:${account.accountId}] ${msg}`),
+          info: (msg) => console.log(`[feishu:${account.accountId}] ${msg}`),
+          error: (msg) => console.error(`[feishu:${account.accountId}] ${msg}`),
         },
       });
     },

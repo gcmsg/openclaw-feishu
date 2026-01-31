@@ -1,8 +1,98 @@
-# Feishu Plus - Clawdbot 飞书增强插件
+# Clawdbot Feishu Plugin / 飞书通道插件
 
-飞书机器人增强插件，支持消息、云文档、云空间操作。
+[English](#english) | [中文](#中文)
 
-## ✨ 功能
+---
+
+## English
+
+A Feishu (Lark) channel plugin for Clawdbot with support for messaging, cloud documents, and drive operations.
+
+### ✨ Features
+
+| Category | Feature | Description |
+|----------|---------|-------------|
+| **Messaging** | Text | Send/receive text messages |
+| | Rich Text | Post format support |
+| | Cards | Interactive Card messages |
+| | Images | Auto upload & send |
+| | Files | Auto upload & send |
+| **Documents** | Create | Create Feishu docs |
+| | Read | Get document content |
+| | Append | Add text/Markdown |
+| **Drive** | Folders | Create, list |
+| | Files | Upload, download, search |
+
+### 📦 Quick Install
+
+```bash
+# One-line install
+clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+```
+
+Or manually:
+
+```bash
+git clone https://github.com/gcmsg/openclaw-feishu ~/.clawdbot/extensions/feishu
+cd ~/.clawdbot/extensions/feishu && npm install
+```
+
+### ⚙️ Configuration
+
+#### 1. Create Feishu App
+
+1. Go to [Feishu Open Platform](https://open.feishu.cn/app)
+2. Create an "Enterprise Self-built App"
+3. Get **App ID** and **App Secret**
+4. Enable "Bot" capability
+5. Set message receive mode to "**Long Connection**"
+
+#### 2. Add Permissions
+
+**Messaging:**
+- `im:message` - Send/receive messages
+- `im:message.group_at_msg` - Receive @bot messages
+- `im:chat` - Get chat info
+
+**Documents:**
+- `docx:document` - Read/write documents
+
+**Drive:**
+- `drive:drive` - Manage drive files
+
+#### 3. Configure Clawdbot
+
+```bash
+clawdbot onboard feishu
+```
+
+Enter your App ID and App Secret when prompted.
+
+### 📖 Message Actions
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `send` | `target`, `message` | Send text |
+| `send_card` | `target`, `card` | Send card |
+| `send_image` | `target`, `filePath` | Send image |
+| `send_file` | `target`, `filePath` | Send file |
+| `doc_create` | `title`, `folderId?` | Create doc |
+| `doc_read` | `documentId` | Read doc |
+| `doc_append` | `documentId`, `content` | Append text |
+| `doc_append_md` | `documentId`, `markdown` | Append Markdown |
+| `folder_create` | `name`, `parentToken?` | Create folder |
+| `folder_list` | `folderToken` | List folder |
+| `file_upload` | `filePath`, `folderToken` | Upload file |
+| `file_download` | `fileToken`, `savePath` | Download file |
+| `file_search` | `query` | Search files |
+
+---
+
+## 中文
+
+Clawdbot 飞书通道插件，支持消息收发、云文档操作、云空间管理。
+
+### ✨ 功能特性
 
 | 类别 | 功能 | 说明 |
 |------|------|------|
@@ -17,21 +107,23 @@
 | **云空间** | 文件夹管理 | 创建、列出 |
 | | 文件操作 | 上传、下载、搜索 |
 
-## 📦 安装
+### 📦 快速安装
 
 ```bash
-# 通过 Clawdbot 安装
-clawdbot extensions add https://github.com/gcmsg/openclaw-feishu
-
-# 或手动克隆
-git clone https://github.com/gcmsg/openclaw-feishu ~/.clawdbot/extensions/feishu-plus
-cd ~/.clawdbot/extensions/feishu-plus
-npm install
+# 一键安装
+clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
-## ⚙️ 配置
+或手动安装：
 
-### 1. 创建飞书应用
+```bash
+git clone https://github.com/gcmsg/openclaw-feishu ~/.clawdbot/extensions/feishu
+cd ~/.clawdbot/extensions/feishu && npm install
+```
+
+### ⚙️ 配置步骤
+
+#### 1. 创建飞书应用
 
 1. 访问 [飞书开放平台](https://open.feishu.cn/app)
 2. 创建「企业自建应用」
@@ -39,60 +131,42 @@ npm install
 4. 开启「机器人」能力
 5. 消息接收方式选择「**使用长连接接收消息**」
 
-### 2. 添加权限
-
-在应用的「权限管理」中添加以下权限：
+#### 2. 添加权限
 
 **消息相关：**
-- `im:message` - 获取与发送单聊、群组消息
-- `im:message.group_at_msg` - 接收群聊中@机器人消息
+- `im:message` - 获取与发送消息
+- `im:message.group_at_msg` - 接收群聊@机器人消息
 - `im:chat` - 获取群组信息
 
 **云文档相关：**
-- `docx:document` - 查看、评论和编辑新版文档
-- `docx:document:readonly` - 查看新版文档
+- `docx:document` - 查看和编辑文档
 
 **云空间相关：**
-- `drive:drive` - 查看、评论、编辑和管理云空间中所有文件
-- `drive:drive:readonly` - 查看云空间中文件
+- `drive:drive` - 管理云空间文件
 
-### 3. 发布应用
-
-在「版本管理与发布」中创建版本并发布。
-
-### 4. 配置 Clawdbot
+#### 3. 配置 Clawdbot
 
 ```bash
 clawdbot onboard feishu
 ```
 
-按提示输入 App ID 和 App Secret。
+按提示输入 App ID 和 App Secret 即可。
 
-## 🚀 使用
+### 🚀 使用示例
 
-配置完成后，你可以通过飞书与 Clawdbot 对话，并使用以下功能：
+配置完成后，通过飞书与 Clawdbot 对话：
 
-### 让 AI 操作云文档
-
+**操作云文档：**
 > "帮我创建一个飞书文档，标题是《会议纪要》"
-> 
-> "把刚才的调查结果写入那个文档"
 > 
 > "在文档末尾追加一段总结"
 
-### 让 AI 管理云空间
-
+**管理云空间：**
 > "在云空间创建一个叫'项目资料'的文件夹"
-> 
-> "把这份报告上传到那个文件夹"
 > 
 > "搜索一下云空间里有哪些 PDF 文件"
 
-## 📖 API 参考
-
-### Message Actions
-
-通过 `message` tool 可以调用以下 actions：
+### 📖 API 参考
 
 | Action | 参数 | 说明 |
 |--------|------|------|
@@ -101,7 +175,6 @@ clawdbot onboard feishu
 | `send_image` | `target`, `filePath` | 发送图片 |
 | `send_file` | `target`, `filePath` | 发送文件 |
 | `doc_create` | `title`, `folderId?` | 创建文档 |
-| `doc_get` | `documentId` | 获取文档信息 |
 | `doc_read` | `documentId` | 读取文档内容 |
 | `doc_append` | `documentId`, `content` | 追加文本 |
 | `doc_append_md` | `documentId`, `markdown` | 追加 Markdown |
@@ -111,63 +184,24 @@ clawdbot onboard feishu
 | `file_download` | `fileToken`, `savePath` | 下载文件 |
 | `file_search` | `query` | 搜索文件 |
 
-### 编程接口
+---
 
-```typescript
-import {
-  createDocument,
-  appendMarkdown,
-  uploadFile,
-  searchFiles,
-} from "feishu-plus";
-
-// 创建文档
-const doc = await createDocument(account, "周报");
-console.log(doc.data?.url);
-
-// 追加 Markdown
-await appendMarkdown(account, doc.data.documentId, `
-# 本周工作
-- 完成了 A 功能
-- 修复了 B bug
-`);
-
-// 上传文件
-await uploadFile(account, "./report.pdf", folderToken);
-
-// 搜索
-const result = await searchFiles(account, "季度报告");
-```
-
-## 🏗️ 项目结构
+## 🏗️ Project Structure / 项目结构
 
 ```
-feishu-plus/
-├── index.ts           # 插件入口
-├── clawdbot.plugin.json  # 插件配置
+clawdbot-feishu/
+├── index.ts              # Plugin entry / 插件入口
+├── clawdbot.plugin.json  # Plugin config / 插件配置
 ├── src/
-│   ├── channel.ts     # 通道插件定义
-│   ├── client.ts      # 消息 API
-│   ├── document.ts    # 云文档 API
-│   ├── space.ts       # 云空间 API
-│   ├── gateway.ts     # 长连接网关
-│   ├── runtime.ts     # 运行时
-│   └── types.ts       # 类型定义
+│   ├── channel.ts        # Channel definition / 通道定义
+│   ├── client.ts         # Messaging API / 消息 API
+│   ├── document.ts       # Document API / 云文档 API
+│   ├── space.ts          # Drive API / 云空间 API
+│   ├── gateway.ts        # WebSocket gateway / 长连接网关
+│   ├── runtime.ts        # Runtime / 运行时
+│   └── types.ts          # Type definitions / 类型定义
 └── package.json
 ```
-
-## 📋 与现有插件的区别
-
-| 功能 | 原飞书插件 | Feishu Plus |
-|------|-----------|-------------|
-| 文本消息 | ✅ | ✅ |
-| 富文本消息 | ❌ | ✅ |
-| 卡片消息 | ❌ | ✅ |
-| 图片消息 | ❌ | ✅ |
-| 文件消息 | ❌ | ✅ |
-| 云文档操作 | ❌ | ✅ |
-| 云空间操作 | ❌ | ✅ |
-| Message Actions | ❌ | ✅ |
 
 ## 📄 License
 

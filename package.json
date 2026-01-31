@@ -1,7 +1,7 @@
 {
-  "name": "@anthropic/feishu-plus",
+  "name": "clawdbot-feishu",
   "version": "1.0.0",
-  "description": "飞书增强插件 for Clawdbot - 支持消息、云文档、云空间",
+  "description": "飞书通道插件 for Clawdbot - 支持消息、云文档、云空间",
   "type": "module",
   "main": "index.ts",
   "scripts": {

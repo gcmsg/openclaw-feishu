@@ -1,8 +1,8 @@
 {
-  "id": "feishu-plus",
-  "name": "Feishu Plus",
+  "id": "feishu",
+  "name": "Feishu",
   "version": "1.0.0",
-  "description": "飞书增强插件 - 支持消息、云文档、云空间",
+  "description": "飞书通道插件 - 支持消息、云文档、云空间",
   "channels": ["feishu"],
   "configSchema": {
     "type": "object",

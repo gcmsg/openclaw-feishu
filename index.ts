@@ -1,5 +1,5 @@
 /**
- * Feishu Plus - Clawdbot 飞书增强插件
+ * Clawdbot 飞书通道插件
  *
  * 功能：
  * - 📨 消息收发（文本、富文本、卡片、图片、文件）
@@ -7,31 +7,31 @@
  * - 📁 云空间管理（文件夹、上传、下载、搜索）
  *
  * 安装：
- *   clawdbot extensions add https://github.com/gcmsg/openclaw-feishu
+ *   clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
  *
  * 配置：
  *   clawdbot onboard feishu
  */
 
 import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk";
-import { feishuPlusPlugin } from "./src/channel.js";
+import { feishuPlugin } from "./src/channel.js";
 import { setFeishuRuntime } from "./src/runtime.js";
 
 export const plugin = {
-  id: "feishu-plus",
-  name: "Feishu Plus",
-  description: "飞书增强插件 - 支持消息、云文档、云空间",
+  id: "feishu",
+  name: "Feishu",
+  description: "飞书通道插件 - 支持消息、云文档、云空间",
 
   register(api: ClawdbotPluginApi) {
     setFeishuRuntime(api.runtime);
-    api.registerChannel({ plugin: feishuPlusPlugin });
+    api.registerChannel({ plugin: feishuPlugin });
   },
 };
 
 export default plugin;
 
 // 导出通道插件
-export { feishuPlusPlugin } from "./src/channel.js";
+export { feishuPlugin } from "./src/channel.js";
 
 // 导出类型
 export * from "./src/types.js";
