@@ -7,7 +7,7 @@ import type {
   ClawdbotConfig,
   ChannelOnboardingAdapter,
   ChannelMessageActionAdapter,
-} from "clawdbot/plugin-sdk";
+} from "./compat.js";
 import type { ResolvedFeishuAccount, FeishuChannelConfig, MsgContext } from "./types.js";
 import { sendTextMessage, sendImageMessage, sendFileMessage, sendCardMessage } from "./client.js";
 import { createDocument, getDocument, getDocumentContent, appendText, appendMarkdown } from "./document.js";

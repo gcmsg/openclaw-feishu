@@ -1,7 +1,7 @@
 {
-  "name": "clawdbot-feishu",
+  "name": "openclaw-feishu",
   "version": "1.0.0",
-  "description": "飞书通道插件 for Clawdbot - 支持消息、云文档、云空间",
+  "description": "飞书通道插件 - 支持消息、云文档、云空间 | Feishu channel plugin with docs & drive support",
   "type": "module",
   "main": "index.ts",
   "scripts": {
@@ -9,19 +9,29 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  },
   "clawdbot": {
     "extensions": ["./index.ts"]
   },
   "keywords": [
+    "openclaw",
     "clawdbot",
+    "moltbot",
     "feishu",
     "lark",
     "bot",
     "document",
-    "drive"
+    "drive",
+    "plugin"
   ],
   "author": "",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gcmsg/openclaw-feishu"
+  },
   "dependencies": {
     "@larksuiteoapi/node-sdk": "^1.46.0"
   },
@@ -31,6 +41,15 @@
     "vitest": "^2.0.0"
   },
   "peerDependencies": {
+    "openclaw": "*",
     "clawdbot": "*"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    },
+    "clawdbot": {
+      "optional": true
+    }
   }
 }

@@ -2,7 +2,7 @@
  * 运行时上下文管理
  */
 
-import type { PluginRuntime } from "clawdbot/plugin-sdk";
+import type { PluginRuntime } from "./compat.js";
 
 let feishuRuntime: PluginRuntime | null = null;
 

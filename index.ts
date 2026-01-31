@@ -13,7 +13,7 @@
  *   clawdbot onboard feishu
  */
 
-import type { ClawdbotPluginApi } from "clawdbot/plugin-sdk";
+import type { ClawdbotPluginApi } from "./src/compat.js";
 import { feishuPlugin } from "./src/channel.js";
 import { setFeishuRuntime } from "./src/runtime.js";
 
