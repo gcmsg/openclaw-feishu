@@ -50,6 +50,21 @@ import {
   deleteBitableRecord,
   deleteBitableRecords,
 } from "./bitable.js";
+import {
+  createSpreadsheet,
+  getSpreadsheet,
+  listSheets,
+  getSheet,
+  readRange,
+  writeRange,
+  appendRows,
+  batchReadRanges,
+  batchWriteRanges,
+  insertRows,
+  deleteRows,
+  insertColumns,
+  deleteColumns,
+} from "./sheets.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
@@ -257,6 +272,20 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "bitable_record_update", description: "更新记录", params: ["appToken", "tableId", "recordId", "fields"] },
     { action: "bitable_record_delete", description: "删除记录", params: ["appToken", "tableId", "recordId"] },
     { action: "bitable_records_delete", description: "批量删除记录", params: ["appToken", "tableId", "recordIds"] },
+    // 电子表格 - 基础
+    { action: "sheet_create", description: "创建电子表格", params: ["title", "folderId?"] },
+    { action: "sheet_get", description: "获取电子表格信息", params: ["spreadsheetToken"] },
+    { action: "sheet_list", description: "列出工作表", params: ["spreadsheetToken"] },
+    { action: "sheet_info", description: "获取工作表信息", params: ["spreadsheetToken", "sheetId"] },
+    // 电子表格 - 读写
+    { action: "sheet_read", description: "读取单元格", params: ["spreadsheetToken", "range"] },
+    { action: "sheet_write", description: "写入单元格", params: ["spreadsheetToken", "range", "values"] },
+    { action: "sheet_append", description: "追加行数据", params: ["spreadsheetToken", "range", "values"] },
+    // 电子表格 - 行列操作
+    { action: "sheet_insert_rows", description: "插入行", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
+    { action: "sheet_delete_rows", description: "删除行", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
+    { action: "sheet_insert_cols", description: "插入列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
+    { action: "sheet_delete_cols", description: "删除列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -414,6 +443,70 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
           : (ctx.recordIds || "").split(",").map((id: string) => id.trim());
         return deleteBitableRecords(account, ctx.appToken, ctx.tableId, recordIds);
       }
+
+      // 电子表格 - 基础
+      case "sheet_create":
+        return createSpreadsheet(account, ctx.title, ctx.folderId);
+
+      case "sheet_get":
+        return getSpreadsheet(account, ctx.spreadsheetToken);
+
+      case "sheet_list":
+        return listSheets(account, ctx.spreadsheetToken);
+
+      case "sheet_info":
+        return getSheet(account, ctx.spreadsheetToken, ctx.sheetId);
+
+      // 电子表格 - 读写
+      case "sheet_read":
+        return readRange(account, ctx.spreadsheetToken, ctx.range);
+
+      case "sheet_write": {
+        const values = typeof ctx.values === "string" ? JSON.parse(ctx.values) : ctx.values;
+        return writeRange(account, ctx.spreadsheetToken, ctx.range, values);
+      }
+
+      case "sheet_append": {
+        const values = typeof ctx.values === "string" ? JSON.parse(ctx.values) : ctx.values;
+        return appendRows(account, ctx.spreadsheetToken, ctx.range, values);
+      }
+
+      // 电子表格 - 行列操作
+      case "sheet_insert_rows":
+        return insertRows(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startIndex, 10) || 0,
+          parseInt(ctx.count, 10) || 1
+        );
+
+      case "sheet_delete_rows":
+        return deleteRows(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startIndex, 10) || 0,
+          parseInt(ctx.count, 10) || 1
+        );
+
+      case "sheet_insert_cols":
+        return insertColumns(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startIndex, 10) || 0,
+          parseInt(ctx.count, 10) || 1
+        );
+
+      case "sheet_delete_cols":
+        return deleteColumns(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startIndex, 10) || 0,
+          parseInt(ctx.count, 10) || 1
+        );
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
