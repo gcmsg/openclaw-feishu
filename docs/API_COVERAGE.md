@@ -1,6 +1,6 @@
 # Feishu API Coverage
 
-> 当前版本: 2.6.0 | 总计 Actions: 117+
+> 当前版本: 2.7.0 | 总计 Actions: 140+
 
 ## 模块概览
 
@@ -17,7 +17,8 @@
 | 知识库   | 14      | ✅      |
 | 搜索     | 4       | ✅      |
 | AI       | 5       | ✅      |
-| 邮件     | 26      | ✅ 新增 |
+| 邮件     | 26      | ✅      |
+| 通讯录   | 23      | ✅ 新增 |
 
 ## 详细 Actions 列表
 
@@ -287,7 +288,48 @@
 - `public_mailbox_member_remove` - 移除公共邮箱成员
 - `public_mailbox_members_clear` - 清空公共邮箱成员
 
+### 通讯录 (23 个) ⭐ 新增
+
+用户:
+
+- `contact_user_get` - 获取用户信息
+- `contact_user_list` - 获取用户列表
+- `contact_user_batch` - 批量获取用户信息
+- `contact_user_batch_id` - 批量获取用户ID (通过邮箱/手机号)
+- `contact_user_by_department` - 获取部门下用户
+
+部门:
+
+- `contact_department_get` - 获取部门信息
+- `contact_department_list` - 获取部门列表
+- `contact_department_children` - 获取子部门列表
+- `contact_department_parent` - 获取父部门列表
+- `contact_department_search` - 搜索部门
+- `contact_department_batch` - 批量获取部门信息
+
+用户组:
+
+- `contact_group_get` - 获取用户组信息
+- `contact_group_list` - 获取用户组列表
+- `contact_group_create` - 创建用户组
+- `contact_group_update` - 更新用户组
+- `contact_group_delete` - 删除用户组
+- `contact_user_groups` - 查询用户所属用户组
+
+用户组成员:
+
+- `contact_group_members` - 获取用户组成员
+- `contact_group_member_add` - 添加用户组成员
+- `contact_group_member_remove` - 移除用户组成员
+- `contact_group_members_batch_add` - 批量添加用户组成员
+- `contact_group_members_batch_remove` - 批量移除用户组成员
+
 ## 更新日志
+
+### v2.7.0
+
+- 新增通讯录模块 (contact.ts): 用户、部门、用户组完整管理
+- 新增 23 个 Actions
 
 ### v2.6.0
 

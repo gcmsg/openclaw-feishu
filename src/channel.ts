@@ -71,6 +71,30 @@ import {
   clearPublicMailboxMembers,
 } from "./mail.js";
 import {
+  getUser,
+  listUsers,
+  batchGetUsers,
+  batchGetUserIds,
+  searchUsersByDepartment,
+  getDepartment,
+  listDepartments,
+  getChildDepartments,
+  getParentDepartments,
+  searchDepartments,
+  batchGetDepartments,
+  getGroup,
+  listGroups,
+  getUserGroups,
+  createGroup,
+  updateGroup,
+  deleteGroup,
+  listGroupMembers,
+  addGroupMember,
+  batchAddGroupMembers,
+  removeGroupMember,
+  batchRemoveGroupMembers,
+} from "./contact.js";
+import {
   createDocument,
   getDocument,
   getDocumentContent,
@@ -965,6 +989,80 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       action: "public_mailbox_members_clear",
       description: "清空公共邮箱成员",
       params: ["publicMailboxId"],
+    },
+    // 通讯录 - 用户
+    { action: "contact_user_get", description: "获取用户信息", params: ["userId", "userIdType?"] },
+    { action: "contact_user_list", description: "获取用户列表", params: ["departmentId?"] },
+    {
+      action: "contact_user_batch",
+      description: "批量获取用户信息",
+      params: ["userIds", "userIdType?"],
+    },
+    {
+      action: "contact_user_batch_id",
+      description: "批量获取用户ID",
+      params: ["emails?", "mobiles?"],
+    },
+    {
+      action: "contact_user_by_department",
+      description: "获取部门下用户",
+      params: ["departmentId"],
+    },
+    // 通讯录 - 部门
+    { action: "contact_department_get", description: "获取部门信息", params: ["departmentId"] },
+    {
+      action: "contact_department_list",
+      description: "获取部门列表",
+      params: ["parentDepartmentId?", "fetchChild?"],
+    },
+    {
+      action: "contact_department_children",
+      description: "获取子部门列表",
+      params: ["departmentId"],
+    },
+    {
+      action: "contact_department_parent",
+      description: "获取父部门列表",
+      params: ["departmentId"],
+    },
+    { action: "contact_department_search", description: "搜索部门", params: ["query"] },
+    {
+      action: "contact_department_batch",
+      description: "批量获取部门信息",
+      params: ["departmentIds"],
+    },
+    // 通讯录 - 用户组
+    { action: "contact_group_get", description: "获取用户组信息", params: ["groupId"] },
+    { action: "contact_group_list", description: "获取用户组列表", params: [] },
+    { action: "contact_group_create", description: "创建用户组", params: ["name", "description?"] },
+    {
+      action: "contact_group_update",
+      description: "更新用户组",
+      params: ["groupId", "name?", "description?"],
+    },
+    { action: "contact_group_delete", description: "删除用户组", params: ["groupId"] },
+    { action: "contact_user_groups", description: "查询用户所属用户组", params: ["userId"] },
+    // 通讯录 - 用户组成员
+    { action: "contact_group_members", description: "获取用户组成员", params: ["groupId"] },
+    {
+      action: "contact_group_member_add",
+      description: "添加用户组成员",
+      params: ["groupId", "memberId", "memberType?"],
+    },
+    {
+      action: "contact_group_member_remove",
+      description: "移除用户组成员",
+      params: ["groupId", "memberId", "memberType?"],
+    },
+    {
+      action: "contact_group_members_batch_add",
+      description: "批量添加用户组成员",
+      params: ["groupId", "members"],
+    },
+    {
+      action: "contact_group_members_batch_remove",
+      description: "批量移除用户组成员",
+      params: ["groupId", "members"],
     },
   ],
 
@@ -1917,6 +2015,105 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "public_mailbox_members_clear":
         return clearPublicMailboxMembers(account, ctx.publicMailboxId);
+
+      // 通讯录 - 用户
+      case "contact_user_get":
+        return getUser(account, ctx.userId, ctx.userIdType as any);
+
+      case "contact_user_list":
+        return listUsers(account, { departmentId: ctx.departmentId });
+
+      case "contact_user_batch": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : ctx.userIds.split(",").map((id: string) => id.trim());
+        return batchGetUsers(account, userIds, ctx.userIdType as any);
+      }
+
+      case "contact_user_batch_id": {
+        const emails = ctx.emails
+          ? Array.isArray(ctx.emails)
+            ? ctx.emails
+            : ctx.emails.split(",").map((e: string) => e.trim())
+          : undefined;
+        const mobiles = ctx.mobiles
+          ? Array.isArray(ctx.mobiles)
+            ? ctx.mobiles
+            : ctx.mobiles.split(",").map((m: string) => m.trim())
+          : undefined;
+        return batchGetUserIds(account, { emails, mobiles });
+      }
+
+      case "contact_user_by_department":
+        return searchUsersByDepartment(account, ctx.departmentId);
+
+      // 通讯录 - 部门
+      case "contact_department_get":
+        return getDepartment(account, ctx.departmentId);
+
+      case "contact_department_list":
+        return listDepartments(account, {
+          parentDepartmentId: ctx.parentDepartmentId,
+          fetchChild: ctx.fetchChild === "true" || ctx.fetchChild === true,
+        });
+
+      case "contact_department_children":
+        return getChildDepartments(account, ctx.departmentId);
+
+      case "contact_department_parent":
+        return getParentDepartments(account, ctx.departmentId);
+
+      case "contact_department_search":
+        return searchDepartments(account, ctx.query);
+
+      case "contact_department_batch": {
+        const departmentIds = Array.isArray(ctx.departmentIds)
+          ? ctx.departmentIds
+          : ctx.departmentIds.split(",").map((id: string) => id.trim());
+        return batchGetDepartments(account, departmentIds);
+      }
+
+      // 通讯录 - 用户组
+      case "contact_group_get":
+        return getGroup(account, ctx.groupId);
+
+      case "contact_group_list":
+        return listGroups(account);
+
+      case "contact_group_create":
+        return createGroup(account, ctx.name, { description: ctx.description });
+
+      case "contact_group_update":
+        return updateGroup(account, ctx.groupId, {
+          name: ctx.name,
+          description: ctx.description,
+        });
+
+      case "contact_group_delete":
+        return deleteGroup(account, ctx.groupId);
+
+      case "contact_user_groups":
+        return getUserGroups(account, ctx.userId);
+
+      // 通讯录 - 用户组成员
+      case "contact_group_members":
+        return listGroupMembers(account, ctx.groupId);
+
+      case "contact_group_member_add":
+        return addGroupMember(account, ctx.groupId, ctx.memberId, ctx.memberType as any);
+
+      case "contact_group_member_remove":
+        return removeGroupMember(account, ctx.groupId, ctx.memberId, ctx.memberType as any);
+
+      case "contact_group_members_batch_add": {
+        const members = Array.isArray(ctx.members) ? ctx.members : JSON.parse(ctx.members);
+        return batchAddGroupMembers(account, ctx.groupId, members);
+      }
+
+      case "contact_group_members_batch_remove": {
+        const members = Array.isArray(ctx.members) ? ctx.members : JSON.parse(ctx.members);
+        return batchRemoveGroupMembers(account, ctx.groupId, members);
+      }
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };

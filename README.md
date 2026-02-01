@@ -27,6 +27,7 @@ A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messa
 | **Search**    | Messages, Documents, Drive files, Universal search                                  |
 | **AI**        | OCR (image text recognition), Speech-to-Text, Translation, Language detection       |
 | **Mail**      | Send/read emails, Folders, Mail groups, Public mailboxes, Members management        |
+| **Contact**   | Users, Departments, User groups, Members, Batch operations, Search                  |
 
 ### 📦 Quick Install
 
