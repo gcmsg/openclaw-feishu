@@ -98,8 +98,17 @@ export interface DocumentInfo {
  * 文档块类型
  */
 export type BlockType =
-  | "page" | "text" | "heading1" | "heading2" | "heading3"
-  | "bullet" | "ordered" | "todo" | "code" | "quote" | "divider";
+  | "page"
+  | "text"
+  | "heading1"
+  | "heading2"
+  | "heading3"
+  | "bullet"
+  | "ordered"
+  | "todo"
+  | "code"
+  | "quote"
+  | "divider";
 
 /**
  * 文档块

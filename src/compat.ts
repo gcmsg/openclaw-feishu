@@ -79,7 +79,7 @@ export interface ChannelMessageActionAdapter {
 /**
  * SDK 包名检测
  */
-const SDK_PACKAGES = ['openclaw', 'clawdbot', 'moltbot'] as const;
+const SDK_PACKAGES = ["openclaw", "clawdbot", "moltbot"] as const;
 let detectedPkg: string | null = null;
 
 export function getDetectedPackage(): string | null {
@@ -95,7 +95,7 @@ export function setDetectedPackage(pkg: string): void {
  */
 export async function detectSDK(): Promise<string> {
   if (detectedPkg) return detectedPkg;
-  
+
   for (const pkg of SDK_PACKAGES) {
     try {
       await import(`${pkg}/plugin-sdk`);
@@ -105,8 +105,8 @@ export async function detectSDK(): Promise<string> {
       continue;
     }
   }
-  
+
   // 默认使用 clawdbot（最广泛兼容）
-  detectedPkg = 'clawdbot';
+  detectedPkg = "clawdbot";
   return detectedPkg;
 }

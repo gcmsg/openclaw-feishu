@@ -2,7 +2,13 @@
  * 飞书云文档 API
  */
 
-import type { ResolvedFeishuAccount, ApiResult, DocumentInfo, DocumentBlock, BlockType } from "./types.js";
+import type {
+  ResolvedFeishuAccount,
+  ApiResult,
+  DocumentInfo,
+  DocumentBlock,
+  BlockType,
+} from "./types.js";
 import { getFeishuClient } from "./client.js";
 
 /**
@@ -174,8 +180,17 @@ export async function appendDocumentBlocks(
  */
 function convertBlock(block: DocumentBlock): any {
   const blockTypeMap: Record<BlockType, number> = {
-    page: 1, text: 2, heading1: 3, heading2: 4, heading3: 5,
-    bullet: 6, ordered: 7, todo: 8, code: 9, quote: 10, divider: 11,
+    page: 1,
+    text: 2,
+    heading1: 3,
+    heading2: 4,
+    heading3: 5,
+    bullet: 6,
+    ordered: 7,
+    todo: 8,
+    code: 9,
+    quote: 10,
+    divider: 11,
   };
 
   const result: any = {
@@ -223,9 +238,28 @@ function convertBlock(block: DocumentBlock): any {
 function getLanguageCode(language?: string): number {
   if (!language) return 1;
   const map: Record<string, number> = {
-    plaintext: 1, bash: 2, c: 3, cpp: 4, csharp: 5, css: 6, go: 7, html: 8,
-    java: 9, javascript: 10, json: 11, kotlin: 12, markdown: 13, php: 14,
-    python: 15, ruby: 16, rust: 17, sql: 18, swift: 19, typescript: 20, xml: 21, yaml: 22,
+    plaintext: 1,
+    bash: 2,
+    c: 3,
+    cpp: 4,
+    csharp: 5,
+    css: 6,
+    go: 7,
+    html: 8,
+    java: 9,
+    javascript: 10,
+    json: 11,
+    kotlin: 12,
+    markdown: 13,
+    php: 14,
+    python: 15,
+    ruby: 16,
+    rust: 17,
+    sql: 18,
+    swift: 19,
+    typescript: 20,
+    xml: 21,
+    yaml: 22,
   };
   return map[language.toLowerCase()] || 1;
 }

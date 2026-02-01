@@ -35,7 +35,10 @@ declare module "clawdbot/plugin-sdk" {
       prompter: {
         note: (text: string, title?: string) => Promise<void>;
         confirm: (opts: { message: string; initialValue?: boolean }) => Promise<boolean>;
-        text: (opts: { message: string; validate?: (v: string) => string | undefined }) => Promise<string>;
+        text: (opts: {
+          message: string;
+          validate?: (v: string) => string | undefined;
+        }) => Promise<string>;
       };
     }) => Promise<{ cfg: ClawdbotConfig; accountId?: string }>;
     disable: (cfg: ClawdbotConfig) => ClawdbotConfig;

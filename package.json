@@ -7,13 +7,22 @@
   "scripts": {
     "build": "tsc",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,md}\"",
+    "prepare": "npm run lint && npm run format:check"
   },
   "openclaw": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "clawdbot": {
-    "extensions": ["./index.ts"]
+    "extensions": [
+      "./index.ts"
+    ]
   },
   "keywords": [
     "openclaw",
@@ -26,7 +35,7 @@
     "drive",
     "plugin"
   ],
-  "author": "",
+  "author": "Nina <nina@clawd.bot>",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -36,8 +45,14 @@
     "@larksuiteoapi/node-sdk": "^1.46.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
     "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.0",
+    "prettier": "^3.4.0",
     "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^2.0.0"
   },
   "peerDependencies": {
@@ -51,5 +66,8 @@
     "clawdbot": {
       "optional": true
     }
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

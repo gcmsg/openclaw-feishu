@@ -70,10 +70,14 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
   });
 
   if (abortSignal) {
-    abortSignal.addEventListener("abort", () => {
-      logger?.info("received abort signal, stopping gateway");
-      stopGateway(cacheKey);
-    }, { once: true });
+    abortSignal.addEventListener(
+      "abort",
+      () => {
+        logger?.info("received abort signal, stopping gateway");
+        stopGateway(cacheKey);
+      },
+      { once: true }
+    );
   }
 
   wsClient.start({
@@ -135,7 +139,7 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           } else if (feishuMessage.messageType === "media") {
             // 视频消息
             feishuMessage.imageKey = parsed.image_key; // 封面
-            feishuMessage.fileKey = parsed.file_key;   // 视频
+            feishuMessage.fileKey = parsed.file_key; // 视频
             feishuMessage.fileName = parsed.file_name;
           } else if (feishuMessage.messageType === "sticker") {
             // 表情包

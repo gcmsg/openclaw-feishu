@@ -17,7 +17,13 @@ import {
   downloadImageByKey,
   downloadMessageFile,
 } from "./client.js";
-import { createDocument, getDocument, getDocumentContent, appendText, appendMarkdown } from "./document.js";
+import {
+  createDocument,
+  getDocument,
+  getDocumentContent,
+  appendText,
+  appendMarkdown,
+} from "./document.js";
 import { createFolder, listFiles, uploadFile, downloadFile, searchFiles } from "./space.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
@@ -117,16 +123,20 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
         initialValue: true,
       });
       if (!keep) {
-        appId = String(await prompter.text({
-          message: "请输入飞书 App ID",
-          validate: (v) => (v?.trim() ? undefined : "必填"),
-        })).trim();
+        appId = String(
+          await prompter.text({
+            message: "请输入飞书 App ID",
+            validate: (v) => (v?.trim() ? undefined : "必填"),
+          })
+        ).trim();
       }
     } else {
-      appId = String(await prompter.text({
-        message: "请输入飞书 App ID",
-        validate: (v) => (v?.trim() ? undefined : "必填"),
-      })).trim();
+      appId = String(
+        await prompter.text({
+          message: "请输入飞书 App ID",
+          validate: (v) => (v?.trim() ? undefined : "必填"),
+        })
+      ).trim();
     }
 
     if (hasAppSecret) {
@@ -135,16 +145,20 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
         initialValue: true,
       });
       if (!keep) {
-        appSecret = String(await prompter.text({
-          message: "请输入飞书 App Secret",
-          validate: (v) => (v?.trim() ? undefined : "必填"),
-        })).trim();
+        appSecret = String(
+          await prompter.text({
+            message: "请输入飞书 App Secret",
+            validate: (v) => (v?.trim() ? undefined : "必填"),
+          })
+        ).trim();
       }
     } else {
-      appSecret = String(await prompter.text({
-        message: "请输入飞书 App Secret",
-        validate: (v) => (v?.trim() ? undefined : "必填"),
-      })).trim();
+      appSecret = String(
+        await prompter.text({
+          message: "请输入飞书 App Secret",
+          validate: (v) => (v?.trim() ? undefined : "必填"),
+        })
+      ).trim();
     }
 
     next = {
@@ -163,13 +177,14 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
     return { cfg: next, accountId: DEFAULT_ACCOUNT_ID };
   },
 
-  disable: (cfg) => ({
-    ...cfg,
-    channels: {
-      ...(cfg as any).channels,
-      feishu: { ...(cfg as any).channels?.feishu, enabled: false },
-    },
-  } as ClawdbotConfig),
+  disable: (cfg) =>
+    ({
+      ...cfg,
+      channels: {
+        ...(cfg as any).channels,
+        feishu: { ...(cfg as any).channels?.feishu, enabled: false },
+      },
+    }) as ClawdbotConfig,
 };
 
 // ========== Message Actions ==========
@@ -184,7 +199,11 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "doc_get", description: "获取文档信息", params: ["documentId"] },
     { action: "doc_read", description: "读取文档内容", params: ["documentId"] },
     { action: "doc_append", description: "追加文本到文档", params: ["documentId", "content"] },
-    { action: "doc_append_md", description: "追加 Markdown 到文档", params: ["documentId", "markdown"] },
+    {
+      action: "doc_append_md",
+      description: "追加 Markdown 到文档",
+      params: ["documentId", "markdown"],
+    },
     { action: "folder_create", description: "创建文件夹", params: ["name", "parentToken?"] },
     { action: "folder_list", description: "列出文件夹内容", params: ["folderToken"] },
     { action: "file_upload", description: "上传文件", params: ["filePath", "folderToken"] },
@@ -332,7 +351,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
         abortSignal: ctx.abortSignal,
         onMessage: async (message) => {
           const logger = {
-            info: (msg: string) => console.log(`[feishu-plus:${account.accountId}] ${msg}`),
+            info: (msg: string) => console.info(`[feishu-plus:${account.accountId}] ${msg}`),
             error: (msg: string) => console.error(`[feishu-plus:${account.accountId}] ${msg}`),
           };
 
@@ -352,7 +371,11 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
                 try {
                   const imgResult = await downloadImageByKey(account, message.imageKey);
                   if (imgResult.ok && imgResult.data) {
-                    const filePath = await saveMediaToTemp(imgResult.data.buffer, "png", "feishu_img");
+                    const filePath = await saveMediaToTemp(
+                      imgResult.data.buffer,
+                      "png",
+                      "feishu_img"
+                    );
                     mediaUrls.push(filePath);
                     bodyText = "[图片]";
                     logger.info(`图片已下载: ${filePath}`);
@@ -372,10 +395,18 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
                 const fileName = message.fileName || "file";
                 logger.info(`收到文件消息: ${fileName}`);
                 try {
-                  const fileResult = await downloadMessageFile(account, message.messageId, message.fileKey);
+                  const fileResult = await downloadMessageFile(
+                    account,
+                    message.messageId,
+                    message.fileKey
+                  );
                   if (fileResult.ok && fileResult.data) {
                     const ext = path.extname(fileName) || ".bin";
-                    const filePath = await saveMediaToTemp(fileResult.data.buffer, ext.slice(1), "feishu_file");
+                    const filePath = await saveMediaToTemp(
+                      fileResult.data.buffer,
+                      ext.slice(1),
+                      "feishu_file"
+                    );
                     mediaUrls.push(filePath);
                     bodyText = `[文件: ${fileName}]`;
                     logger.info(`文件已下载: ${filePath}`);
@@ -471,7 +502,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
           });
         },
         logger: {
-          info: (msg) => console.log(`[feishu:${account.accountId}] ${msg}`),
+          info: (msg) => console.info(`[feishu:${account.accountId}] ${msg}`),
           error: (msg) => console.error(`[feishu:${account.accountId}] ${msg}`),
         },
       });
