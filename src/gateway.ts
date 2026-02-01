@@ -136,6 +136,11 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           } else if (feishuMessage.messageType === "audio") {
             // 语音消息
             feishuMessage.fileKey = parsed.file_key;
+            feishuMessage.audioDuration = parsed.duration;
+            // 飞书可能提供语音识别结果（需要应用有 speech_to_text 权限）
+            if (parsed.recognition) {
+              feishuMessage.audioRecognition = parsed.recognition;
+            }
           } else if (feishuMessage.messageType === "media") {
             // 视频消息
             feishuMessage.imageKey = parsed.image_key; // 封面

@@ -48,6 +48,10 @@ export interface FeishuMessage {
   fileKey?: string;
   /** 文件名（文件消息） */
   fileName?: string;
+  /** 语音识别结果（语音消息） */
+  audioRecognition?: string;
+  /** 语音时长（毫秒） */
+  audioDuration?: number;
   mentions?: FeishuMention[];
   createTime?: number;
 }

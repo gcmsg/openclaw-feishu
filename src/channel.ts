@@ -422,8 +422,21 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               break;
 
             case "audio":
-              bodyText = "[语音消息 - 暂不支持]";
-              logger.info("收到语音消息（暂不支持）");
+              if (message.audioRecognition) {
+                // 飞书提供了语音转文字结果
+                bodyText = message.audioRecognition;
+                const durationSec = message.audioDuration
+                  ? (message.audioDuration / 1000).toFixed(1)
+                  : "?";
+                logger.info(`收到语音消息 (${durationSec}s): ${bodyText.slice(0, 50)}...`);
+              } else {
+                // 没有转写结果，提示用户
+                const durationSec = message.audioDuration
+                  ? (message.audioDuration / 1000).toFixed(1)
+                  : "?";
+                bodyText = `[语音消息 ${durationSec}s - 无法识别，请开启语音识别权限]`;
+                logger.info(`收到语音消息 (${durationSec}s)，无转写结果`);
+              }
               break;
 
             case "media":
