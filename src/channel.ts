@@ -17,6 +17,10 @@ import {
   downloadImageByKey,
   downloadMessageFile,
   sendSmartMessage,
+  forwardMessage,
+  mergeForwardMessages,
+  sendUrgentMessage,
+  getMessageReadUsers,
 } from "./client.js";
 import {
   createDocument,
@@ -33,7 +37,20 @@ import {
   appendMarkdown,
   appendDocumentBlocks,
 } from "./document.js";
-import { createFolder, listFiles, uploadFile, downloadFile, searchFiles } from "./space.js";
+import {
+  createFolder,
+  listFiles,
+  uploadFile,
+  downloadFile,
+  searchFiles,
+  getFileMeta,
+  getBatchDownloadUrls,
+  createShortcut,
+  transferFileOwner,
+  moveFile,
+  copyFile,
+  deleteFile,
+} from "./space.js";
 import {
   createBitableApp,
   getBitableApp,
@@ -302,6 +319,15 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "send_card", description: "发送卡片消息", params: ["target", "card"] },
     { action: "send_image", description: "发送图片", params: ["target", "filePath"] },
     { action: "send_file", description: "发送文件", params: ["target", "filePath"] },
+    // 消息 - 高级
+    { action: "msg_forward", description: "转发消息", params: ["messageId", "targetChatId"] },
+    {
+      action: "msg_merge_forward",
+      description: "合并转发多条消息",
+      params: ["messageIds", "targetChatId"],
+    },
+    { action: "msg_urgent", description: "发送加急消息", params: ["messageId", "userIds"] },
+    { action: "msg_read_users", description: "获取消息已读用户", params: ["messageId"] },
     // 文档 - 基础
     { action: "doc_create", description: "创建云文档", params: ["title", "folderId?"] },
     { action: "doc_get", description: "获取文档信息", params: ["documentId"] },
@@ -335,6 +361,25 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "file_upload", description: "上传文件", params: ["filePath", "folderToken"] },
     { action: "file_download", description: "下载文件", params: ["fileToken", "savePath"] },
     { action: "file_search", description: "搜索文件", params: ["query"] },
+    { action: "file_meta", description: "获取文件元数据", params: ["fileToken", "fileType"] },
+    { action: "file_move", description: "移动文件", params: ["fileToken", "targetFolderToken"] },
+    {
+      action: "file_copy",
+      description: "复制文件",
+      params: ["fileToken", "targetFolderToken", "newName?"],
+    },
+    { action: "file_delete", description: "删除文件", params: ["fileToken"] },
+    {
+      action: "file_shortcut",
+      description: "创建快捷方式",
+      params: ["targetToken", "targetType", "parentFolderToken"],
+    },
+    { action: "file_batch_download_urls", description: "批量获取下载链接", params: ["fileTokens"] },
+    {
+      action: "file_transfer_owner",
+      description: "转移文件所有权",
+      params: ["fileToken", "fileType", "newOwnerId"],
+    },
     // 多维表格 - 应用
     { action: "bitable_create", description: "创建多维表格", params: ["name", "folderId?"] },
     { action: "bitable_get", description: "获取多维表格信息", params: ["appToken"] },
@@ -640,6 +685,27 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       case "send_file":
         return sendFileMessage(account, ctx.target, ctx.filePath, ctx.fileName);
 
+      // 消息 - 高级
+      case "msg_forward":
+        return forwardMessage(account, ctx.messageId, ctx.targetChatId);
+
+      case "msg_merge_forward": {
+        const msgIds = Array.isArray(ctx.messageIds)
+          ? ctx.messageIds
+          : ctx.messageIds.split(",").map((id: string) => id.trim());
+        return mergeForwardMessages(account, msgIds, ctx.targetChatId);
+      }
+
+      case "msg_urgent": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : ctx.userIds.split(",").map((id: string) => id.trim());
+        return sendUrgentMessage(account, ctx.messageId, userIds);
+      }
+
+      case "msg_read_users":
+        return getMessageReadUsers(account, ctx.messageId);
+
       case "doc_create":
         return createDocument(account, ctx.title, ctx.folderId);
 
@@ -709,6 +775,36 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "file_search":
         return searchFiles(account, ctx.query);
+
+      case "file_meta":
+        return getFileMeta(account, ctx.fileToken, ctx.fileType as any);
+
+      case "file_move":
+        return moveFile(account, ctx.fileToken, ctx.targetFolderToken);
+
+      case "file_copy":
+        return copyFile(account, ctx.fileToken, ctx.targetFolderToken, ctx.newName);
+
+      case "file_delete":
+        return deleteFile(account, ctx.fileToken);
+
+      case "file_shortcut":
+        return createShortcut(
+          account,
+          ctx.targetToken,
+          ctx.targetType as any,
+          ctx.parentFolderToken
+        );
+
+      case "file_batch_download_urls": {
+        const tokens = Array.isArray(ctx.fileTokens)
+          ? ctx.fileTokens
+          : ctx.fileTokens.split(",").map((t: string) => t.trim());
+        return getBatchDownloadUrls(account, tokens);
+      }
+
+      case "file_transfer_owner":
+        return transferFileOwner(account, ctx.fileToken, ctx.fileType as any, ctx.newOwnerId);
 
       // 多维表格 - 应用
       case "bitable_create":

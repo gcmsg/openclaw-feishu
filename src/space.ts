@@ -278,6 +278,156 @@ export async function deleteFile(
 }
 
 /**
+ * 获取文件元数据
+ */
+export async function getFileMeta(
+  account: ResolvedFeishuAccount,
+  fileToken: string,
+  fileType: "doc" | "docx" | "sheet" | "bitable" | "file" | "folder"
+): Promise<
+  ApiResult<{
+    name: string;
+    owner?: { id: string; name?: string };
+    createTime?: number;
+    modifiedTime?: number;
+    url?: string;
+  }>
+> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.drive.v1.meta.batchQuery({
+      params: { user_id_type: "open_id" },
+      data: {
+        request_docs: [
+          {
+            doc_token: fileToken,
+            doc_type: fileType,
+          },
+        ],
+      },
+    });
+
+    if (result.code === 0 && result.data?.metas?.[0]) {
+      const meta = result.data.metas[0];
+      return {
+        ok: true,
+        data: {
+          name: meta.title || "",
+          owner: meta.owner_id ? { id: meta.owner_id, name: meta.owner?.name } : undefined,
+          createTime: meta.create_time ? parseInt(meta.create_time) * 1000 : undefined,
+          modifiedTime: meta.latest_modify_time
+            ? parseInt(meta.latest_modify_time) * 1000
+            : undefined,
+          url: meta.url,
+        },
+      };
+    }
+    return { ok: false, error: result.msg || "File not found" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 批量获取临时下载链接
+ */
+export async function getBatchDownloadUrls(
+  account: ResolvedFeishuAccount,
+  fileTokens: string[]
+): Promise<ApiResult<{ urls: Record<string, string> }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.drive.v1.media.batchGetTmpDownloadUrl({
+      params: {
+        file_tokens: fileTokens.join(","),
+      },
+    });
+
+    if (result.code === 0) {
+      const urls: Record<string, string> = {};
+      for (const item of result.data?.tmp_download_urls || []) {
+        if (item.file_token && item.tmp_download_url) {
+          urls[item.file_token] = item.tmp_download_url;
+        }
+      }
+      return { ok: true, data: { urls } };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 创建快捷方式
+ */
+export async function createShortcut(
+  account: ResolvedFeishuAccount,
+  targetToken: string,
+  targetType: "doc" | "docx" | "sheet" | "bitable" | "file" | "folder",
+  parentFolderToken: string
+): Promise<ApiResult<{ token: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.drive.v1.file.createShortcut({
+      data: {
+        parent_token: parentFolderToken,
+        refer_entity: {
+          refer_token: targetToken,
+          refer_type: targetType,
+        },
+      },
+    });
+
+    if (result.code === 0) {
+      return {
+        ok: true,
+        data: { token: result.data?.succ_shortcut_node?.token || "" },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 转移文件所有权
+ */
+export async function transferFileOwner(
+  account: ResolvedFeishuAccount,
+  fileToken: string,
+  fileType: "doc" | "docx" | "sheet" | "bitable" | "file" | "folder",
+  newOwnerId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.drive.v1.permissionMember.transfer({
+      path: { token: fileToken },
+      params: {
+        type: fileType,
+        need_notification: true,
+      },
+      data: {
+        member_type: "openid",
+        member_id: newOwnerId,
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
  * 搜索文件
  */
 export async function searchFiles(

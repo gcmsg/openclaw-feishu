@@ -321,6 +321,141 @@ export async function getMessage(
   }
 }
 
+/**
+ * 转发消息
+ */
+export async function forwardMessage(
+  account: ResolvedFeishuAccount,
+  messageId: string,
+  targetChatId: string
+): Promise<ApiResult<{ messageId: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.forward({
+      path: { message_id: messageId },
+      params: { receive_id_type: "chat_id" },
+      data: {
+        receive_id: targetChatId,
+      },
+    });
+
+    if (result.code === 0) {
+      return {
+        ok: true,
+        data: { messageId: result.data?.message_id || "" },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 合并转发多条消息
+ */
+export async function mergeForwardMessages(
+  account: ResolvedFeishuAccount,
+  messageIds: string[],
+  targetChatId: string
+): Promise<ApiResult<{ messageId: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.mergeForward({
+      params: { receive_id_type: "chat_id" },
+      data: {
+        receive_id: targetChatId,
+        message_id_list: messageIds,
+      },
+    });
+
+    if (result.code === 0) {
+      return {
+        ok: true,
+        data: { messageId: result.data?.message_id || "" },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 发送加急消息 (应用内)
+ */
+export async function sendUrgentMessage(
+  account: ResolvedFeishuAccount,
+  messageId: string,
+  userIds: string[]
+): Promise<ApiResult<{ invalidUserIds?: string[] }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.urgentApp({
+      path: { message_id: messageId },
+      params: { user_id_type: "open_id" },
+      data: {
+        user_id_list: userIds,
+      },
+    });
+
+    if (result.code === 0) {
+      return {
+        ok: true,
+        data: { invalidUserIds: result.data?.invalid_user_id_list },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 获取消息已读用户列表
+ */
+export async function getMessageReadUsers(
+  account: ResolvedFeishuAccount,
+  messageId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ users: Array<{ userId: string; readTime: number }>; pageToken?: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.readUsers({
+      path: { message_id: messageId },
+      params: {
+        user_id_type: "open_id",
+        page_size: options?.pageSize || 50,
+        page_token: options?.pageToken,
+      },
+    });
+
+    if (result.code === 0) {
+      const users = (result.data?.items || []).map((u: any) => ({
+        userId: u.user_id,
+        readTime: parseInt(u.timestamp, 10) || 0,
+      }));
+      return {
+        ok: true,
+        data: {
+          users,
+          pageToken: result.data?.page_token,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
 // ==================== 下载 API ====================
 
 /**
