@@ -347,12 +347,7 @@ describe("日历 API", () => {
         },
       });
 
-      const result = await queryFreeBusy(
-        mockAccount,
-        ["user_1"],
-        1704067200,
-        1704153600
-      );
+      const result = await queryFreeBusy(mockAccount, ["user_1"], 1704067200, 1704153600);
 
       expect(result.ok).toBe(true);
       expect(result.data?.[0].busyPeriods).toHaveLength(2);

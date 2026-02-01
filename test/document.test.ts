@@ -237,9 +237,7 @@ describe("云文档 API", () => {
       expect(mockClient.docx.v1.documentBlockChildren.create).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            children: expect.arrayContaining([
-              expect.objectContaining({ block_type: 2 }),
-            ]),
+            children: expect.arrayContaining([expect.objectContaining({ block_type: 2 })]),
           }),
         })
       );

@@ -58,8 +58,6 @@ import {
   readRange,
   writeRange,
   appendRows,
-  batchReadRanges,
-  batchWriteRanges,
   insertRows,
   deleteRows,
   insertColumns,
@@ -67,8 +65,6 @@ import {
   setCellStyle,
   mergeCells,
   unmergeCells,
-  setDataValidation,
-  setConditionalFormat,
   createFilter,
   deleteFilter,
   sortRange,
@@ -112,6 +108,21 @@ import {
   addTaskReminder,
   parseDueString,
 } from "./task.js";
+import {
+  listWikiSpaces,
+  getWikiSpace,
+  createWikiSpace,
+  listWikiNodes,
+  getWikiNode,
+  createWikiNode,
+  updateWikiNodeTitle,
+  moveWikiNode,
+  copyWikiNode,
+  listWikiMembers,
+  addWikiMember,
+  removeWikiMember,
+} from "./wiki.js";
+import { searchMessages, searchDocs, searchDriveFiles, universalSearch } from "./search.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
@@ -290,12 +301,24 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "doc_structure", description: "获取文档结构（块列表）", params: ["documentId"] },
     // 文档 - 内容操作
     { action: "doc_append", description: "追加文本到文档末尾", params: ["documentId", "content"] },
-    { action: "doc_append_md", description: "追加 Markdown 到文档", params: ["documentId", "markdown"] },
+    {
+      action: "doc_append_md",
+      description: "追加 Markdown 到文档",
+      params: ["documentId", "markdown"],
+    },
     { action: "doc_prepend", description: "在文档开头插入内容", params: ["documentId", "content"] },
-    { action: "doc_insert_after", description: "在指定块后插入内容", params: ["documentId", "blockId", "content"] },
+    {
+      action: "doc_insert_after",
+      description: "在指定块后插入内容",
+      params: ["documentId", "blockId", "content"],
+    },
     // 文档 - 块操作
     { action: "doc_block_get", description: "获取指定块内容", params: ["documentId", "blockId"] },
-    { action: "doc_block_update", description: "更新块内容", params: ["documentId", "blockId", "text", "checked?"] },
+    {
+      action: "doc_block_update",
+      description: "更新块内容",
+      params: ["documentId", "blockId", "text", "checked?"],
+    },
     { action: "doc_block_delete", description: "删除指定块", params: ["documentId", "blockId"] },
     { action: "doc_blocks_delete", description: "批量删除块", params: ["documentId", "blockIds"] },
     // 云空间
@@ -311,64 +334,188 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "bitable_table_create", description: "创建数据表", params: ["appToken", "name"] },
     // 多维表格 - 字段
     { action: "bitable_fields", description: "列出字段", params: ["appToken", "tableId"] },
-    { action: "bitable_field_create", description: "创建字段", params: ["appToken", "tableId", "fieldName", "fieldType"] },
+    {
+      action: "bitable_field_create",
+      description: "创建字段",
+      params: ["appToken", "tableId", "fieldName", "fieldType"],
+    },
     // 多维表格 - 记录
-    { action: "bitable_records", description: "查询记录", params: ["appToken", "tableId", "pageSize?"] },
-    { action: "bitable_record_get", description: "获取单条记录", params: ["appToken", "tableId", "recordId"] },
-    { action: "bitable_record_create", description: "创建记录", params: ["appToken", "tableId", "fields"] },
-    { action: "bitable_record_update", description: "更新记录", params: ["appToken", "tableId", "recordId", "fields"] },
-    { action: "bitable_record_delete", description: "删除记录", params: ["appToken", "tableId", "recordId"] },
-    { action: "bitable_records_delete", description: "批量删除记录", params: ["appToken", "tableId", "recordIds"] },
+    {
+      action: "bitable_records",
+      description: "查询记录",
+      params: ["appToken", "tableId", "pageSize?"],
+    },
+    {
+      action: "bitable_record_get",
+      description: "获取单条记录",
+      params: ["appToken", "tableId", "recordId"],
+    },
+    {
+      action: "bitable_record_create",
+      description: "创建记录",
+      params: ["appToken", "tableId", "fields"],
+    },
+    {
+      action: "bitable_record_update",
+      description: "更新记录",
+      params: ["appToken", "tableId", "recordId", "fields"],
+    },
+    {
+      action: "bitable_record_delete",
+      description: "删除记录",
+      params: ["appToken", "tableId", "recordId"],
+    },
+    {
+      action: "bitable_records_delete",
+      description: "批量删除记录",
+      params: ["appToken", "tableId", "recordIds"],
+    },
     // 电子表格 - 基础
     { action: "sheet_create", description: "创建电子表格", params: ["title", "folderId?"] },
     { action: "sheet_get", description: "获取电子表格信息", params: ["spreadsheetToken"] },
     { action: "sheet_list", description: "列出工作表", params: ["spreadsheetToken"] },
-    { action: "sheet_info", description: "获取工作表信息", params: ["spreadsheetToken", "sheetId"] },
+    {
+      action: "sheet_info",
+      description: "获取工作表信息",
+      params: ["spreadsheetToken", "sheetId"],
+    },
     // 电子表格 - 读写
     { action: "sheet_read", description: "读取单元格", params: ["spreadsheetToken", "range"] },
-    { action: "sheet_write", description: "写入单元格", params: ["spreadsheetToken", "range", "values"] },
-    { action: "sheet_append", description: "追加行数据", params: ["spreadsheetToken", "range", "values"] },
+    {
+      action: "sheet_write",
+      description: "写入单元格",
+      params: ["spreadsheetToken", "range", "values"],
+    },
+    {
+      action: "sheet_append",
+      description: "追加行数据",
+      params: ["spreadsheetToken", "range", "values"],
+    },
     // 电子表格 - 行列操作
-    { action: "sheet_insert_rows", description: "插入行", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
-    { action: "sheet_delete_rows", description: "删除行", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
-    { action: "sheet_insert_cols", description: "插入列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
-    { action: "sheet_delete_cols", description: "删除列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
+    {
+      action: "sheet_insert_rows",
+      description: "插入行",
+      params: ["spreadsheetToken", "sheetId", "startIndex", "count"],
+    },
+    {
+      action: "sheet_delete_rows",
+      description: "删除行",
+      params: ["spreadsheetToken", "sheetId", "startIndex", "count"],
+    },
+    {
+      action: "sheet_insert_cols",
+      description: "插入列",
+      params: ["spreadsheetToken", "sheetId", "startIndex", "count"],
+    },
+    {
+      action: "sheet_delete_cols",
+      description: "删除列",
+      params: ["spreadsheetToken", "sheetId", "startIndex", "count"],
+    },
     // 电子表格 - 样式
-    { action: "sheet_style", description: "设置单元格样式", params: ["spreadsheetToken", "range", "style"] },
-    { action: "sheet_merge", description: "合并单元格", params: ["spreadsheetToken", "range", "mergeType?"] },
+    {
+      action: "sheet_style",
+      description: "设置单元格样式",
+      params: ["spreadsheetToken", "range", "style"],
+    },
+    {
+      action: "sheet_merge",
+      description: "合并单元格",
+      params: ["spreadsheetToken", "range", "mergeType?"],
+    },
     { action: "sheet_unmerge", description: "拆分单元格", params: ["spreadsheetToken", "range"] },
     // 电子表格 - 高级
-    { action: "sheet_sort", description: "排序", params: ["spreadsheetToken", "sheetId", "range", "sortSpecs"] },
-    { action: "sheet_freeze", description: "冻结行列", params: ["spreadsheetToken", "sheetId", "frozenRows", "frozenColumns"] },
-    { action: "sheet_find_replace", description: "查找替换", params: ["spreadsheetToken", "sheetId", "find", "replace"] },
-    { action: "sheet_filter_create", description: "创建筛选", params: ["spreadsheetToken", "sheetId", "range"] },
-    { action: "sheet_filter_delete", description: "删除筛选", params: ["spreadsheetToken", "sheetId"] },
-    { action: "sheet_col_width", description: "设置列宽", params: ["spreadsheetToken", "sheetId", "startCol", "endCol", "width"] },
-    { action: "sheet_row_height", description: "设置行高", params: ["spreadsheetToken", "sheetId", "startRow", "endRow", "height"] },
+    {
+      action: "sheet_sort",
+      description: "排序",
+      params: ["spreadsheetToken", "sheetId", "range", "sortSpecs"],
+    },
+    {
+      action: "sheet_freeze",
+      description: "冻结行列",
+      params: ["spreadsheetToken", "sheetId", "frozenRows", "frozenColumns"],
+    },
+    {
+      action: "sheet_find_replace",
+      description: "查找替换",
+      params: ["spreadsheetToken", "sheetId", "find", "replace"],
+    },
+    {
+      action: "sheet_filter_create",
+      description: "创建筛选",
+      params: ["spreadsheetToken", "sheetId", "range"],
+    },
+    {
+      action: "sheet_filter_delete",
+      description: "删除筛选",
+      params: ["spreadsheetToken", "sheetId"],
+    },
+    {
+      action: "sheet_col_width",
+      description: "设置列宽",
+      params: ["spreadsheetToken", "sheetId", "startCol", "endCol", "width"],
+    },
+    {
+      action: "sheet_row_height",
+      description: "设置行高",
+      params: ["spreadsheetToken", "sheetId", "startRow", "endRow", "height"],
+    },
     // 电子表格 - 工作表管理
-    { action: "sheet_add", description: "添加工作表", params: ["spreadsheetToken", "title", "index?"] },
+    {
+      action: "sheet_add",
+      description: "添加工作表",
+      params: ["spreadsheetToken", "title", "index?"],
+    },
     { action: "sheet_delete", description: "删除工作表", params: ["spreadsheetToken", "sheetId"] },
-    { action: "sheet_copy", description: "复制工作表", params: ["spreadsheetToken", "sourceSheetId", "targetTitle?"] },
+    {
+      action: "sheet_copy",
+      description: "复制工作表",
+      params: ["spreadsheetToken", "sourceSheetId", "targetTitle?"],
+    },
     // 日历 - 基础
     { action: "cal_list", description: "列出日历", params: [] },
     { action: "cal_primary", description: "获取主日历", params: [] },
     { action: "cal_create", description: "创建日历", params: ["summary", "description?"] },
     // 日历 - 日程
-    { action: "cal_events", description: "列出日程", params: ["calendarId", "startTime?", "endTime?"] },
+    {
+      action: "cal_events",
+      description: "列出日程",
+      params: ["calendarId", "startTime?", "endTime?"],
+    },
     { action: "cal_event_get", description: "获取日程详情", params: ["calendarId", "eventId"] },
-    { action: "cal_event_create", description: "创建日程", params: ["calendarId", "summary", "startTime", "endTime", "description?", "location?"] },
-    { action: "cal_event_update", description: "更新日程", params: ["calendarId", "eventId", "summary?", "startTime?", "endTime?"] },
+    {
+      action: "cal_event_create",
+      description: "创建日程",
+      params: ["calendarId", "summary", "startTime", "endTime", "description?", "location?"],
+    },
+    {
+      action: "cal_event_update",
+      description: "更新日程",
+      params: ["calendarId", "eventId", "summary?", "startTime?", "endTime?"],
+    },
     { action: "cal_event_delete", description: "删除日程", params: ["calendarId", "eventId"] },
     { action: "cal_event_search", description: "搜索日程", params: ["calendarId", "query"] },
     // 日历 - 参与者
     { action: "cal_attendees", description: "获取日程参与者", params: ["calendarId", "eventId"] },
-    { action: "cal_attendee_add", description: "添加参与者", params: ["calendarId", "eventId", "userIds"] },
+    {
+      action: "cal_attendee_add",
+      description: "添加参与者",
+      params: ["calendarId", "eventId", "userIds"],
+    },
     // 日历 - 忙闲
-    { action: "cal_freebusy", description: "查询忙闲状态", params: ["userIds", "startTime", "endTime"] },
+    {
+      action: "cal_freebusy",
+      description: "查询忙闲状态",
+      params: ["userIds", "startTime", "endTime"],
+    },
     // 任务 - 基础
     { action: "task_create", description: "创建任务", params: ["summary", "due?", "description?"] },
     { action: "task_get", description: "获取任务详情", params: ["taskId"] },
-    { action: "task_update", description: "更新任务", params: ["taskId", "summary?", "due?", "description?"] },
+    {
+      action: "task_update",
+      description: "更新任务",
+      params: ["taskId", "summary?", "due?", "description?"],
+    },
     { action: "task_delete", description: "删除任务", params: ["taskId"] },
     { action: "task_complete", description: "完成任务", params: ["taskId"] },
     { action: "task_uncomplete", description: "取消完成任务", params: ["taskId"] },
@@ -378,10 +525,70 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "tasklist_get", description: "获取任务列表详情", params: ["tasklistId"] },
     { action: "tasklist_list", description: "列出所有任务列表", params: [] },
     { action: "tasklist_delete", description: "删除任务列表", params: ["tasklistId"] },
-    { action: "tasklist_add_task", description: "将任务添加到列表", params: ["tasklistId", "taskId"] },
-    { action: "tasklist_remove_task", description: "从列表移除任务", params: ["tasklistId", "taskId"] },
+    {
+      action: "tasklist_add_task",
+      description: "将任务添加到列表",
+      params: ["tasklistId", "taskId"],
+    },
+    {
+      action: "tasklist_remove_task",
+      description: "从列表移除任务",
+      params: ["tasklistId", "taskId"],
+    },
     // 任务提醒
     { action: "task_reminder_add", description: "添加任务提醒", params: ["taskId", "minutes"] },
+    // 知识库 - 空间
+    { action: "wiki_spaces", description: "列出知识空间", params: [] },
+    { action: "wiki_space_get", description: "获取知识空间详情", params: ["spaceId"] },
+    {
+      action: "wiki_space_create",
+      description: "创建知识空间",
+      params: ["name", "description?", "visibility?"],
+    },
+    // 知识库 - 节点
+    { action: "wiki_nodes", description: "列出节点", params: ["spaceId", "parentNodeToken?"] },
+    { action: "wiki_node_get", description: "获取节点详情", params: ["nodeToken"] },
+    {
+      action: "wiki_node_create",
+      description: "创建节点",
+      params: ["spaceId", "objType", "parentNodeToken?", "title?"],
+    },
+    {
+      action: "wiki_node_rename",
+      description: "重命名节点",
+      params: ["spaceId", "nodeToken", "title"],
+    },
+    {
+      action: "wiki_node_move",
+      description: "移动节点",
+      params: ["spaceId", "nodeToken", "targetParentToken?", "targetSpaceId?"],
+    },
+    {
+      action: "wiki_node_copy",
+      description: "复制节点",
+      params: ["spaceId", "nodeToken", "targetParentToken?", "title?"],
+    },
+    // 知识库 - 成员
+    { action: "wiki_members", description: "列出成员", params: ["spaceId"] },
+    {
+      action: "wiki_member_add",
+      description: "添加成员",
+      params: ["spaceId", "memberId", "memberType", "memberRole?"],
+    },
+    {
+      action: "wiki_member_remove",
+      description: "移除成员",
+      params: ["spaceId", "memberId", "memberType"],
+    },
+    // 搜索
+    {
+      action: "search_messages",
+      description: "搜索消息",
+      params: ["query", "chatId?", "startTime?", "endTime?"],
+    },
+    { action: "search_docs", description: "搜索云文档", params: ["query", "docTypes?"] },
+    { action: "search_files", description: "搜索云空间文件", params: ["query", "folderToken?"] },
+    { action: "search_all", description: "综合搜索", params: ["query", "types?"] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -618,7 +825,8 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       // 电子表格 - 高级
       case "sheet_sort": {
-        const sortSpecs = typeof ctx.sortSpecs === "string" ? JSON.parse(ctx.sortSpecs) : ctx.sortSpecs;
+        const sortSpecs =
+          typeof ctx.sortSpecs === "string" ? JSON.parse(ctx.sortSpecs) : ctx.sortSpecs;
         return sortRange(account, ctx.spreadsheetToken, ctx.sheetId, ctx.range, sortSpecs);
       }
 
@@ -687,8 +895,12 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       // 日历 - 日程
       case "cal_events": {
-        const startTime = ctx.startTime ? parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10) : undefined;
-        const endTime = ctx.endTime ? parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10) : undefined;
+        const startTime = ctx.startTime
+          ? parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10)
+          : undefined;
+        const endTime = ctx.endTime
+          ? parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10)
+          : undefined;
         return listEvents(account, ctx.calendarId, { startTime, endTime });
       }
 
@@ -711,7 +923,8 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
         const params: any = {};
         if (ctx.summary) params.summary = ctx.summary;
         if (ctx.description) params.description = ctx.description;
-        if (ctx.startTime) params.startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
+        if (ctx.startTime)
+          params.startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
         if (ctx.endTime) params.endTime = parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10);
         if (ctx.location) params.location = ctx.location;
         return updateEvent(account, ctx.calendarId, ctx.eventId, params);
@@ -731,7 +944,12 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
         const userIds = Array.isArray(ctx.userIds)
           ? ctx.userIds
           : (ctx.userIds || "").split(",").map((id: string) => id.trim());
-        return addAttendees(account, ctx.calendarId, ctx.eventId, userIds.map((userId: string) => ({ userId })));
+        return addAttendees(
+          account,
+          ctx.calendarId,
+          ctx.eventId,
+          userIds.map((userId: string) => ({ userId }))
+        );
       }
 
       // 日历 - 忙闲
@@ -746,7 +964,7 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       // 任务 - 基础
       case "task_create": {
-        const due = ctx.due ? (parseDueString(ctx.due) || parseInt(ctx.due, 10)) : undefined;
+        const due = ctx.due ? parseDueString(ctx.due) || parseInt(ctx.due, 10) : undefined;
         return createTask(account, {
           summary: ctx.summary,
           description: ctx.description,
@@ -775,7 +993,8 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
         return uncompleteTask(account, ctx.taskId);
 
       case "task_list": {
-        const completed = ctx.completed === "true" ? true : ctx.completed === "false" ? false : undefined;
+        const completed =
+          ctx.completed === "true" ? true : ctx.completed === "false" ? false : undefined;
         return listTasks(account, { tasklistId: ctx.tasklistId, completed });
       }
 
@@ -801,6 +1020,109 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       // 任务提醒
       case "task_reminder_add":
         return addTaskReminder(account, ctx.taskId, parseInt(ctx.minutes, 10) || 30);
+
+      // 知识库 - 空间
+      case "wiki_spaces":
+        return listWikiSpaces(account);
+
+      case "wiki_space_get":
+        return getWikiSpace(account, ctx.spaceId);
+
+      case "wiki_space_create":
+        return createWikiSpace(account, ctx.name, {
+          description: ctx.description,
+          visibility: ctx.visibility as any,
+        });
+
+      // 知识库 - 节点
+      case "wiki_nodes":
+        return listWikiNodes(account, ctx.spaceId, {
+          parentNodeToken: ctx.parentNodeToken,
+        });
+
+      case "wiki_node_get":
+        return getWikiNode(account, ctx.nodeToken);
+
+      case "wiki_node_create":
+        return createWikiNode(account, ctx.spaceId, {
+          objType: ctx.objType as any,
+          parentNodeToken: ctx.parentNodeToken,
+          title: ctx.title,
+        });
+
+      case "wiki_node_rename":
+        return updateWikiNodeTitle(account, ctx.spaceId, ctx.nodeToken, ctx.title);
+
+      case "wiki_node_move":
+        return moveWikiNode(
+          account,
+          ctx.spaceId,
+          ctx.nodeToken,
+          ctx.targetParentToken,
+          ctx.targetSpaceId
+        );
+
+      case "wiki_node_copy":
+        return copyWikiNode(
+          account,
+          ctx.spaceId,
+          ctx.nodeToken,
+          ctx.targetParentToken,
+          undefined,
+          ctx.title
+        );
+
+      // 知识库 - 成员
+      case "wiki_members":
+        return listWikiMembers(account, ctx.spaceId);
+
+      case "wiki_member_add":
+        return addWikiMember(
+          account,
+          ctx.spaceId,
+          ctx.memberId,
+          ctx.memberType as any,
+          (ctx.memberRole as any) || "member"
+        );
+
+      case "wiki_member_remove":
+        return removeWikiMember(account, ctx.spaceId, ctx.memberId, ctx.memberType as any);
+
+      // 搜索
+      case "search_messages": {
+        const filter: any = {};
+        if (ctx.chatId) filter.chatIds = [ctx.chatId];
+        if (ctx.startTime)
+          filter.startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
+        if (ctx.endTime) filter.endTime = parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10);
+        return searchMessages(account, ctx.query, { filter });
+      }
+
+      case "search_docs": {
+        const filter: any = {};
+        if (ctx.docTypes) {
+          filter.docTypes = Array.isArray(ctx.docTypes)
+            ? ctx.docTypes
+            : ctx.docTypes.split(",").map((t: string) => t.trim());
+        }
+        return searchDocs(account, ctx.query, { filter });
+      }
+
+      case "search_files":
+        return searchDriveFiles(account, ctx.query, {
+          folderToken: ctx.folderToken,
+        });
+
+      case "search_all": {
+        const types = ctx.types
+          ? Array.isArray(ctx.types)
+            ? ctx.types
+            : ctx.types.split(",").map((t: string) => t.trim())
+          : ["message", "doc"];
+        return universalSearch(account, ctx.query, {
+          searchTypes: types as any,
+        });
+      }
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };

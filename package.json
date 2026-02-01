@@ -1,7 +1,7 @@
 {
   "name": "openclaw-feishu",
-  "version": "2.1.0",
-  "description": "飞书通道插件 - 支持消息、云文档、云空间 | Feishu channel plugin with docs & drive support",
+  "version": "2.2.0",
+  "description": "飞书通道插件 - 支持消息、云文档、云空间、知识库、搜索 | Feishu channel plugin with docs, drive, wiki & search",
   "type": "module",
   "main": "index.ts",
   "scripts": {
@@ -33,6 +33,8 @@
     "bot",
     "document",
     "drive",
+    "wiki",
+    "search",
     "plugin"
   ],
   "author": "Nina <nina@clawd.bot>",

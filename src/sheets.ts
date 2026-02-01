@@ -188,11 +188,6 @@ export async function readRange(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.sheets.v2.spreadsheetSheetFilterView.query({
-      path: { spreadsheet_token: spreadsheetToken },
-      params: { range },
-    } as any);
-
     // 使用 v2 API 读取值
     const response = await fetch(
       `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/values/${encodeURIComponent(range)}`,
@@ -1427,9 +1422,7 @@ export async function protectSheet(
               sheetId,
             },
             lockInfo: options?.lockInfo || "Protected",
-            editors: options?.allowedUsers
-              ? { users: options.allowedUsers }
-              : undefined,
+            editors: options?.allowedUsers ? { users: options.allowedUsers } : undefined,
           },
         }),
       }

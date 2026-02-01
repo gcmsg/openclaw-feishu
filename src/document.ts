@@ -201,22 +201,53 @@ function extractTextFromBlock(block: any): string {
 
   // 根据块类型获取对应的内容字段
   switch (blockType) {
-    case 2: content = block.text; break;
-    case 3: content = block.heading1; break;
-    case 4: content = block.heading2; break;
-    case 5: content = block.heading3; break;
-    case 6: content = block.heading4; break;
-    case 7: content = block.heading5; break;
-    case 8: content = block.heading6; break;
-    case 9: content = block.heading7; break;
-    case 10: content = block.heading8; break;
-    case 11: content = block.heading9; break;
-    case 12: content = block.bullet; break;
-    case 13: content = block.ordered; break;
-    case 14: content = block.code; break;
-    case 15: content = block.quote; break;
-    case 17: content = block.todo; break;
-    default: return "";
+    case 2:
+      content = block.text;
+      break;
+    case 3:
+      content = block.heading1;
+      break;
+    case 4:
+      content = block.heading2;
+      break;
+    case 5:
+      content = block.heading3;
+      break;
+    case 6:
+      content = block.heading4;
+      break;
+    case 7:
+      content = block.heading5;
+      break;
+    case 8:
+      content = block.heading6;
+      break;
+    case 9:
+      content = block.heading7;
+      break;
+    case 10:
+      content = block.heading8;
+      break;
+    case 11:
+      content = block.heading9;
+      break;
+    case 12:
+      content = block.bullet;
+      break;
+    case 13:
+      content = block.ordered;
+      break;
+    case 14:
+      content = block.code;
+      break;
+    case 15:
+      content = block.quote;
+      break;
+    case 17:
+      content = block.todo;
+      break;
+    default:
+      return "";
   }
 
   if (!content?.elements) return "";
