@@ -1445,31 +1445,6 @@ export async function protectSheet(
   }
 }
 
-// ==================== 辅助函数 ====================
-
-/**
- * 获取访问令牌
- */
-async function getAccessToken(account: ResolvedFeishuAccount): Promise<string> {
-  const response = await fetch(
-    "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        app_id: account.appId,
-        app_secret: account.appSecret,
-      }),
-    }
-  );
-
-  const data = await response.json();
-  if (data.code === 0) {
-    return data.tenant_access_token;
-  }
-  throw new Error(data.msg || "Failed to get access token");
-}
-
 /**
  * 将列号转换为字母（1 -> A, 26 -> Z, 27 -> AA）
  */
