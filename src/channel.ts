@@ -80,6 +80,38 @@ import {
   deleteSheet,
   copySheet,
 } from "./sheets.js";
+import {
+  listCalendars,
+  getPrimaryCalendar,
+  createCalendar,
+  listEvents,
+  getEvent,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  searchEvents,
+  listAttendees,
+  addAttendees,
+  queryFreeBusy,
+  parseTimeString,
+} from "./calendar.js";
+import {
+  createTask,
+  getTask,
+  updateTask,
+  deleteTask,
+  completeTask,
+  uncompleteTask,
+  listTasks,
+  createTaskList,
+  getTaskList,
+  listTaskLists,
+  deleteTaskList,
+  addTaskToList,
+  removeTaskFromList,
+  addTaskReminder,
+  parseDueString,
+} from "./task.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
@@ -317,6 +349,39 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "sheet_add", description: "添加工作表", params: ["spreadsheetToken", "title", "index?"] },
     { action: "sheet_delete", description: "删除工作表", params: ["spreadsheetToken", "sheetId"] },
     { action: "sheet_copy", description: "复制工作表", params: ["spreadsheetToken", "sourceSheetId", "targetTitle?"] },
+    // 日历 - 基础
+    { action: "cal_list", description: "列出日历", params: [] },
+    { action: "cal_primary", description: "获取主日历", params: [] },
+    { action: "cal_create", description: "创建日历", params: ["summary", "description?"] },
+    // 日历 - 日程
+    { action: "cal_events", description: "列出日程", params: ["calendarId", "startTime?", "endTime?"] },
+    { action: "cal_event_get", description: "获取日程详情", params: ["calendarId", "eventId"] },
+    { action: "cal_event_create", description: "创建日程", params: ["calendarId", "summary", "startTime", "endTime", "description?", "location?"] },
+    { action: "cal_event_update", description: "更新日程", params: ["calendarId", "eventId", "summary?", "startTime?", "endTime?"] },
+    { action: "cal_event_delete", description: "删除日程", params: ["calendarId", "eventId"] },
+    { action: "cal_event_search", description: "搜索日程", params: ["calendarId", "query"] },
+    // 日历 - 参与者
+    { action: "cal_attendees", description: "获取日程参与者", params: ["calendarId", "eventId"] },
+    { action: "cal_attendee_add", description: "添加参与者", params: ["calendarId", "eventId", "userIds"] },
+    // 日历 - 忙闲
+    { action: "cal_freebusy", description: "查询忙闲状态", params: ["userIds", "startTime", "endTime"] },
+    // 任务 - 基础
+    { action: "task_create", description: "创建任务", params: ["summary", "due?", "description?"] },
+    { action: "task_get", description: "获取任务详情", params: ["taskId"] },
+    { action: "task_update", description: "更新任务", params: ["taskId", "summary?", "due?", "description?"] },
+    { action: "task_delete", description: "删除任务", params: ["taskId"] },
+    { action: "task_complete", description: "完成任务", params: ["taskId"] },
+    { action: "task_uncomplete", description: "取消完成任务", params: ["taskId"] },
+    { action: "task_list", description: "列出任务", params: ["tasklistId?", "completed?"] },
+    // 任务列表
+    { action: "tasklist_create", description: "创建任务列表", params: ["name"] },
+    { action: "tasklist_get", description: "获取任务列表详情", params: ["tasklistId"] },
+    { action: "tasklist_list", description: "列出所有任务列表", params: [] },
+    { action: "tasklist_delete", description: "删除任务列表", params: ["tasklistId"] },
+    { action: "tasklist_add_task", description: "将任务添加到列表", params: ["tasklistId", "taskId"] },
+    { action: "tasklist_remove_task", description: "从列表移除任务", params: ["tasklistId", "taskId"] },
+    // 任务提醒
+    { action: "task_reminder_add", description: "添加任务提醒", params: ["taskId", "minutes"] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -609,6 +674,133 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "sheet_copy":
         return copySheet(account, ctx.spreadsheetToken, ctx.sourceSheetId, ctx.targetTitle);
+
+      // 日历 - 基础
+      case "cal_list":
+        return listCalendars(account);
+
+      case "cal_primary":
+        return getPrimaryCalendar(account);
+
+      case "cal_create":
+        return createCalendar(account, ctx.summary, ctx.description);
+
+      // 日历 - 日程
+      case "cal_events": {
+        const startTime = ctx.startTime ? parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10) : undefined;
+        const endTime = ctx.endTime ? parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10) : undefined;
+        return listEvents(account, ctx.calendarId, { startTime, endTime });
+      }
+
+      case "cal_event_get":
+        return getEvent(account, ctx.calendarId, ctx.eventId);
+
+      case "cal_event_create": {
+        const startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
+        const endTime = parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10);
+        return createEvent(account, ctx.calendarId, {
+          summary: ctx.summary,
+          description: ctx.description,
+          startTime,
+          endTime,
+          location: ctx.location,
+        });
+      }
+
+      case "cal_event_update": {
+        const params: any = {};
+        if (ctx.summary) params.summary = ctx.summary;
+        if (ctx.description) params.description = ctx.description;
+        if (ctx.startTime) params.startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
+        if (ctx.endTime) params.endTime = parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10);
+        if (ctx.location) params.location = ctx.location;
+        return updateEvent(account, ctx.calendarId, ctx.eventId, params);
+      }
+
+      case "cal_event_delete":
+        return deleteEvent(account, ctx.calendarId, ctx.eventId);
+
+      case "cal_event_search":
+        return searchEvents(account, ctx.calendarId, ctx.query);
+
+      // 日历 - 参与者
+      case "cal_attendees":
+        return listAttendees(account, ctx.calendarId, ctx.eventId);
+
+      case "cal_attendee_add": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : (ctx.userIds || "").split(",").map((id: string) => id.trim());
+        return addAttendees(account, ctx.calendarId, ctx.eventId, userIds.map((userId: string) => ({ userId })));
+      }
+
+      // 日历 - 忙闲
+      case "cal_freebusy": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : (ctx.userIds || "").split(",").map((id: string) => id.trim());
+        const startTime = parseTimeString(ctx.startTime) || parseInt(ctx.startTime, 10);
+        const endTime = parseTimeString(ctx.endTime) || parseInt(ctx.endTime, 10);
+        return queryFreeBusy(account, userIds, startTime, endTime);
+      }
+
+      // 任务 - 基础
+      case "task_create": {
+        const due = ctx.due ? (parseDueString(ctx.due) || parseInt(ctx.due, 10)) : undefined;
+        return createTask(account, {
+          summary: ctx.summary,
+          description: ctx.description,
+          due,
+        });
+      }
+
+      case "task_get":
+        return getTask(account, ctx.taskId);
+
+      case "task_update": {
+        const params: any = {};
+        if (ctx.summary) params.summary = ctx.summary;
+        if (ctx.description) params.description = ctx.description;
+        if (ctx.due) params.due = parseDueString(ctx.due) || parseInt(ctx.due, 10);
+        return updateTask(account, ctx.taskId, params);
+      }
+
+      case "task_delete":
+        return deleteTask(account, ctx.taskId);
+
+      case "task_complete":
+        return completeTask(account, ctx.taskId);
+
+      case "task_uncomplete":
+        return uncompleteTask(account, ctx.taskId);
+
+      case "task_list": {
+        const completed = ctx.completed === "true" ? true : ctx.completed === "false" ? false : undefined;
+        return listTasks(account, { tasklistId: ctx.tasklistId, completed });
+      }
+
+      // 任务列表
+      case "tasklist_create":
+        return createTaskList(account, ctx.name);
+
+      case "tasklist_get":
+        return getTaskList(account, ctx.tasklistId);
+
+      case "tasklist_list":
+        return listTaskLists(account);
+
+      case "tasklist_delete":
+        return deleteTaskList(account, ctx.tasklistId);
+
+      case "tasklist_add_task":
+        return addTaskToList(account, ctx.tasklistId, ctx.taskId);
+
+      case "tasklist_remove_task":
+        return removeTaskFromList(account, ctx.tasklistId, ctx.taskId);
+
+      // 任务提醒
+      case "task_reminder_add":
+        return addTaskReminder(account, ctx.taskId, parseInt(ctx.minutes, 10) || 30);
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
