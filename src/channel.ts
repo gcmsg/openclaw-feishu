@@ -45,6 +45,32 @@ import {
   updateChatAnnouncement,
 } from "./chat.js";
 import {
+  sendMail,
+  getMail,
+  listMails,
+  getMailAttachmentUrl,
+  listMailFolders,
+  createMailFolder,
+  deleteMailFolder,
+  createMailGroup,
+  getMailGroup,
+  listMailGroups,
+  updateMailGroup,
+  deleteMailGroup,
+  listMailGroupMembers,
+  addMailGroupMember,
+  removeMailGroupMember,
+  createPublicMailbox,
+  getPublicMailbox,
+  listPublicMailboxes,
+  updatePublicMailbox,
+  deletePublicMailbox,
+  listPublicMailboxMembers,
+  addPublicMailboxMember,
+  removePublicMailboxMember,
+  clearPublicMailboxMembers,
+} from "./mail.js";
+import {
   createDocument,
   getDocument,
   getDocumentContent,
@@ -860,6 +886,86 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     },
     { action: "ai_detect_language", description: "检测文本语言", params: ["text"] },
     { action: "ai_languages", description: "获取支持的语言列表", params: [] },
+    // 邮件 - 消息
+    {
+      action: "mail_send",
+      description: "发送邮件",
+      params: ["userMailboxId", "subject", "to", "bodyHtml?", "bodyPlainText?", "cc?", "bcc?"],
+    },
+    { action: "mail_get", description: "获取邮件详情", params: ["userMailboxId", "messageId"] },
+    { action: "mail_list", description: "获取邮件列表", params: ["userMailboxId", "folderId?"] },
+    {
+      action: "mail_attachment_url",
+      description: "获取邮件附件下载链接",
+      params: ["userMailboxId", "messageId", "attachmentId"],
+    },
+    // 邮件 - 文件夹
+    { action: "mail_folders", description: "获取邮件文件夹列表", params: ["userMailboxId"] },
+    {
+      action: "mail_folder_create",
+      description: "创建邮件文件夹",
+      params: ["userMailboxId", "name", "parentFolderId?"],
+    },
+    {
+      action: "mail_folder_delete",
+      description: "删除邮件文件夹",
+      params: ["userMailboxId", "folderId"],
+    },
+    // 邮件组
+    {
+      action: "mailgroup_create",
+      description: "创建邮件组",
+      params: ["email", "name?", "description?"],
+    },
+    { action: "mailgroup_get", description: "获取邮件组信息", params: ["mailGroupId"] },
+    { action: "mailgroup_list", description: "获取邮件组列表", params: [] },
+    {
+      action: "mailgroup_update",
+      description: "更新邮件组",
+      params: ["mailGroupId", "name?", "description?"],
+    },
+    { action: "mailgroup_delete", description: "删除邮件组", params: ["mailGroupId"] },
+    { action: "mailgroup_members", description: "获取邮件组成员", params: ["mailGroupId"] },
+    {
+      action: "mailgroup_member_add",
+      description: "添加邮件组成员",
+      params: ["mailGroupId", "email?", "userId?", "type?"],
+    },
+    {
+      action: "mailgroup_member_remove",
+      description: "移除邮件组成员",
+      params: ["mailGroupId", "memberId"],
+    },
+    // 公共邮箱
+    { action: "public_mailbox_create", description: "创建公共邮箱", params: ["email", "name?"] },
+    { action: "public_mailbox_get", description: "获取公共邮箱信息", params: ["publicMailboxId"] },
+    { action: "public_mailbox_list", description: "获取公共邮箱列表", params: [] },
+    {
+      action: "public_mailbox_update",
+      description: "更新公共邮箱",
+      params: ["publicMailboxId", "name"],
+    },
+    { action: "public_mailbox_delete", description: "删除公共邮箱", params: ["publicMailboxId"] },
+    {
+      action: "public_mailbox_members",
+      description: "获取公共邮箱成员",
+      params: ["publicMailboxId"],
+    },
+    {
+      action: "public_mailbox_member_add",
+      description: "添加公共邮箱成员",
+      params: ["publicMailboxId", "userId"],
+    },
+    {
+      action: "public_mailbox_member_remove",
+      description: "移除公共邮箱成员",
+      params: ["publicMailboxId", "memberId"],
+    },
+    {
+      action: "public_mailbox_members_clear",
+      description: "清空公共邮箱成员",
+      params: ["publicMailboxId"],
+    },
   ],
 
   extractToolSend: (ctx) => ({
@@ -1707,6 +1813,110 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "ai_languages":
         return { ok: true, data: { languages: getSupportedLanguages() } };
+
+      // 邮件 - 消息
+      case "mail_send": {
+        const to = Array.isArray(ctx.to)
+          ? ctx.to
+          : ctx.to.split(",").map((email: string) => ({ email: email.trim() }));
+        const cc = ctx.cc
+          ? Array.isArray(ctx.cc)
+            ? ctx.cc
+            : ctx.cc.split(",").map((email: string) => ({ email: email.trim() }))
+          : undefined;
+        const bcc = ctx.bcc
+          ? Array.isArray(ctx.bcc)
+            ? ctx.bcc
+            : ctx.bcc.split(",").map((email: string) => ({ email: email.trim() }))
+          : undefined;
+        return sendMail(account, ctx.userMailboxId, {
+          subject: ctx.subject,
+          to,
+          cc,
+          bcc,
+          bodyHtml: ctx.bodyHtml,
+          bodyPlainText: ctx.bodyPlainText,
+        });
+      }
+
+      case "mail_get":
+        return getMail(account, ctx.userMailboxId, ctx.messageId);
+
+      case "mail_list":
+        return listMails(account, ctx.userMailboxId, { folderId: ctx.folderId });
+
+      case "mail_attachment_url":
+        return getMailAttachmentUrl(account, ctx.userMailboxId, ctx.messageId, ctx.attachmentId);
+
+      // 邮件 - 文件夹
+      case "mail_folders":
+        return listMailFolders(account, ctx.userMailboxId);
+
+      case "mail_folder_create":
+        return createMailFolder(account, ctx.userMailboxId, ctx.name, ctx.parentFolderId);
+
+      case "mail_folder_delete":
+        return deleteMailFolder(account, ctx.userMailboxId, ctx.folderId);
+
+      // 邮件组
+      case "mailgroup_create":
+        return createMailGroup(account, ctx.email, ctx.name, ctx.description);
+
+      case "mailgroup_get":
+        return getMailGroup(account, ctx.mailGroupId);
+
+      case "mailgroup_list":
+        return listMailGroups(account);
+
+      case "mailgroup_update":
+        return updateMailGroup(account, ctx.mailGroupId, {
+          name: ctx.name,
+          description: ctx.description,
+        });
+
+      case "mailgroup_delete":
+        return deleteMailGroup(account, ctx.mailGroupId);
+
+      case "mailgroup_members":
+        return listMailGroupMembers(account, ctx.mailGroupId);
+
+      case "mailgroup_member_add":
+        return addMailGroupMember(account, ctx.mailGroupId, {
+          email: ctx.email,
+          userId: ctx.userId,
+          type: ctx.type as any,
+        });
+
+      case "mailgroup_member_remove":
+        return removeMailGroupMember(account, ctx.mailGroupId, ctx.memberId);
+
+      // 公共邮箱
+      case "public_mailbox_create":
+        return createPublicMailbox(account, ctx.email, ctx.name);
+
+      case "public_mailbox_get":
+        return getPublicMailbox(account, ctx.publicMailboxId);
+
+      case "public_mailbox_list":
+        return listPublicMailboxes(account);
+
+      case "public_mailbox_update":
+        return updatePublicMailbox(account, ctx.publicMailboxId, ctx.name);
+
+      case "public_mailbox_delete":
+        return deletePublicMailbox(account, ctx.publicMailboxId);
+
+      case "public_mailbox_members":
+        return listPublicMailboxMembers(account, ctx.publicMailboxId);
+
+      case "public_mailbox_member_add":
+        return addPublicMailboxMember(account, ctx.publicMailboxId, { userId: ctx.userId });
+
+      case "public_mailbox_member_remove":
+        return removePublicMailboxMember(account, ctx.publicMailboxId, ctx.memberId);
+
+      case "public_mailbox_members_clear":
+        return clearPublicMailboxMembers(account, ctx.publicMailboxId);
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
