@@ -720,3 +720,191 @@ export function parseTimeString(timeStr: string): number | null {
 
   return null;
 }
+
+// ==================== 日历订阅 ====================
+
+/**
+ * 订阅日历
+ */
+export async function subscribeCalendar(
+  account: ResolvedFeishuAccount,
+  calendarId: string
+): Promise<ApiResult<{ calendar: CalendarInfo }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.calendar.v4.calendar.subscribe({
+      path: { calendar_id: calendarId },
+    });
+
+    if (result.code === 0 && result.data?.calendar) {
+      const c = result.data.calendar;
+      return {
+        ok: true,
+        data: {
+          calendar: {
+            calendarId: c.calendar_id!,
+            summary: c.summary || "",
+            description: c.description,
+            color: c.color ? parseInt(c.color) : undefined,
+            type: c.type as any,
+            role: c.role as any,
+          },
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 取消订阅日历
+ */
+export async function unsubscribeCalendar(
+  account: ResolvedFeishuAccount,
+  calendarId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.calendar.v4.calendar.unsubscribe({
+      path: { calendar_id: calendarId },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 日历权限 (ACL) ====================
+
+/** 日历访问控制 */
+export interface CalendarAcl {
+  aclId: string;
+  userId?: string;
+  role: "unknown" | "free_busy_reader" | "reader" | "writer" | "owner";
+  scope: {
+    type: "user" | "group" | "domain" | "public";
+    userId?: string;
+  };
+}
+
+/**
+ * 获取日历访问控制列表
+ */
+export async function listCalendarAcls(
+  account: ResolvedFeishuAccount,
+  calendarId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ acls: CalendarAcl[]; pageToken?: string; hasMore?: boolean }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.calendar.v4.calendarAcl.list({
+      path: { calendar_id: calendarId },
+      params: {
+        user_id_type: "open_id",
+        page_size: options?.pageSize || 50,
+        page_token: options?.pageToken,
+      },
+    });
+
+    if (result.code === 0) {
+      const acls = (result.data?.acls || []).map((a: any) => ({
+        aclId: a.acl_id,
+        userId: a.user_id,
+        role: a.role,
+        scope: {
+          type: a.scope?.type,
+          userId: a.scope?.user_id,
+        },
+      }));
+
+      return {
+        ok: true,
+        data: {
+          acls,
+          pageToken: result.data?.page_token,
+          hasMore: result.data?.has_more,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 添加日历访问控制
+ */
+export async function addCalendarAcl(
+  account: ResolvedFeishuAccount,
+  calendarId: string,
+  userId: string,
+  role: "free_busy_reader" | "reader" | "writer"
+): Promise<ApiResult<CalendarAcl>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.calendar.v4.calendarAcl.create({
+      path: { calendar_id: calendarId },
+      params: { user_id_type: "open_id" },
+      data: {
+        role,
+        scope: {
+          type: "user",
+          user_id: userId,
+        },
+      },
+    });
+
+    if (result.code === 0) {
+      return {
+        ok: true,
+        data: {
+          aclId: result.data?.acl_id || "",
+          userId,
+          role,
+          scope: { type: "user", userId },
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除日历访问控制
+ */
+export async function removeCalendarAcl(
+  account: ResolvedFeishuAccount,
+  calendarId: string,
+  aclId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.calendar.v4.calendarAcl.delete({
+      path: { calendar_id: calendarId, acl_id: aclId },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}

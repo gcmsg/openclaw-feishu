@@ -23,6 +23,28 @@ import {
   getMessageReadUsers,
 } from "./client.js";
 import {
+  createChat,
+  getChat,
+  updateChat,
+  deleteChat,
+  listChats,
+  searchChats,
+  addChatMembers,
+  removeChatMembers,
+  getChatMembers,
+  isUserInChat,
+  addChatManagers,
+  removeChatManagers,
+  createChatTab,
+  listChatTabs,
+  updateChatTab,
+  deleteChatTabs,
+  putTopNotice,
+  deleteTopNotice,
+  getChatAnnouncement,
+  updateChatAnnouncement,
+} from "./chat.js";
+import {
   createDocument,
   getDocument,
   getDocumentContent,
@@ -66,6 +88,22 @@ import {
   updateBitableRecord,
   deleteBitableRecord,
   deleteBitableRecords,
+  // 视图
+  listBitableViews,
+  getBitableView,
+  createBitableView,
+  deleteBitableView,
+  // 角色
+  listBitableRoles,
+  createBitableRole,
+  updateBitableRole,
+  deleteBitableRole,
+  listBitableRoleMembers,
+  addBitableRoleMember,
+  removeBitableRoleMember,
+  // 自动化
+  listBitableWorkflows,
+  toggleBitableWorkflow,
 } from "./bitable.js";
 import {
   createSpreadsheet,
@@ -107,6 +145,13 @@ import {
   addAttendees,
   queryFreeBusy,
   parseTimeString,
+  // 订阅
+  subscribeCalendar,
+  unsubscribeCalendar,
+  // ACL
+  listCalendarAcls,
+  addCalendarAcl,
+  removeCalendarAcl,
 } from "./calendar.js";
 import {
   createTask,
@@ -124,6 +169,19 @@ import {
   removeTaskFromList,
   addTaskReminder,
   parseDueString,
+  // 成员
+  addTaskMembers,
+  removeTaskMembers,
+  // 依赖
+  addTaskDependencies,
+  removeTaskDependencies,
+  // 附件
+  listTaskAttachments,
+  getTaskAttachment,
+  deleteTaskAttachment,
+  // 任务列表成员
+  addTaskListMembers,
+  removeTaskListMembers,
 } from "./task.js";
 import {
   listWikiSpaces,
@@ -328,6 +386,60 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     },
     { action: "msg_urgent", description: "发送加急消息", params: ["messageId", "userIds"] },
     { action: "msg_read_users", description: "获取消息已读用户", params: ["messageId"] },
+    // 聊天管理
+    {
+      action: "chat_create",
+      description: "创建群聊",
+      params: ["name", "description?", "userIds?"],
+    },
+    { action: "chat_get", description: "获取群聊信息", params: ["chatId"] },
+    {
+      action: "chat_update",
+      description: "更新群聊信息",
+      params: ["chatId", "name?", "description?"],
+    },
+    { action: "chat_delete", description: "解散群聊", params: ["chatId"] },
+    { action: "chat_list", description: "获取群聊列表", params: [] },
+    { action: "chat_search", description: "搜索群聊", params: ["query"] },
+    // 聊天成员
+    { action: "chat_members_add", description: "添加群成员", params: ["chatId", "userIds"] },
+    { action: "chat_members_remove", description: "移除群成员", params: ["chatId", "userIds"] },
+    { action: "chat_members_list", description: "获取群成员列表", params: ["chatId"] },
+    {
+      action: "chat_members_check",
+      description: "判断用户是否在群中",
+      params: ["chatId", "userId"],
+    },
+    // 群管理员
+    { action: "chat_managers_add", description: "添加群管理员", params: ["chatId", "managerIds"] },
+    {
+      action: "chat_managers_remove",
+      description: "移除群管理员",
+      params: ["chatId", "managerIds"],
+    },
+    // 会话标签页
+    {
+      action: "chat_tab_create",
+      description: "创建会话标签页",
+      params: ["chatId", "tabName", "tabType", "url?", "doc?"],
+    },
+    { action: "chat_tab_list", description: "获取会话标签页列表", params: ["chatId"] },
+    {
+      action: "chat_tab_update",
+      description: "更新会话标签页",
+      params: ["chatId", "tabId", "tabName"],
+    },
+    { action: "chat_tab_delete", description: "删除会话标签页", params: ["chatId", "tabIds"] },
+    // 置顶消息
+    { action: "chat_top_notice_put", description: "置顶消息", params: ["chatId", "messageId"] },
+    { action: "chat_top_notice_delete", description: "取消置顶消息", params: ["chatId"] },
+    // 群公告
+    { action: "chat_announcement_get", description: "获取群公告", params: ["chatId"] },
+    {
+      action: "chat_announcement_update",
+      description: "更新群公告",
+      params: ["chatId", "content", "revision"],
+    },
     // 文档 - 基础
     { action: "doc_create", description: "创建云文档", params: ["title", "folderId?"] },
     { action: "doc_get", description: "获取文档信息", params: ["documentId"] },
@@ -422,6 +534,54 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       action: "bitable_records_delete",
       description: "批量删除记录",
       params: ["appToken", "tableId", "recordIds"],
+    },
+    // 多维表格 - 视图
+    { action: "bitable_views", description: "列出视图", params: ["appToken", "tableId"] },
+    {
+      action: "bitable_view_get",
+      description: "获取视图详情",
+      params: ["appToken", "tableId", "viewId"],
+    },
+    {
+      action: "bitable_view_create",
+      description: "创建视图",
+      params: ["appToken", "tableId", "viewName", "viewType?"],
+    },
+    {
+      action: "bitable_view_delete",
+      description: "删除视图",
+      params: ["appToken", "tableId", "viewId"],
+    },
+    // 多维表格 - 角色
+    { action: "bitable_roles", description: "列出角色", params: ["appToken"] },
+    {
+      action: "bitable_role_create",
+      description: "创建角色",
+      params: ["appToken", "roleName", "tablePerm?", "recPerm?"],
+    },
+    {
+      action: "bitable_role_update",
+      description: "更新角色",
+      params: ["appToken", "roleId", "roleName?", "tablePerm?", "recPerm?"],
+    },
+    { action: "bitable_role_delete", description: "删除角色", params: ["appToken", "roleId"] },
+    { action: "bitable_role_members", description: "列出角色成员", params: ["appToken", "roleId"] },
+    {
+      action: "bitable_role_member_add",
+      description: "添加角色成员",
+      params: ["appToken", "roleId", "memberId", "memberType?"],
+    },
+    {
+      action: "bitable_role_member_remove",
+      description: "移除角色成员",
+      params: ["appToken", "roleId", "memberId", "memberType?"],
+    },
+    // 多维表格 - 自动化
+    { action: "bitable_workflows", description: "列出自动化规则", params: ["appToken", "tableId"] },
+    {
+      action: "bitable_workflow_toggle",
+      description: "启用/禁用自动化规则",
+      params: ["appToken", "tableId", "workflowId", "enabled"],
     },
     // 电子表格 - 基础
     { action: "sheet_create", description: "创建电子表格", params: ["title", "folderId?"] },
@@ -561,6 +721,17 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       description: "查询忙闲状态",
       params: ["userIds", "startTime", "endTime"],
     },
+    // 日历 - 订阅
+    { action: "cal_subscribe", description: "订阅日历", params: ["calendarId"] },
+    { action: "cal_unsubscribe", description: "取消订阅日历", params: ["calendarId"] },
+    // 日历 - 权限
+    { action: "cal_acls", description: "获取日历访问控制列表", params: ["calendarId"] },
+    {
+      action: "cal_acl_add",
+      description: "添加日历访问控制",
+      params: ["calendarId", "userId", "role"],
+    },
+    { action: "cal_acl_remove", description: "删除日历访问控制", params: ["calendarId", "aclId"] },
     // 任务 - 基础
     { action: "task_create", description: "创建任务", params: ["summary", "due?", "description?"] },
     { action: "task_get", description: "获取任务详情", params: ["taskId"] },
@@ -590,6 +761,43 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     },
     // 任务提醒
     { action: "task_reminder_add", description: "添加任务提醒", params: ["taskId", "minutes"] },
+    // 任务成员
+    {
+      action: "task_members_add",
+      description: "添加任务成员",
+      params: ["taskId", "memberIds", "memberRole?"],
+    },
+    {
+      action: "task_members_remove",
+      description: "移除任务成员",
+      params: ["taskId", "memberIds", "memberRole?"],
+    },
+    // 任务依赖
+    {
+      action: "task_dependencies_add",
+      description: "添加任务依赖",
+      params: ["taskId", "dependencyTaskIds", "dependencyType?"],
+    },
+    {
+      action: "task_dependencies_remove",
+      description: "移除任务依赖",
+      params: ["taskId", "dependencyTaskIds", "dependencyType?"],
+    },
+    // 任务附件
+    { action: "task_attachments", description: "获取任务附件列表", params: ["taskId"] },
+    { action: "task_attachment_get", description: "获取任务附件详情", params: ["attachmentId"] },
+    { action: "task_attachment_delete", description: "删除任务附件", params: ["attachmentId"] },
+    // 任务列表成员
+    {
+      action: "tasklist_members_add",
+      description: "添加任务列表成员",
+      params: ["tasklistId", "memberIds"],
+    },
+    {
+      action: "tasklist_members_remove",
+      description: "移除任务列表成员",
+      params: ["tasklistId", "memberIds"],
+    },
     // 知识库 - 空间
     { action: "wiki_spaces", description: "列出知识空间", params: [] },
     { action: "wiki_space_get", description: "获取知识空间详情", params: ["spaceId"] },
@@ -705,6 +913,100 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "msg_read_users":
         return getMessageReadUsers(account, ctx.messageId);
+
+      // 聊天管理
+      case "chat_create":
+        return createChat(account, ctx.name, {
+          description: ctx.description,
+          userIds: ctx.userIds
+            ? Array.isArray(ctx.userIds)
+              ? ctx.userIds
+              : ctx.userIds.split(",").map((id: string) => id.trim())
+            : undefined,
+        });
+
+      case "chat_get":
+        return getChat(account, ctx.chatId);
+
+      case "chat_update":
+        return updateChat(account, ctx.chatId, {
+          name: ctx.name,
+          description: ctx.description,
+        });
+
+      case "chat_delete":
+        return deleteChat(account, ctx.chatId);
+
+      case "chat_list":
+        return listChats(account);
+
+      case "chat_search":
+        return searchChats(account, ctx.query);
+
+      case "chat_members_add": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : ctx.userIds.split(",").map((id: string) => id.trim());
+        return addChatMembers(account, ctx.chatId, userIds);
+      }
+
+      case "chat_members_remove": {
+        const userIds = Array.isArray(ctx.userIds)
+          ? ctx.userIds
+          : ctx.userIds.split(",").map((id: string) => id.trim());
+        return removeChatMembers(account, ctx.chatId, userIds);
+      }
+
+      case "chat_members_list":
+        return getChatMembers(account, ctx.chatId);
+
+      case "chat_members_check":
+        return isUserInChat(account, ctx.chatId, ctx.userId);
+
+      case "chat_managers_add": {
+        const managerIds = Array.isArray(ctx.managerIds)
+          ? ctx.managerIds
+          : ctx.managerIds.split(",").map((id: string) => id.trim());
+        return addChatManagers(account, ctx.chatId, managerIds);
+      }
+
+      case "chat_managers_remove": {
+        const managerIds = Array.isArray(ctx.managerIds)
+          ? ctx.managerIds
+          : ctx.managerIds.split(",").map((id: string) => id.trim());
+        return removeChatManagers(account, ctx.chatId, managerIds);
+      }
+
+      case "chat_tab_create":
+        return createChatTab(account, ctx.chatId, ctx.tabName, ctx.tabType as any, {
+          url: ctx.url,
+          doc: ctx.doc,
+        });
+
+      case "chat_tab_list":
+        return listChatTabs(account, ctx.chatId);
+
+      case "chat_tab_update":
+        return updateChatTab(account, ctx.chatId, ctx.tabId, ctx.tabName);
+
+      case "chat_tab_delete": {
+        const tabIds = Array.isArray(ctx.tabIds)
+          ? ctx.tabIds
+          : ctx.tabIds.split(",").map((id: string) => id.trim());
+        return deleteChatTabs(account, ctx.chatId, tabIds);
+      }
+
+      case "chat_top_notice_put":
+        return putTopNotice(account, ctx.chatId, ctx.messageId);
+
+      case "chat_top_notice_delete":
+        return deleteTopNotice(account, ctx.chatId);
+
+      case "chat_announcement_get":
+        return getChatAnnouncement(account, ctx.chatId);
+
+      case "chat_announcement_update":
+        return updateChatAnnouncement(account, ctx.chatId, ctx.content, ctx.revision);
 
       case "doc_create":
         return createDocument(account, ctx.title, ctx.folderId);
@@ -860,6 +1162,79 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
           : (ctx.recordIds || "").split(",").map((id: string) => id.trim());
         return deleteBitableRecords(account, ctx.appToken, ctx.tableId, recordIds);
       }
+
+      // 多维表格 - 视图
+      case "bitable_views":
+        return listBitableViews(account, ctx.appToken, ctx.tableId);
+
+      case "bitable_view_get":
+        return getBitableView(account, ctx.appToken, ctx.tableId, ctx.viewId);
+
+      case "bitable_view_create":
+        return createBitableView(
+          account,
+          ctx.appToken,
+          ctx.tableId,
+          ctx.viewName,
+          ctx.viewType as any
+        );
+
+      case "bitable_view_delete":
+        return deleteBitableView(account, ctx.appToken, ctx.tableId, ctx.viewId);
+
+      // 多维表格 - 角色
+      case "bitable_roles":
+        return listBitableRoles(account, ctx.appToken);
+
+      case "bitable_role_create":
+        return createBitableRole(account, ctx.appToken, ctx.roleName, {
+          tablePerm: ctx.tablePerm ? parseInt(ctx.tablePerm, 10) : undefined,
+          recPerm: ctx.recPerm ? parseInt(ctx.recPerm, 10) : undefined,
+        });
+
+      case "bitable_role_update":
+        return updateBitableRole(account, ctx.appToken, ctx.roleId, {
+          roleName: ctx.roleName,
+          tablePerm: ctx.tablePerm ? parseInt(ctx.tablePerm, 10) : undefined,
+          recPerm: ctx.recPerm ? parseInt(ctx.recPerm, 10) : undefined,
+        });
+
+      case "bitable_role_delete":
+        return deleteBitableRole(account, ctx.appToken, ctx.roleId);
+
+      case "bitable_role_members":
+        return listBitableRoleMembers(account, ctx.appToken, ctx.roleId);
+
+      case "bitable_role_member_add":
+        return addBitableRoleMember(
+          account,
+          ctx.appToken,
+          ctx.roleId,
+          ctx.memberId,
+          ctx.memberType as any
+        );
+
+      case "bitable_role_member_remove":
+        return removeBitableRoleMember(
+          account,
+          ctx.appToken,
+          ctx.roleId,
+          ctx.memberId,
+          ctx.memberType as any
+        );
+
+      // 多维表格 - 自动化
+      case "bitable_workflows":
+        return listBitableWorkflows(account, ctx.appToken, ctx.tableId);
+
+      case "bitable_workflow_toggle":
+        return toggleBitableWorkflow(
+          account,
+          ctx.appToken,
+          ctx.tableId,
+          ctx.workflowId,
+          ctx.enabled === "true" || ctx.enabled === true
+        );
 
       // 电子表格 - 基础
       case "sheet_create":
@@ -1076,6 +1451,23 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
         return queryFreeBusy(account, userIds, startTime, endTime);
       }
 
+      // 日历 - 订阅
+      case "cal_subscribe":
+        return subscribeCalendar(account, ctx.calendarId);
+
+      case "cal_unsubscribe":
+        return unsubscribeCalendar(account, ctx.calendarId);
+
+      // 日历 - 权限
+      case "cal_acls":
+        return listCalendarAcls(account, ctx.calendarId);
+
+      case "cal_acl_add":
+        return addCalendarAcl(account, ctx.calendarId, ctx.userId, ctx.role as any);
+
+      case "cal_acl_remove":
+        return removeCalendarAcl(account, ctx.calendarId, ctx.aclId);
+
       // 任务 - 基础
       case "task_create": {
         const due = ctx.due ? parseDueString(ctx.due) || parseInt(ctx.due, 10) : undefined;
@@ -1134,6 +1526,61 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       // 任务提醒
       case "task_reminder_add":
         return addTaskReminder(account, ctx.taskId, parseInt(ctx.minutes, 10) || 30);
+
+      // 任务成员
+      case "task_members_add": {
+        const memberIds = Array.isArray(ctx.memberIds)
+          ? ctx.memberIds
+          : ctx.memberIds.split(",").map((id: string) => id.trim());
+        return addTaskMembers(account, ctx.taskId, memberIds, ctx.memberRole as any);
+      }
+
+      case "task_members_remove": {
+        const memberIds = Array.isArray(ctx.memberIds)
+          ? ctx.memberIds
+          : ctx.memberIds.split(",").map((id: string) => id.trim());
+        return removeTaskMembers(account, ctx.taskId, memberIds, ctx.memberRole as any);
+      }
+
+      // 任务依赖
+      case "task_dependencies_add": {
+        const depIds = Array.isArray(ctx.dependencyTaskIds)
+          ? ctx.dependencyTaskIds
+          : ctx.dependencyTaskIds.split(",").map((id: string) => id.trim());
+        return addTaskDependencies(account, ctx.taskId, depIds, ctx.dependencyType as any);
+      }
+
+      case "task_dependencies_remove": {
+        const depIds = Array.isArray(ctx.dependencyTaskIds)
+          ? ctx.dependencyTaskIds
+          : ctx.dependencyTaskIds.split(",").map((id: string) => id.trim());
+        return removeTaskDependencies(account, ctx.taskId, depIds, ctx.dependencyType as any);
+      }
+
+      // 任务附件
+      case "task_attachments":
+        return listTaskAttachments(account, ctx.taskId);
+
+      case "task_attachment_get":
+        return getTaskAttachment(account, ctx.attachmentId);
+
+      case "task_attachment_delete":
+        return deleteTaskAttachment(account, ctx.attachmentId);
+
+      // 任务列表成员
+      case "tasklist_members_add": {
+        const memberIds = Array.isArray(ctx.memberIds)
+          ? ctx.memberIds
+          : ctx.memberIds.split(",").map((id: string) => id.trim());
+        return addTaskListMembers(account, ctx.tasklistId, memberIds);
+      }
+
+      case "tasklist_members_remove": {
+        const memberIds = Array.isArray(ctx.memberIds)
+          ? ctx.memberIds
+          : ctx.memberIds.split(",").map((id: string) => id.trim());
+        return removeTaskListMembers(account, ctx.tasklistId, memberIds);
+      }
 
       // 知识库 - 空间
       case "wiki_spaces":

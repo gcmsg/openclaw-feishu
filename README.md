@@ -16,12 +16,13 @@ A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messa
 
 | Category      | Features                                                                            |
 | ------------- | ----------------------------------------------------------------------------------- |
-| **Messaging** | Text, Rich Text, Cards, Images, Files, Voice transcription, Quote reply             |
+| **Messaging** | Text, Rich Text, Cards, Images, Files, Voice, Quote, Forward, Urgent               |
+| **Chat**      | Create/manage groups, Members, Managers, Tabs, Top notice, Announcement             |
 | **Documents** | Create, Read, Update, Delete blocks, Insert at position, Markdown support           |
-| **Bitable**   | Create apps/tables, Field management, Record CRUD, Batch operations                 |
+| **Bitable**   | Apps/tables, Fields, Records, Views, Roles, Members, Automation                     |
 | **Sheets**    | Create/read/write cells, Row/column operations, Styles, Merge, Sort, Filter, Freeze |
-| **Calendar**  | Create events, List/search events, Attendees, Free/busy query                       |
-| **Tasks**     | Create/complete tasks, Task lists, Reminders                                        |
+| **Calendar**  | Events, Attendees, Free/busy, Subscribe, ACL permissions                            |
+| **Tasks**     | Tasks, Lists, Reminders, Members, Dependencies, Attachments                         |
 | **Wiki**      | Spaces, Nodes (pages), Members management, Move/copy nodes                          |
 | **Search**    | Messages, Documents, Drive files, Universal search                                  |
 | **AI**        | OCR (image text recognition), Speech-to-Text, Translation, Language detection       |

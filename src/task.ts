@@ -701,3 +701,313 @@ export function parseDueString(dueStr: string): number | null {
 
   return null;
 }
+
+// ==================== 任务成员管理 ====================
+
+/**
+ * 添加任务成员
+ */
+export async function addTaskMembers(
+  account: ResolvedFeishuAccount,
+  taskId: string,
+  memberIds: string[],
+  memberRole: "assignee" | "follower" = "assignee"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.task.addMembers({
+      path: { task_guid: taskId },
+      params: { user_id_type: "open_id" },
+      data: {
+        members: memberIds.map((id) => ({
+          id,
+          type: "user",
+          role: memberRole,
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 移除任务成员
+ */
+export async function removeTaskMembers(
+  account: ResolvedFeishuAccount,
+  taskId: string,
+  memberIds: string[],
+  memberRole: "assignee" | "follower" = "assignee"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.task.removeMembers({
+      path: { task_guid: taskId },
+      params: { user_id_type: "open_id" },
+      data: {
+        members: memberIds.map((id) => ({
+          id,
+          type: "user",
+          role: memberRole,
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 任务依赖管理 ====================
+
+/**
+ * 添加任务依赖
+ */
+export async function addTaskDependencies(
+  account: ResolvedFeishuAccount,
+  taskId: string,
+  dependencyTaskIds: string[],
+  dependencyType: "prev" | "next" = "prev"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.task.addDependencies({
+      path: { task_guid: taskId },
+      data: {
+        dependencies: dependencyTaskIds.map((id) => ({
+          task_guid: id,
+          type: dependencyType,
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 移除任务依赖
+ */
+export async function removeTaskDependencies(
+  account: ResolvedFeishuAccount,
+  taskId: string,
+  dependencyTaskIds: string[],
+  dependencyType: "prev" | "next" = "prev"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.task.removeDependencies({
+      path: { task_guid: taskId },
+      data: {
+        dependencies: dependencyTaskIds.map((id) => ({
+          task_guid: id,
+          type: dependencyType,
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 任务附件管理 ====================
+
+/** 附件信息 */
+export interface TaskAttachment {
+  attachmentId: string;
+  name: string;
+  size?: number;
+  uploadTime?: number;
+  resourceType?: string;
+}
+
+/**
+ * 获取任务附件列表
+ */
+export async function listTaskAttachments(
+  account: ResolvedFeishuAccount,
+  taskId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ attachments: TaskAttachment[]; pageToken?: string; hasMore?: boolean }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.attachment.list({
+      params: {
+        resource_type: "task",
+        resource_id: taskId,
+        page_size: options?.pageSize || 50,
+        page_token: options?.pageToken,
+      },
+    } as any);
+
+    if (result.code === 0) {
+      const attachments = (result.data?.items || []).map((a: any) => ({
+        attachmentId: a.guid,
+        name: a.name || "",
+        size: a.size,
+        uploadTime: a.uploaded_at ? parseInt(a.uploaded_at, 10) : undefined,
+        resourceType: a.resource?.type,
+      }));
+
+      return {
+        ok: true,
+        data: {
+          attachments,
+          pageToken: result.data?.page_token,
+          hasMore: result.data?.has_more,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 获取任务附件详情
+ */
+export async function getTaskAttachment(
+  account: ResolvedFeishuAccount,
+  attachmentId: string
+): Promise<ApiResult<TaskAttachment>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.attachment.get({
+      path: { attachment_guid: attachmentId },
+    } as any);
+
+    if (result.code === 0 && result.data?.attachment) {
+      const a = result.data.attachment;
+      return {
+        ok: true,
+        data: {
+          attachmentId: a.guid!,
+          name: a.name || "",
+          size: a.size,
+          uploadTime: a.uploaded_at ? parseInt(a.uploaded_at, 10) : undefined,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除任务附件
+ */
+export async function deleteTaskAttachment(
+  account: ResolvedFeishuAccount,
+  attachmentId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.attachment.delete({
+      path: { attachment_guid: attachmentId },
+    } as any);
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 任务列表成员管理 ====================
+
+/**
+ * 添加任务列表成员
+ */
+export async function addTaskListMembers(
+  account: ResolvedFeishuAccount,
+  tasklistId: string,
+  memberIds: string[]
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.tasklist.addMembers({
+      path: { tasklist_guid: tasklistId },
+      params: { user_id_type: "open_id" },
+      data: {
+        members: memberIds.map((id) => ({
+          id,
+          type: "user",
+          role: "editor",
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 移除任务列表成员
+ */
+export async function removeTaskListMembers(
+  account: ResolvedFeishuAccount,
+  tasklistId: string,
+  memberIds: string[]
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.task.v2.tasklist.removeMembers({
+      path: { tasklist_guid: tasklistId },
+      params: { user_id_type: "open_id" },
+      data: {
+        members: memberIds.map((id) => ({
+          id,
+          type: "user",
+        })),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}

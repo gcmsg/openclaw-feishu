@@ -592,3 +592,491 @@ export async function deleteBitableRecords(
     return { ok: false, error: String(error) };
   }
 }
+
+// ==================== 视图管理 ====================
+
+/** 视图信息 */
+export interface BitableView {
+  viewId: string;
+  viewName: string;
+  viewType: "grid" | "kanban" | "gallery" | "form" | "gantt";
+}
+
+/**
+ * 获取视图列表
+ */
+export async function listBitableViews(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ views: BitableView[]; pageToken?: string; hasMore?: boolean }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appTableView.list({
+      path: { app_token: appToken, table_id: tableId },
+      params: {
+        page_size: options?.pageSize || 100,
+        page_token: options?.pageToken,
+      },
+    });
+
+    if (result.code === 0) {
+      const views = (result.data?.items || []).map((v: any) => ({
+        viewId: v.view_id,
+        viewName: v.view_name || "",
+        viewType: v.view_type,
+      }));
+
+      return {
+        ok: true,
+        data: {
+          views,
+          pageToken: result.data?.page_token,
+          hasMore: result.data?.has_more,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 获取视图详情
+ */
+export async function getBitableView(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  viewId: string
+): Promise<ApiResult<BitableView>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appTableView.get({
+      path: { app_token: appToken, table_id: tableId, view_id: viewId },
+    });
+
+    if (result.code === 0 && result.data?.view) {
+      const v = result.data.view;
+      return {
+        ok: true,
+        data: {
+          viewId: v.view_id!,
+          viewName: v.view_name || "",
+          viewType: v.view_type as any,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 创建视图
+ */
+export async function createBitableView(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  viewName: string,
+  viewType: "grid" | "kanban" | "gallery" | "form" | "gantt" = "grid"
+): Promise<ApiResult<BitableView>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appTableView.create({
+      path: { app_token: appToken, table_id: tableId },
+      data: {
+        view_name: viewName,
+        view_type: viewType,
+      },
+    });
+
+    if (result.code === 0 && result.data?.view) {
+      const v = result.data.view;
+      return {
+        ok: true,
+        data: {
+          viewId: v.view_id!,
+          viewName: v.view_name || viewName,
+          viewType: v.view_type as any,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除视图
+ */
+export async function deleteBitableView(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  viewId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appTableView.delete({
+      path: { app_token: appToken, table_id: tableId, view_id: viewId },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 角色管理 ====================
+
+/** 角色信息 */
+export interface BitableRole {
+  roleId: string;
+  roleName: string;
+  tablePerm?: number;
+  recPerm?: number;
+  fieldPerm?: Record<string, number>;
+}
+
+/**
+ * 获取角色列表
+ */
+export async function listBitableRoles(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ roles: BitableRole[]; pageToken?: string; hasMore?: boolean }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRole.list({
+      path: { app_token: appToken },
+      params: {
+        page_size: options?.pageSize || 100,
+        page_token: options?.pageToken,
+      },
+    });
+
+    if (result.code === 0) {
+      const roles = (result.data?.items || []).map((r: any) => ({
+        roleId: r.role_id,
+        roleName: r.role_name || "",
+        tablePerm: r.table_perm,
+        recPerm: r.rec_perm,
+      }));
+
+      return {
+        ok: true,
+        data: {
+          roles,
+          pageToken: result.data?.page_token,
+          hasMore: result.data?.has_more,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 创建角色
+ */
+export async function createBitableRole(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleName: string,
+  options?: {
+    tablePerm?: number; // 1: 可读, 2: 可编辑, 4: 可管理
+    recPerm?: number;
+  }
+): Promise<ApiResult<BitableRole>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRole.create({
+      path: { app_token: appToken },
+      data: {
+        role_name: roleName,
+        table_perm: options?.tablePerm,
+        rec_perm: options?.recPerm,
+      },
+    });
+
+    if (result.code === 0 && result.data?.role) {
+      const r = result.data.role;
+      return {
+        ok: true,
+        data: {
+          roleId: r.role_id!,
+          roleName: r.role_name || roleName,
+          tablePerm: r.table_perm,
+          recPerm: r.rec_perm,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 更新角色
+ */
+export async function updateBitableRole(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleId: string,
+  updates: {
+    roleName?: string;
+    tablePerm?: number;
+    recPerm?: number;
+  }
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRole.update({
+      path: { app_token: appToken, role_id: roleId },
+      data: {
+        role_name: updates.roleName,
+        table_perm: updates.tablePerm,
+        rec_perm: updates.recPerm,
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除角色
+ */
+export async function deleteBitableRole(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleId: string
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRole.delete({
+      path: { app_token: appToken, role_id: roleId },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 获取角色成员列表
+ */
+export async function listBitableRoleMembers(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<
+  ApiResult<{ members: Array<{ memberId: string; memberType: string }>; pageToken?: string }>
+> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRoleMember.list({
+      path: { app_token: appToken, role_id: roleId },
+      params: {
+        page_size: options?.pageSize || 100,
+        page_token: options?.pageToken,
+      },
+    });
+
+    if (result.code === 0) {
+      const members = (result.data?.items || []).map((m: any) => ({
+        memberId: m.member_id,
+        memberType: m.member_type,
+      }));
+
+      return {
+        ok: true,
+        data: {
+          members,
+          pageToken: result.data?.page_token,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 添加角色成员
+ */
+export async function addBitableRoleMember(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleId: string,
+  memberId: string,
+  memberType: "user" | "chat" | "department" = "user"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRoleMember.create({
+      path: { app_token: appToken, role_id: roleId },
+      data: {
+        member_id: memberId,
+        member_type: memberType,
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 移除角色成员
+ */
+export async function removeBitableRoleMember(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  roleId: string,
+  memberId: string,
+  memberType: "user" | "chat" | "department" = "user"
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appRoleMember.delete({
+      path: { app_token: appToken, role_id: roleId, member_id: memberId },
+      params: { member_type: memberType },
+    });
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 自动化 ====================
+
+/** 自动化规则信息 */
+export interface BitableWorkflow {
+  workflowId: string;
+  workflowName: string;
+  enabled: boolean;
+}
+
+/**
+ * 获取自动化规则列表
+ */
+export async function listBitableWorkflows(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  options?: {
+    pageSize?: number;
+    pageToken?: string;
+  }
+): Promise<ApiResult<{ workflows: BitableWorkflow[]; pageToken?: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appWorkflow.list({
+      path: { app_token: appToken, table_id: tableId },
+      params: {
+        page_size: options?.pageSize || 100,
+        page_token: options?.pageToken,
+      },
+    } as any);
+
+    if (result.code === 0) {
+      const workflows = (result.data?.items || []).map((w: any) => ({
+        workflowId: w.workflow_id,
+        workflowName: w.workflow_name || "",
+        enabled: w.enabled || false,
+      }));
+
+      return {
+        ok: true,
+        data: {
+          workflows,
+          pageToken: result.data?.page_token,
+        },
+      };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 启用/禁用自动化规则
+ */
+export async function toggleBitableWorkflow(
+  account: ResolvedFeishuAccount,
+  appToken: string,
+  tableId: string,
+  workflowId: string,
+  enabled: boolean
+): Promise<ApiResult> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.bitable.v1.appWorkflow.update({
+      path: { app_token: appToken, table_id: tableId, workflow_id: workflowId },
+      data: { enabled },
+    } as any);
+
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
