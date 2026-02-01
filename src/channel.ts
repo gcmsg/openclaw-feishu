@@ -22,10 +22,34 @@ import {
   createDocument,
   getDocument,
   getDocumentContent,
+  getDocumentStructure,
+  getBlock,
+  updateBlock,
+  deleteBlock,
+  deleteBlocks,
+  insertBlocksAfter,
+  prependDocumentBlocks,
   appendText,
   appendMarkdown,
+  appendDocumentBlocks,
 } from "./document.js";
 import { createFolder, listFiles, uploadFile, downloadFile, searchFiles } from "./space.js";
+import {
+  createBitableApp,
+  getBitableApp,
+  listBitableTables,
+  createBitableTable,
+  listBitableFields,
+  createBitableField,
+  listBitableRecords,
+  searchBitableRecords,
+  getBitableRecord,
+  createBitableRecord,
+  createBitableRecords,
+  updateBitableRecord,
+  deleteBitableRecord,
+  deleteBitableRecords,
+} from "./bitable.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
@@ -192,24 +216,47 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
 
 const feishuMessageActions: ChannelMessageActionAdapter = {
   listActions: () => [
+    // 消息
     { action: "send", description: "发送消息", params: ["target", "message"] },
     { action: "send_card", description: "发送卡片消息", params: ["target", "card"] },
     { action: "send_image", description: "发送图片", params: ["target", "filePath"] },
     { action: "send_file", description: "发送文件", params: ["target", "filePath"] },
+    // 文档 - 基础
     { action: "doc_create", description: "创建云文档", params: ["title", "folderId?"] },
     { action: "doc_get", description: "获取文档信息", params: ["documentId"] },
-    { action: "doc_read", description: "读取文档内容", params: ["documentId"] },
-    { action: "doc_append", description: "追加文本到文档", params: ["documentId", "content"] },
-    {
-      action: "doc_append_md",
-      description: "追加 Markdown 到文档",
-      params: ["documentId", "markdown"],
-    },
+    { action: "doc_read", description: "读取文档纯文本", params: ["documentId"] },
+    { action: "doc_structure", description: "获取文档结构（块列表）", params: ["documentId"] },
+    // 文档 - 内容操作
+    { action: "doc_append", description: "追加文本到文档末尾", params: ["documentId", "content"] },
+    { action: "doc_append_md", description: "追加 Markdown 到文档", params: ["documentId", "markdown"] },
+    { action: "doc_prepend", description: "在文档开头插入内容", params: ["documentId", "content"] },
+    { action: "doc_insert_after", description: "在指定块后插入内容", params: ["documentId", "blockId", "content"] },
+    // 文档 - 块操作
+    { action: "doc_block_get", description: "获取指定块内容", params: ["documentId", "blockId"] },
+    { action: "doc_block_update", description: "更新块内容", params: ["documentId", "blockId", "text", "checked?"] },
+    { action: "doc_block_delete", description: "删除指定块", params: ["documentId", "blockId"] },
+    { action: "doc_blocks_delete", description: "批量删除块", params: ["documentId", "blockIds"] },
+    // 云空间
     { action: "folder_create", description: "创建文件夹", params: ["name", "parentToken?"] },
     { action: "folder_list", description: "列出文件夹内容", params: ["folderToken"] },
     { action: "file_upload", description: "上传文件", params: ["filePath", "folderToken"] },
     { action: "file_download", description: "下载文件", params: ["fileToken", "savePath"] },
     { action: "file_search", description: "搜索文件", params: ["query"] },
+    // 多维表格 - 应用
+    { action: "bitable_create", description: "创建多维表格", params: ["name", "folderId?"] },
+    { action: "bitable_get", description: "获取多维表格信息", params: ["appToken"] },
+    { action: "bitable_tables", description: "列出数据表", params: ["appToken"] },
+    { action: "bitable_table_create", description: "创建数据表", params: ["appToken", "name"] },
+    // 多维表格 - 字段
+    { action: "bitable_fields", description: "列出字段", params: ["appToken", "tableId"] },
+    { action: "bitable_field_create", description: "创建字段", params: ["appToken", "tableId", "fieldName", "fieldType"] },
+    // 多维表格 - 记录
+    { action: "bitable_records", description: "查询记录", params: ["appToken", "tableId", "pageSize?"] },
+    { action: "bitable_record_get", description: "获取单条记录", params: ["appToken", "tableId", "recordId"] },
+    { action: "bitable_record_create", description: "创建记录", params: ["appToken", "tableId", "fields"] },
+    { action: "bitable_record_update", description: "更新记录", params: ["appToken", "tableId", "recordId", "fields"] },
+    { action: "bitable_record_delete", description: "删除记录", params: ["appToken", "tableId", "recordId"] },
+    { action: "bitable_records_delete", description: "批量删除记录", params: ["appToken", "tableId", "recordIds"] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -252,11 +299,51 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       case "doc_read":
         return getDocumentContent(account, ctx.documentId);
 
+      case "doc_structure":
+        return getDocumentStructure(account, ctx.documentId);
+
       case "doc_append":
         return appendText(account, ctx.documentId, ctx.content);
 
       case "doc_append_md":
         return appendMarkdown(account, ctx.documentId, ctx.markdown);
+
+      case "doc_prepend": {
+        const lines = (ctx.content || "").split("\n");
+        const blocks = lines.map((line: string) => ({
+          blockType: "text" as const,
+          text: line || " ",
+        }));
+        return prependDocumentBlocks(account, ctx.documentId, blocks);
+      }
+
+      case "doc_insert_after": {
+        const lines = (ctx.content || "").split("\n");
+        const blocks = lines.map((line: string) => ({
+          blockType: "text" as const,
+          text: line || " ",
+        }));
+        return insertBlocksAfter(account, ctx.documentId, ctx.blockId, blocks);
+      }
+
+      case "doc_block_get":
+        return getBlock(account, ctx.documentId, ctx.blockId);
+
+      case "doc_block_update":
+        return updateBlock(account, ctx.documentId, ctx.blockId, {
+          text: ctx.text,
+          checked: ctx.checked,
+        });
+
+      case "doc_block_delete":
+        return deleteBlock(account, ctx.documentId, ctx.blockId);
+
+      case "doc_blocks_delete": {
+        const blockIds = Array.isArray(ctx.blockIds)
+          ? ctx.blockIds
+          : (ctx.blockIds || "").split(",").map((id: string) => id.trim());
+        return deleteBlocks(account, ctx.documentId, blockIds);
+      }
 
       case "folder_create":
         return createFolder(account, ctx.name, ctx.parentToken);
@@ -272,6 +359,61 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "file_search":
         return searchFiles(account, ctx.query);
+
+      // 多维表格 - 应用
+      case "bitable_create":
+        return createBitableApp(account, ctx.name, ctx.folderId);
+
+      case "bitable_get":
+        return getBitableApp(account, ctx.appToken);
+
+      case "bitable_tables":
+        return listBitableTables(account, ctx.appToken);
+
+      case "bitable_table_create":
+        return createBitableTable(account, ctx.appToken, ctx.name);
+
+      // 多维表格 - 字段
+      case "bitable_fields":
+        return listBitableFields(account, ctx.appToken, ctx.tableId);
+
+      case "bitable_field_create":
+        return createBitableField(
+          account,
+          ctx.appToken,
+          ctx.tableId,
+          ctx.fieldName,
+          parseInt(ctx.fieldType, 10) || 1
+        );
+
+      // 多维表格 - 记录
+      case "bitable_records":
+        return listBitableRecords(account, ctx.appToken, ctx.tableId, {
+          pageSize: ctx.pageSize ? parseInt(ctx.pageSize, 10) : undefined,
+        });
+
+      case "bitable_record_get":
+        return getBitableRecord(account, ctx.appToken, ctx.tableId, ctx.recordId);
+
+      case "bitable_record_create": {
+        const fields = typeof ctx.fields === "string" ? JSON.parse(ctx.fields) : ctx.fields;
+        return createBitableRecord(account, ctx.appToken, ctx.tableId, fields);
+      }
+
+      case "bitable_record_update": {
+        const fields = typeof ctx.fields === "string" ? JSON.parse(ctx.fields) : ctx.fields;
+        return updateBitableRecord(account, ctx.appToken, ctx.tableId, ctx.recordId, fields);
+      }
+
+      case "bitable_record_delete":
+        return deleteBitableRecord(account, ctx.appToken, ctx.tableId, ctx.recordId);
+
+      case "bitable_records_delete": {
+        const recordIds = Array.isArray(ctx.recordIds)
+          ? ctx.recordIds
+          : (ctx.recordIds || "").split(",").map((id: string) => id.trim());
+        return deleteBitableRecords(account, ctx.appToken, ctx.tableId, recordIds);
+      }
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };

@@ -111,21 +111,64 @@ export type BlockType =
   | "heading1"
   | "heading2"
   | "heading3"
+  | "heading4"
+  | "heading5"
+  | "heading6"
+  | "heading7"
+  | "heading8"
+  | "heading9"
   | "bullet"
   | "ordered"
   | "todo"
   | "code"
   | "quote"
-  | "divider";
+  | "divider"
+  | "image"
+  | "table"
+  | "tableCell"
+  | "grid"
+  | "gridColumn";
 
 /**
  * 文档块
  */
 export interface DocumentBlock {
+  /** 块 ID（读取时返回） */
+  blockId?: string;
+  /** 块类型 */
   blockType: BlockType;
+  /** 文本内容 */
   text?: string;
+  /** 待办事项是否完成 */
   checked?: boolean;
+  /** 代码块语言 */
   language?: string;
+  /** 图片 token */
+  imageToken?: string;
+  /** 图片宽度 */
+  imageWidth?: number;
+  /** 图片高度 */
+  imageHeight?: number;
+  /** 子块（用于表格、Grid 等） */
+  children?: DocumentBlock[];
+  /** 父块 ID */
+  parentId?: string;
+}
+
+/**
+ * 解析后的文档结构
+ */
+export interface ParsedDocument {
+  /** 文档 ID */
+  documentId: string;
+  /** 文档标题 */
+  title: string;
+  /** 文档 URL */
+  url: string;
+  /** 文档块列表 */
+  blocks: DocumentBlock[];
+  /** 纯文本内容 */
+  plainText?: string;
 }
 
 /**
