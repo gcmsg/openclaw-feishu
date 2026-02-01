@@ -1,253 +1,242 @@
-# 飞书 SDK API 覆盖率分析
+# Feishu API Coverage
 
-> 生成时间: 2026-02-01
-> 插件版本: 2.3.0
+> 当前版本: 2.5.0 | 总计 Actions: 91+
 
-## 概览
+## 模块概览
 
-| 模块               | SDK APIs | 已实现 | 覆盖率 | 状态        |
-| ------------------ | -------- | ------ | ------ | ----------- |
-| 消息 (IM)          | 31       | 12     | 39%    | ⚠️ 部分     |
-| 云文档 (Docx)      | 8        | 14     | 175%+  | ✅ 完整     |
-| 多维表格 (Bitable) | 12       | 15     | 125%+  | ✅ 完整     |
-| 电子表格 (Sheets)  | 9        | 33     | 366%+  | ✅ 完整     |
-| 日历 (Calendar)    | 19       | 14     | 74%    | ✅ 核心完整 |
-| 任务 (Task)        | 23       | 17     | 74%    | ✅ 核心完整 |
-| 知识库 (Wiki)      | 11       | 14     | 127%+  | ✅ 完整     |
-| 搜索 (Search)      | 5        | 6      | 120%+  | ✅ 完整     |
-| AI 能力            | 5        | 8      | 160%+  | ✅ 完整     |
-| 云空间 (Drive)     | 23       | 8      | 35%    | ⚠️ 部分     |
+| 模块 | Actions | 状态 |
+|------|---------|------|
+| 消息 | 7 | ✅ |
+| 聊天管理 | 17 | ✅ 新增 |
+| 云文档 | 11 | ✅ |
+| 云空间 | 14 | ✅ |
+| 多维表格 | 25 | ✅ 增强 |
+| 电子表格 | 19 | ✅ |
+| 日历 | 18 | ✅ 增强 |
+| 任务 | 21 | ✅ 增强 |
+| 知识库 | 14 | ✅ |
+| 搜索 | 4 | ✅ |
+| AI | 5 | ✅ |
 
----
+## 详细 Actions 列表
 
-## 详细分析
+### 消息 (7 个)
+- `send` - 发送消息
+- `send_card` - 发送卡片消息
+- `send_image` - 发送图片
+- `send_file` - 发送文件
+- `msg_forward` - 转发消息
+- `msg_merge_forward` - 合并转发多条消息
+- `msg_urgent` - 发送加急消息
+- `msg_read_users` - 获取消息已读用户
 
-### 1. 消息 (IM) - 39% 覆盖
+### 聊天管理 (17 个) ⭐ 新增
+- `chat_create` - 创建群聊
+- `chat_get` - 获取群聊信息
+- `chat_update` - 更新群聊信息
+- `chat_delete` - 解散群聊
+- `chat_list` - 获取群聊列表
+- `chat_search` - 搜索群聊
+- `chat_members_add` - 添加群成员
+- `chat_members_remove` - 移除群成员
+- `chat_members_list` - 获取群成员列表
+- `chat_members_check` - 判断用户是否在群中
+- `chat_managers_add` - 添加群管理员
+- `chat_managers_remove` - 移除群管理员
+- `chat_tab_create` - 创建会话标签页
+- `chat_tab_list` - 获取会话标签页列表
+- `chat_tab_update` - 更新会话标签页
+- `chat_tab_delete` - 删除会话标签页
+- `chat_top_notice_put` - 置顶消息
+- `chat_top_notice_delete` - 取消置顶消息
+- `chat_announcement_get` - 获取群公告
+- `chat_announcement_update` - 更新群公告
 
-#### ✅ 已实现
+### 云文档 (11 个)
+- `doc_create` - 创建云文档
+- `doc_get` - 获取文档信息
+- `doc_read` - 读取文档纯文本
+- `doc_structure` - 获取文档结构
+- `doc_append` - 追加文本到文档末尾
+- `doc_append_md` - 追加 Markdown 到文档
+- `doc_prepend` - 在文档开头插入内容
+- `doc_insert_after` - 在指定块后插入内容
+- `doc_block_get` - 获取指定块内容
+- `doc_block_update` - 更新块内容
+- `doc_block_delete` - 删除指定块
+- `doc_blocks_delete` - 批量删除块
 
-- `create` → sendTextMessage, sendPostMessage, sendCardMessage, sendImageMessage, sendFileMessage
-- `reply` → replyMessage
-- `delete` → recallMessage
-- `get` → getMessage
+### 云空间 (14 个)
+- `folder_create` - 创建文件夹
+- `folder_list` - 列出文件夹内容
+- `file_upload` - 上传文件
+- `file_download` - 下载文件
+- `file_search` - 搜索文件
+- `file_meta` - 获取文件元数据
+- `file_move` - 移动文件
+- `file_copy` - 复制文件
+- `file_delete` - 删除文件
+- `file_shortcut` - 创建快捷方式
+- `file_batch_download_urls` - 批量获取下载链接
+- `file_transfer_owner` - 转移文件所有权
 
-#### ❌ 未实现
+### 多维表格 (25 个) ⭐ 增强
+基础:
+- `bitable_create` - 创建多维表格
+- `bitable_get` - 获取多维表格信息
+- `bitable_tables` - 列出数据表
+- `bitable_table_create` - 创建数据表
+- `bitable_fields` - 列出字段
+- `bitable_field_create` - 创建字段
+- `bitable_records` - 查询记录
+- `bitable_record_get` - 获取单条记录
+- `bitable_record_create` - 创建记录
+- `bitable_record_update` - 更新记录
+- `bitable_record_delete` - 删除记录
+- `bitable_records_delete` - 批量删除记录
 
-- `forward` - 转发消息
-- `merge_forward` - 合并转发
-- `urgent_app` / `urgent_phone` / `urgent_sms` - 加急消息
-- `read_users` - 已读用户列表
-- `search` - 搜索消息 (已在 search.ts 实现)
-- `push_follow_up` - 发送跟进消息
-- 聊天管理 (add_managers, delete_managers, me_join, link 等)
-- Tab 管理 (list_tabs, update_tabs, delete_tabs, sort_tabs)
-- 置顶 (put_top_notice, delete_top_notice)
+视图 (新增):
+- `bitable_views` - 列出视图
+- `bitable_view_get` - 获取视图详情
+- `bitable_view_create` - 创建视图
+- `bitable_view_delete` - 删除视图
 
-### 2. 云文档 (Docx) - 175%+ 覆盖 ✅
+角色 (新增):
+- `bitable_roles` - 列出角色
+- `bitable_role_create` - 创建角色
+- `bitable_role_update` - 更新角色
+- `bitable_role_delete` - 删除角色
+- `bitable_role_members` - 列出角色成员
+- `bitable_role_member_add` - 添加角色成员
+- `bitable_role_member_remove` - 移除角色成员
 
-#### ✅ 已实现
+自动化 (新增):
+- `bitable_workflows` - 列出自动化规则
+- `bitable_workflow_toggle` - 启用/禁用自动化规则
 
-- `create` → createDocument
-- `get` → getDocument, getDocumentContent
-- `list` → getDocumentBlocks, getDocumentStructure
-- `patch` → updateBlock
-- `batch_delete` → deleteBlock, deleteBlocks
-- 扩展: insertBlocksAfter, prependDocumentBlocks, appendDocumentBlocks, appendText, appendMarkdown
+### 电子表格 (19 个)
+- `sheet_create` - 创建电子表格
+- `sheet_get` - 获取电子表格信息
+- `sheet_list` - 列出工作表
+- `sheet_info` - 获取工作表信息
+- `sheet_read` - 读取单元格
+- `sheet_write` - 写入单元格
+- `sheet_append` - 追加行数据
+- `sheet_insert_rows` - 插入行
+- `sheet_delete_rows` - 删除行
+- `sheet_insert_cols` - 插入列
+- `sheet_delete_cols` - 删除列
+- `sheet_style` - 设置单元格样式
+- `sheet_merge` - 合并单元格
+- `sheet_unmerge` - 拆分单元格
+- `sheet_sort` - 排序
+- `sheet_freeze` - 冻结行列
+- `sheet_find_replace` - 查找替换
+- `sheet_filter_create` - 创建筛选
+- `sheet_filter_delete` - 删除筛选
+- `sheet_col_width` - 设置列宽
+- `sheet_row_height` - 设置行高
+- `sheet_add` - 添加工作表
+- `sheet_delete` - 删除工作表
+- `sheet_copy` - 复制工作表
 
-#### ❌ 未实现
+### 日历 (18 个) ⭐ 增强
+基础:
+- `cal_list` - 列出日历
+- `cal_primary` - 获取主日历
+- `cal_create` - 创建日历
+- `cal_events` - 列出日程
+- `cal_event_get` - 获取日程详情
+- `cal_event_create` - 创建日程
+- `cal_event_update` - 更新日程
+- `cal_event_delete` - 删除日程
+- `cal_event_search` - 搜索日程
+- `cal_attendees` - 获取日程参与者
+- `cal_attendee_add` - 添加参与者
+- `cal_freebusy` - 查询忙闲状态
 
-- `convert` - 文档格式转换
-- `raw_content` - 获取原始内容
+订阅 (新增):
+- `cal_subscribe` - 订阅日历
+- `cal_unsubscribe` - 取消订阅日历
 
-### 3. 多维表格 (Bitable) - 125%+ 覆盖 ✅
+权限 (新增):
+- `cal_acls` - 获取日历访问控制列表
+- `cal_acl_add` - 添加日历访问控制
+- `cal_acl_remove` - 删除日历访问控制
 
-#### ✅ 已实现
+### 任务 (21 个) ⭐ 增强
+基础:
+- `task_create` - 创建任务
+- `task_get` - 获取任务详情
+- `task_update` - 更新任务
+- `task_delete` - 删除任务
+- `task_complete` - 完成任务
+- `task_uncomplete` - 取消完成任务
+- `task_list` - 列出任务
 
-- `create` → createBitableApp, createBitableTable, createBitableField, createBitableRecord
-- `get` → getBitableApp, getBitableRecord
-- `list` → listBitableTables, listBitableFields, listBitableRecords
-- `search` → searchBitableRecords
-- `update` → updateBitableRecord
-- `delete` → deleteBitableRecord
-- `batch_create` → createBitableRecords
-- `batch_update` → updateBitableRecords
-- `batch_delete` → deleteBitableRecords
+任务列表:
+- `tasklist_create` - 创建任务列表
+- `tasklist_get` - 获取任务列表详情
+- `tasklist_list` - 列出所有任务列表
+- `tasklist_delete` - 删除任务列表
+- `tasklist_add_task` - 将任务添加到列表
+- `tasklist_remove_task` - 从列表移除任务
+- `task_reminder_add` - 添加任务提醒
 
-#### ❌ 未实现
+成员 (新增):
+- `task_members_add` - 添加任务成员
+- `task_members_remove` - 移除任务成员
+- `tasklist_members_add` - 添加任务列表成员
+- `tasklist_members_remove` - 移除任务列表成员
 
-- `copy` - 复制多维表格
-- `batch_get` - 批量获取记录
-- `patch` - 更新表格元数据
-- 视图管理 (view.create, view.list, view.get, view.delete, view.patch)
-- 角色管理 (role.create, role.list, role.update, role.delete)
-- 仪表盘 (dashboard.list, dashboard.copy)
-- 自动化 (workflow.list, workflow.update)
-- 表单管理 (form.get, form.patch, form.field.list, form.field.patch)
+依赖 (新增):
+- `task_dependencies_add` - 添加任务依赖
+- `task_dependencies_remove` - 移除任务依赖
 
-### 4. 电子表格 (Sheets) - 366%+ 覆盖 ✅
+附件 (新增):
+- `task_attachments` - 获取任务附件列表
+- `task_attachment_get` - 获取任务附件详情
+- `task_attachment_delete` - 删除任务附件
 
-#### ✅ 已实现 (远超SDK基础API)
+### 知识库 (14 个)
+- `wiki_spaces` - 列出知识空间
+- `wiki_space_get` - 获取知识空间详情
+- `wiki_space_create` - 创建知识空间
+- `wiki_nodes` - 列出节点
+- `wiki_node_get` - 获取节点详情
+- `wiki_node_create` - 创建节点
+- `wiki_node_rename` - 重命名节点
+- `wiki_node_move` - 移动节点
+- `wiki_node_copy` - 复制节点
+- `wiki_members` - 列出成员
+- `wiki_member_add` - 添加成员
+- `wiki_member_remove` - 移除成员
 
-- 基础: createSpreadsheet, getSpreadsheet, listSheets, getSheet
-- 读写: readRange, writeRange, appendRows, batchReadRanges, batchWriteRanges
-- 行列: insertRows, deleteRows, insertColumns, deleteColumns
-- 样式: setCellStyle, batchSetCellStyle
-- 合并: mergeCells, unmergeCells
-- 筛选: createFilter, deleteFilter, setFilterCondition
-- 排序: sortRange
-- 冻结: freezeRowsAndColumns
-- 查找替换: findReplace
-- 尺寸: setColumnWidth, setRowHeight
-- 工作表: copySheet, addSheet, deleteSheet, protectSheet
-- 辅助: columnToLetter, letterToColumn, buildRange
+### 搜索 (4 个)
+- `search_messages` - 搜索消息
+- `search_docs` - 搜索云文档
+- `search_files` - 搜索云空间文件
+- `search_all` - 综合搜索
 
-### 5. 日历 (Calendar) - 74% 覆盖 ✅
+### AI (5 个)
+- `ai_ocr` - 图片文字识别
+- `ai_speech_to_text` - 语音转文字
+- `ai_translate` - 翻译文本
+- `ai_detect_language` - 检测文本语言
+- `ai_languages` - 获取支持的语言列表
 
-#### ✅ 已实现
+## 更新日志
 
-- `list` → listCalendars
-- `primary` → getPrimaryCalendar
-- `create` → createCalendar, createEvent
-- `get` → getEvent
-- `patch` → updateEvent
-- `delete` → deleteEvent
-- `search` → searchEvents
-- 参与者: listAttendees, addAttendees, removeAttendees
-- 忙闲: queryFreeBusy
+### v2.5.0
+- 新增聊天管理模块 (chat.ts): 群聊 CRUD、成员、管理员、Tab、置顶、公告
+- 多维表格增强: 视图管理、角色管理、自动化管理
+- 日历增强: 订阅、ACL 权限
+- 任务增强: 成员、依赖、附件管理
 
-#### ❌ 未实现
+### v2.4.0
+- 新增 AI 能力: OCR、语音转文字、翻译
+- 新增综合搜索
 
-- `subscribe` / `unsubscribe` - 订阅日历
-- `subscription` / `unsubscription` - 订阅变更
-- `mget` - 批量获取日历
-- `primarys` - 获取多个主日历
-- `instances` / `instance_view` - 重复日程实例
-- `reply` - 回复日程邀请
-- 会议相关 (meeting_chat.create/delete, meeting_minute.create)
-- Exchange 绑定
-- ACL 权限管理
-
-### 6. 任务 (Task) - 74% 覆盖 ✅
-
-#### ✅ 已实现
-
-- `create` → createTask, createTaskList
-- `get` → getTask, getTaskList
-- `patch` → updateTask
-- `delete` → deleteTask, deleteTaskList
-- `complete` / `uncomplete` → completeTask, uncompleteTask
-- `list` → listTasks, listTaskLists
-- `add` → addTaskToList
-- `remove` → removeTaskFromList
-- `add_reminders` → addTaskReminder
-- 扩展: listTaskReminders, deleteTaskReminder
-
-#### ❌ 未实现
-
-- `add_members` / `remove_members` - 成员管理
-- `add_dependencies` / `remove_dependencies` - 任务依赖
-- `tasklists` - 获取任务所属列表
-- `tasks` - 获取列表中的任务
-- `upload` - 上传附件
-- `batch_delete_collaborator` / `batch_delete_follower` - 批量删除
-
-### 7. 知识库 (Wiki) - 127%+ 覆盖 ✅
-
-#### ✅ 已实现
-
-- `list` → listWikiSpaces
-- `get` → getWikiSpace
-- `create` → createWikiSpace, createWikiNode
-- `get_node` → getWikiNode
-- `update_title` → updateWikiNodeTitle
-- `move` → moveWikiNode
-- `copy` → copyWikiNode
-- `delete` → deleteWikiNode (通过 move)
-- 成员管理: listWikiMembers, addWikiMember, removeWikiMember
-- 辅助: getNodeUrl
-
-#### ❌ 未实现
-
-- `search` - 搜索知识库 (已在 search.ts 实现)
-- `move_docs_to_wiki` - 移动文档到知识库
-- `update` - 更新知识空间
-
-### 8. 搜索 (Search) - 120%+ 覆盖 ✅
-
-#### ✅ 已实现
-
-- `create` → searchMessages, searchDocs, searchDriveFiles, searchAppData
-- 扩展: universalSearch, highlightKeywords
-
-### 9. AI 能力 - 160%+ 覆盖 ✅
-
-#### ✅ 已实现
-
-- `basic_recognize` → recognizeImage (OCR)
-- `file_recognize` → speechToText
-- `stream_recognize` → streamSpeechRecognize
-- `translate` → translateText
-- `detect` → detectLanguage
-- 扩展: translateBatch, getLanguageName, getSupportedLanguages
-
-### 10. 云空间 (Drive) - 35% 覆盖 ⚠️
-
-#### ✅ 已实现
-
-- `create_folder` → createFolder
-- `list` → listFiles
-- `upload_all` → uploadFile
-- `download` → downloadFile
-- `move` → moveFile
-- `copy` → copyFile
-- `delete` → deleteFile
-- 搜索 → searchFiles
-
-#### ❌ 未实现
-
-- `get` - 获取文件元数据
-- `patch` - 更新文件元数据
-- `create_shortcut` - 创建快捷方式
-- `transfer_owner` - 转让所有权
-- `subscribe` / `get_subscribe` / `delete_subscribe` - 订阅
-- `batch_get_tmp_download_url` - 批量获取下载链接
-- `batch_query` - 批量查询
-- `auth` - 授权
-- `task_check` - 异步任务检查
-- 分片上传 (upload_prepare, upload_part, upload_finish)
-
----
-
-## 优先补充建议
-
-### 高优先级 (P0)
-
-1. **IM - 消息转发** (`forward`, `merge_forward`)
-2. **Drive - 文件元数据** (`get`, `patch`)
-3. **Drive - 批量下载** (`batch_get_tmp_download_url`)
-
-### 中优先级 (P1)
-
-1. **IM - 加急消息** (`urgent_app`, `urgent_phone`)
-2. **Bitable - 视图管理** (`view.*`)
-3. **Calendar - 日程订阅** (`subscribe`, `subscription`)
-4. **Task - 成员管理** (`add_members`, `remove_members`)
-
-### 低优先级 (P2)
-
-1. **IM - 聊天管理** (群管理功能)
-2. **Bitable - 角色管理** (`role.*`)
-3. **Drive - 分片上传** (大文件支持)
-4. **Calendar - Exchange 绑定**
-
----
-
-## 总结
-
-当前插件已覆盖飞书 SDK 的核心功能，整体覆盖率约 **75%**。
-
-- ✅ **完整覆盖**: 云文档、多维表格、电子表格、知识库、搜索、AI
-- ⚠️ **部分覆盖**: 消息、云空间
-- ✅ **核心完整**: 日历、任务
-
-对于大多数使用场景，当前功能已足够。如需特定功能，可按优先级补充。
+### v2.3.0
+- 完整电子表格支持
+- 知识库管理
