@@ -123,6 +123,14 @@ import {
   removeWikiMember,
 } from "./wiki.js";
 import { searchMessages, searchDocs, searchDriveFiles, universalSearch } from "./search.js";
+import {
+  recognizeImage,
+  speechToText,
+  translateText,
+  detectLanguage,
+  getSupportedLanguages,
+  type LanguageCode,
+} from "./ai.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
@@ -589,6 +597,16 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "search_docs", description: "搜索云文档", params: ["query", "docTypes?"] },
     { action: "search_files", description: "搜索云空间文件", params: ["query", "folderToken?"] },
     { action: "search_all", description: "综合搜索", params: ["query", "types?"] },
+    // AI 能力
+    { action: "ai_ocr", description: "图片文字识别", params: ["image"] },
+    { action: "ai_speech_to_text", description: "语音转文字", params: ["audio", "format?"] },
+    {
+      action: "ai_translate",
+      description: "翻译文本",
+      params: ["text", "targetLang", "sourceLang?"],
+    },
+    { action: "ai_detect_language", description: "检测文本语言", params: ["text"] },
+    { action: "ai_languages", description: "获取支持的语言列表", params: [] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -1123,6 +1141,29 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
           searchTypes: types as any,
         });
       }
+
+      // AI 能力
+      case "ai_ocr":
+        return recognizeImage(account, ctx.image);
+
+      case "ai_speech_to_text":
+        return speechToText(account, ctx.audio, {
+          format: ctx.format as any,
+        });
+
+      case "ai_translate":
+        return translateText(
+          account,
+          ctx.text,
+          ctx.targetLang as LanguageCode,
+          ctx.sourceLang as LanguageCode | undefined
+        );
+
+      case "ai_detect_language":
+        return detectLanguage(account, ctx.text);
+
+      case "ai_languages":
+        return { ok: true, data: { languages: getSupportedLanguages() } };
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };

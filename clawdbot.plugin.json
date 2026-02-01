@@ -1,8 +1,8 @@
 {
   "id": "feishu",
   "name": "Feishu",
-  "version": "2.2.0",
-  "description": "飞书通道插件 - 支持消息、云文档、知识库、搜索",
+  "version": "2.3.0",
+  "description": "飞书通道插件 - 支持消息、云文档、AI能力",
   "channels": ["feishu"],
   "configSchema": {
     "type": "object",

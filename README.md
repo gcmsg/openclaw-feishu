@@ -24,6 +24,7 @@ A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messa
 | **Tasks**     | Create/complete tasks, Task lists, Reminders                                        |
 | **Wiki**      | Spaces, Nodes (pages), Members management, Move/copy nodes                          |
 | **Search**    | Messages, Documents, Drive files, Universal search                                  |
+| **AI**        | OCR (image text recognition), Speech-to-Text, Translation, Language detection       |
 
 ### 📦 Quick Install
 
@@ -45,18 +46,19 @@ clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 
 #### Required Permissions
 
-| Feature   | Permissions                           |
-| --------- | ------------------------------------- |
-| Messaging | `im:message`, `im:chat`               |
-| Voice     | `im:message:speech_to_text`           |
-| Documents | `docx:document`                       |
-| Wiki      | `wiki:wiki`                           |
-| Search    | `search:message`, `suite:docs_search` |
-| Drive     | `drive:drive`                         |
-| Bitable   | `bitable:app`                         |
-| Sheets    | `sheets:spreadsheet`                  |
-| Calendar  | `calendar:calendar`                   |
-| Tasks     | `task:task`                           |
+| Feature   | Permissions                                                                   |
+| --------- | ----------------------------------------------------------------------------- |
+| Messaging | `im:message`, `im:chat`                                                       |
+| Voice     | `im:message:speech_to_text`                                                   |
+| Documents | `docx:document`                                                               |
+| Wiki      | `wiki:wiki`                                                                   |
+| Search    | `search:message`, `suite:docs_search`                                         |
+| AI        | `optical_char_recognition:image`, `speech_to_text:speech`, `translation:text` |
+| Drive     | `drive:drive`                                                                 |
+| Bitable   | `bitable:app`                                                                 |
+| Sheets    | `sheets:spreadsheet`                                                          |
+| Calendar  | `calendar:calendar`                                                           |
+| Tasks     | `task:task`                                                                   |
 
 ---
 
@@ -262,6 +264,20 @@ clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 
 **搜索类型 (types):** `message`, `doc`, `app`
 
+### AI 能力 / AI Capabilities
+
+| Action               | Params                              | Description    |
+| -------------------- | ----------------------------------- | -------------- |
+| `ai_ocr`             | `image`                             | 图片文字识别   |
+| `ai_speech_to_text`  | `audio`, `format?`                  | 语音转文字     |
+| `ai_translate`       | `text`, `targetLang`, `sourceLang?` | 翻译文本       |
+| `ai_detect_language` | `text`                              | 检测文本语言   |
+| `ai_languages`       | -                                   | 获取支持的语言 |
+
+**支持的语言:** `zh`, `zh-Hant`, `en`, `ja`, `ko`, `fr`, `de`, `es`, `it`, `pt`, `ru`, `ar`, `th`, `vi`, `id`
+
+**音频格式:** `pcm`, `wav`, `ogg`, `speex`, `mp3`, `silk`
+
 ---
 
 ## 🏗️ Project Structure / 项目结构
@@ -280,6 +296,7 @@ openclaw-feishu/
 │   ├── task.ts           # Task API / 任务 API
 │   ├── wiki.ts           # Wiki API / 知识库 API
 │   ├── search.ts         # Search API / 搜索 API
+│   ├── ai.ts             # AI API / AI 能力 API
 │   ├── space.ts          # Drive API / 云空间 API
 │   ├── gateway.ts        # WebSocket gateway / 长连接网关
 │   ├── markdown.ts       # Markdown converter / Markdown 转换
@@ -295,7 +312,8 @@ openclaw-feishu/
 │   ├── calendar.test.ts
 │   ├── task.test.ts
 │   ├── wiki.test.ts
-│   └── search.test.ts
+│   ├── search.test.ts
+│   └── ai.test.ts
 └── docs/
     └── SDK_CAPABILITIES.md  # SDK analysis / SDK 能力分析
 ```
