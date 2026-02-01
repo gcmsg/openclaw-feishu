@@ -269,6 +269,58 @@ export async function recallMessage(
   }
 }
 
+/**
+ * 获取单条消息内容
+ */
+export async function getMessage(
+  account: ResolvedFeishuAccount,
+  messageId: string
+): Promise<ApiResult<{ messageType: string; content: string; text?: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.get({
+      path: { message_id: messageId },
+    });
+
+    if (result.code === 0 && result.data?.items?.[0]) {
+      const msg = result.data.items[0];
+      const messageType = msg.msg_type || "";
+      const content = msg.body?.content || "";
+
+      // 尝试提取文本内容
+      let text: string | undefined;
+      try {
+        const parsed = JSON.parse(content);
+        if (messageType === "text") {
+          text = parsed.text;
+        } else if (messageType === "post") {
+          // 富文本消息，提取纯文本
+          const extractText = (node: any): string => {
+            if (typeof node === "string") return node;
+            if (node.text) return node.text;
+            if (Array.isArray(node)) return node.map(extractText).join("");
+            if (node.content) return extractText(node.content);
+            if (node.zh_cn?.content) return extractText(node.zh_cn.content);
+            return "";
+          };
+          text = extractText(parsed);
+        }
+      } catch {
+        // ignore
+      }
+
+      return {
+        ok: true,
+        data: { messageType, content, text },
+      };
+    }
+    return { ok: false, error: result.msg || "Message not found" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
 // ==================== 下载 API ====================
 
 /**

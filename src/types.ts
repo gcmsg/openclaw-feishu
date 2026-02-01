@@ -54,6 +54,10 @@ export interface FeishuMessage {
   audioDuration?: number;
   mentions?: FeishuMention[];
   createTime?: number;
+  /** 被引用消息的 ID */
+  parentId?: string;
+  /** 被引用消息的文本内容 */
+  quotedText?: string;
 }
 
 /**

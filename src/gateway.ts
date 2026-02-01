@@ -4,6 +4,7 @@
 
 import * as lark from "@larksuiteoapi/node-sdk";
 import type { ResolvedFeishuAccount, FeishuMessage, FeishuMention } from "./types.js";
+import { getMessage } from "./client.js";
 
 // WebSocket 客户端缓存
 const wsClientCache = new Map<string, lark.WSClient>();
@@ -108,6 +109,9 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           }));
         }
 
+        // 提取引用消息 ID
+        const parentId = message.parent_id || message.root_id || undefined;
+
         const feishuMessage: FeishuMessage = {
           messageId,
           chatId: message.chat_id || "",
@@ -117,6 +121,7 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           content: message.content || "",
           mentions,
           createTime: createTime ? parseInt(createTime, 10) : undefined,
+          parentId,
         };
 
         // 解析消息内容
@@ -152,6 +157,19 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           }
         } catch {
           // ignore parse errors
+        }
+
+        // 获取引用消息内容
+        if (parentId) {
+          try {
+            const quotedResult = await getMessage(account, parentId);
+            if (quotedResult.ok && quotedResult.data) {
+              feishuMessage.quotedText = quotedResult.data.text || "[无法解析引用内容]";
+              logger?.info(`引用消息内容: ${feishuMessage.quotedText.slice(0, 50)}...`);
+            }
+          } catch (err) {
+            logger?.error(`获取引用消息失败: ${err}`);
+          }
         }
 
         // 异步处理

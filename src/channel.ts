@@ -488,6 +488,12 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             return;
           }
 
+          // 如果有引用消息，把引用内容加到正文前面
+          if (message.quotedText) {
+            bodyText = `[引用: ${message.quotedText}]\n\n${bodyText}`;
+            logger.info(`包含引用消息: ${message.quotedText.slice(0, 50)}...`);
+          }
+
           const msgCtx: MsgContext = {
             From: message.senderId,
             Body: bodyText,
@@ -498,6 +504,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             To: message.chatId,
             ChatType: message.chatType === "p2p" ? "direct" : "group",
             MessageId: message.messageId,
+            ReplyToId: message.parentId,
             Mentions: message.mentions?.map((m) => m.name),
             MediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
           };
