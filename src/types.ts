@@ -42,6 +42,12 @@ export interface FeishuMessage {
   messageType: string;
   content: string;
   text?: string;
+  /** 图片消息的 image_key */
+  imageKey?: string;
+  /** 文件消息的 file_key */
+  fileKey?: string;
+  /** 文件名（文件消息） */
+  fileName?: string;
   mentions?: FeishuMention[];
   createTime?: number;
 }

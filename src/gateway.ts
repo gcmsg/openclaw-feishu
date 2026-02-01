@@ -115,14 +115,34 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
           createTime: createTime ? parseInt(createTime, 10) : undefined,
         };
 
-        // 解析文本内容
-        if (feishuMessage.messageType === "text") {
-          try {
-            const parsed = JSON.parse(feishuMessage.content);
+        // 解析消息内容
+        try {
+          const parsed = JSON.parse(feishuMessage.content);
+
+          if (feishuMessage.messageType === "text") {
+            // 文本消息
             feishuMessage.text = parsed.text;
-          } catch {
-            // ignore
+          } else if (feishuMessage.messageType === "image") {
+            // 图片消息
+            feishuMessage.imageKey = parsed.image_key;
+          } else if (feishuMessage.messageType === "file") {
+            // 文件消息
+            feishuMessage.fileKey = parsed.file_key;
+            feishuMessage.fileName = parsed.file_name;
+          } else if (feishuMessage.messageType === "audio") {
+            // 语音消息
+            feishuMessage.fileKey = parsed.file_key;
+          } else if (feishuMessage.messageType === "media") {
+            // 视频消息
+            feishuMessage.imageKey = parsed.image_key; // 封面
+            feishuMessage.fileKey = parsed.file_key;   // 视频
+            feishuMessage.fileName = parsed.file_name;
+          } else if (feishuMessage.messageType === "sticker") {
+            // 表情包
+            feishuMessage.fileKey = parsed.file_key;
           }
+        } catch {
+          // ignore parse errors
         }
 
         // 异步处理

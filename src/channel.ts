@@ -9,13 +9,38 @@ import type {
   ChannelMessageActionAdapter,
 } from "./compat.js";
 import type { ResolvedFeishuAccount, FeishuChannelConfig, MsgContext } from "./types.js";
-import { sendTextMessage, sendImageMessage, sendFileMessage, sendCardMessage } from "./client.js";
+import {
+  sendTextMessage,
+  sendImageMessage,
+  sendFileMessage,
+  sendCardMessage,
+  downloadImageByKey,
+  downloadMessageFile,
+} from "./client.js";
 import { createDocument, getDocument, getDocumentContent, appendText, appendMarkdown } from "./document.js";
 import { createFolder, listFiles, uploadFile, downloadFile, searchFiles } from "./space.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
+import * as fs from "fs";
+import * as path from "path";
+import * as os from "os";
 
 const DEFAULT_ACCOUNT_ID = "default";
+
+/**
+ * 保存媒体到临时文件
+ */
+async function saveMediaToTemp(
+  buffer: Buffer,
+  ext: string,
+  prefix: string = "feishu"
+): Promise<string> {
+  const tempDir = os.tmpdir();
+  const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+  const filePath = path.join(tempDir, fileName);
+  await fs.promises.writeFile(filePath, buffer);
+  return filePath;
+}
 const CHANNEL_ID = "feishu" as const;
 
 function getFeishuConfig(cfg: ClawdbotConfig): FeishuChannelConfig | undefined {
@@ -306,15 +331,121 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
         account,
         abortSignal: ctx.abortSignal,
         onMessage: async (message) => {
-          if (message.messageType !== "text" || !message.text) {
+          const logger = {
+            info: (msg: string) => console.log(`[feishu-plus:${account.accountId}] ${msg}`),
+            error: (msg: string) => console.error(`[feishu-plus:${account.accountId}] ${msg}`),
+          };
+
+          let bodyText = "";
+          const mediaUrls: string[] = [];
+
+          // 处理不同类型的消息
+          switch (message.messageType) {
+            case "text":
+              bodyText = message.text || "";
+              logger.info(`收到文本消息: ${bodyText}`);
+              break;
+
+            case "image":
+              if (message.imageKey) {
+                logger.info(`收到图片消息: ${message.imageKey}`);
+                try {
+                  const imgResult = await downloadImageByKey(account, message.imageKey);
+                  if (imgResult.ok && imgResult.data) {
+                    const filePath = await saveMediaToTemp(imgResult.data.buffer, "png", "feishu_img");
+                    mediaUrls.push(filePath);
+                    bodyText = "[图片]";
+                    logger.info(`图片已下载: ${filePath}`);
+                  } else {
+                    logger.error(`下载图片失败: ${imgResult.error}`);
+                    bodyText = "[图片下载失败]";
+                  }
+                } catch (err) {
+                  logger.error(`下载图片异常: ${err}`);
+                  bodyText = "[图片]";
+                }
+              }
+              break;
+
+            case "file":
+              if (message.fileKey) {
+                const fileName = message.fileName || "file";
+                logger.info(`收到文件消息: ${fileName}`);
+                try {
+                  const fileResult = await downloadMessageFile(account, message.messageId, message.fileKey);
+                  if (fileResult.ok && fileResult.data) {
+                    const ext = path.extname(fileName) || ".bin";
+                    const filePath = await saveMediaToTemp(fileResult.data.buffer, ext.slice(1), "feishu_file");
+                    mediaUrls.push(filePath);
+                    bodyText = `[文件: ${fileName}]`;
+                    logger.info(`文件已下载: ${filePath}`);
+                  } else {
+                    logger.error(`下载文件失败: ${fileResult.error}`);
+                    bodyText = `[文件: ${fileName}]`;
+                  }
+                } catch (err) {
+                  logger.error(`下载文件异常: ${err}`);
+                  bodyText = `[文件: ${fileName}]`;
+                }
+              }
+              break;
+
+            case "audio":
+              bodyText = "[语音消息 - 暂不支持]";
+              logger.info("收到语音消息（暂不支持）");
+              break;
+
+            case "media":
+              bodyText = "[视频消息 - 暂不支持]";
+              logger.info("收到视频消息（暂不支持）");
+              break;
+
+            case "sticker":
+              bodyText = "[表情包]";
+              logger.info("收到表情包消息");
+              break;
+
+            case "post":
+              // 富文本消息，尝试提取纯文本
+              try {
+                const postContent = JSON.parse(message.content);
+                const extractText = (node: any): string => {
+                  if (typeof node === "string") return node;
+                  if (node.text) return node.text;
+                  if (Array.isArray(node)) return node.map(extractText).join("");
+                  if (node.content) return extractText(node.content);
+                  return "";
+                };
+                bodyText = extractText(postContent);
+                logger.info(`收到富文本消息: ${bodyText.slice(0, 100)}...`);
+              } catch {
+                bodyText = "[富文本消息]";
+              }
+              break;
+
+            case "share_card":
+              bodyText = "[分享卡片]";
+              logger.info("收到分享卡片消息");
+              break;
+
+            case "share_user":
+              bodyText = "[用户名片]";
+              logger.info("收到用户名片消息");
+              break;
+
+            default:
+              bodyText = `[未知消息类型: ${message.messageType}]`;
+              logger.info(`收到未知类型消息: ${message.messageType}`);
+          }
+
+          // 如果没有任何内容，跳过
+          if (!bodyText && mediaUrls.length === 0) {
             return;
           }
 
-          console.log(`[feishu:${account.accountId}] 收到消息: ${message.text}`);
-
           const msgCtx: MsgContext = {
             From: message.senderId,
-            Body: message.text,
+            Body: bodyText,
             AccountId: account.accountId,
             Provider: "feishu",
             Surface: "feishu",
@@ -323,6 +454,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             ChatType: message.chatType === "p2p" ? "direct" : "group",
             MessageId: message.messageId,
             Mentions: message.mentions?.map((m) => m.name),
+            MediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
           };
 
           await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({

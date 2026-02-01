@@ -268,3 +268,111 @@ export async function recallMessage(
     return { ok: false, error: String(error) };
   }
 }
+
+// ==================== 下载 API ====================
+
+/**
+ * 将飞书 SDK 返回的响应转换为 Buffer
+ */
+async function responseToBuffer(response: any): Promise<Buffer | null> {
+  // 如果已经是 Buffer
+  if (Buffer.isBuffer(response)) {
+    return response;
+  }
+
+  // 如果是 ArrayBuffer
+  if (response instanceof ArrayBuffer) {
+    return Buffer.from(response);
+  }
+
+  // 飞书 SDK 返回的对象带有 getReadableStream 方法
+  if (response && typeof response.getReadableStream === "function") {
+    const stream = response.getReadableStream();
+    const chunks: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      stream.on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
+      stream.on("end", () => resolve());
+      stream.on("error", reject);
+    });
+    return Buffer.concat(chunks);
+  }
+
+  // 如果是 Node.js Stream
+  if (response && typeof response.pipe === "function") {
+    const chunks: Buffer[] = [];
+    await new Promise<void>((resolve, reject) => {
+      response.on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)));
+      response.on("end", () => resolve());
+      response.on("error", reject);
+    });
+    return Buffer.concat(chunks);
+  }
+
+  return null;
+}
+
+/**
+ * 通过 image_key 下载图片
+ */
+export async function downloadImageByKey(
+  account: ResolvedFeishuAccount,
+  imageKey: string
+): Promise<ApiResult<{ buffer: Buffer; mimeType: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.image.get({
+      path: { image_key: imageKey },
+    });
+
+    const buffer = await responseToBuffer(result);
+    if (buffer) {
+      return {
+        ok: true,
+        data: {
+          buffer,
+          mimeType: "image/png",
+        },
+      };
+    }
+
+    return { ok: false, error: "Unexpected response format" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 下载文件（通过消息 ID 和 file_key）
+ */
+export async function downloadMessageFile(
+  account: ResolvedFeishuAccount,
+  messageId: string,
+  fileKey: string
+): Promise<ApiResult<{ buffer: Buffer; fileName?: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.messageResource.get({
+      path: {
+        message_id: messageId,
+        file_key: fileKey,
+      },
+      params: {
+        type: "file",
+      },
+    });
+
+    const buffer = await responseToBuffer(result);
+    if (buffer) {
+      return {
+        ok: true,
+        data: { buffer },
+      };
+    }
+
+    return { ok: false, error: "Unexpected response format" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
