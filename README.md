@@ -29,6 +29,7 @@ A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messa
 | **Mail**      | Send/read emails, Folders, Mail groups, Public mailboxes, Members management        |
 | **Contact**   | Users, Departments, User groups, Members, Batch operations, Search                  |
 | **Approval**  | Create/query approvals, Approve/reject/transfer tasks, Comments, CC, Add sign       |
+| **Lingo**     | Entity CRUD, Search, Match, Highlight, Classifications, Repos, Drafts               |
 
 ### 📦 Quick Install
 

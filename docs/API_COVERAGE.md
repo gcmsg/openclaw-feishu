@@ -1,6 +1,6 @@
 # Feishu API Coverage
 
-> 当前版本: 2.8.0 | 总计 Actions: 160+
+> 当前版本: 2.9.0 | 总计 Actions: 175+
 
 ## 模块概览
 
@@ -19,7 +19,8 @@
 | AI       | 5       | ✅      |
 | 邮件     | 26      | ✅      |
 | 通讯录   | 23      | ✅      |
-| 审批     | 18      | ✅ 新增 |
+| 审批     | 18      | ✅      |
+| 词典     | 12      | ✅ 新增 |
 
 ## 详细 Actions 列表
 
@@ -355,7 +356,35 @@
 - `approval_comments` - 获取审批评论列表
 - `approval_comment_delete` - 删除审批评论
 
+### 词典 (12 个) ⭐ 新增
+
+词条:
+
+- `lingo_entity_create` - 创建词条
+- `lingo_entity_get` - 获取词条详情
+- `lingo_entity_update` - 更新词条
+- `lingo_entity_delete` - 删除词条
+- `lingo_entity_list` - 获取词条列表
+- `lingo_entity_search` - 搜索词条
+- `lingo_entity_match` - 精准匹配词条
+- `lingo_entity_highlight` - 高亮标记词条
+
+分类/词库:
+
+- `lingo_classifications` - 获取分类列表
+- `lingo_repos` - 获取词库列表
+
+草稿:
+
+- `lingo_draft_create` - 创建词条草稿
+- `lingo_draft_update` - 更新词条草稿
+
 ## 更新日志
+
+### v2.9.0
+
+- 新增词典模块 (lingo.ts): 词条 CRUD、搜索、匹配、高亮、分类、词库、草稿
+- 新增 12 个 Actions
 
 ### v2.8.0
 

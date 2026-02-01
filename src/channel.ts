@@ -113,6 +113,20 @@ import {
   deleteApprovalComment,
 } from "./approval.js";
 import {
+  createEntity,
+  getEntity,
+  updateEntity,
+  deleteEntity,
+  listEntities,
+  searchEntities,
+  matchEntity,
+  highlightEntities,
+  listClassifications,
+  listRepos,
+  createDraft,
+  updateDraft,
+} from "./lingo.js";
+import {
   createDocument,
   getDocument,
   getDocumentContent,
@@ -1145,6 +1159,37 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       action: "approval_comment_delete",
       description: "删除审批评论",
       params: ["instanceCode", "commentId", "userId"],
+    },
+    // 词典 - 词条
+    {
+      action: "lingo_entity_create",
+      description: "创建词条",
+      params: ["mainKey", "description", "aliases?", "richText?", "repoId?"],
+    },
+    { action: "lingo_entity_get", description: "获取词条详情", params: ["entityId", "repoId?"] },
+    {
+      action: "lingo_entity_update",
+      description: "更新词条",
+      params: ["entityId", "mainKey?", "description?", "aliases?", "repoId?"],
+    },
+    { action: "lingo_entity_delete", description: "删除词条", params: ["entityId", "repoId?"] },
+    { action: "lingo_entity_list", description: "获取词条列表", params: ["repoId?"] },
+    { action: "lingo_entity_search", description: "搜索词条", params: ["query", "repoId?"] },
+    { action: "lingo_entity_match", description: "精准匹配词条", params: ["word", "repoId?"] },
+    { action: "lingo_entity_highlight", description: "高亮标记词条", params: ["text", "repoId?"] },
+    // 词典 - 分类/词库
+    { action: "lingo_classifications", description: "获取分类列表", params: ["repoId?"] },
+    { action: "lingo_repos", description: "获取词库列表", params: [] },
+    // 词典 - 草稿
+    {
+      action: "lingo_draft_create",
+      description: "创建词条草稿",
+      params: ["mainKey", "description", "entityId?", "repoId?"],
+    },
+    {
+      action: "lingo_draft_update",
+      description: "更新词条草稿",
+      params: ["draftId", "mainKey?", "description?", "repoId?"],
     },
   ],
 
@@ -2287,6 +2332,72 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
       case "approval_comment_delete":
         return deleteApprovalComment(account, ctx.instanceCode, ctx.commentId, ctx.userId);
+
+      // 词典 - 词条
+      case "lingo_entity_create": {
+        const aliases = ctx.aliases
+          ? Array.isArray(ctx.aliases)
+            ? ctx.aliases
+            : ctx.aliases.split(",").map((a: string) => a.trim())
+          : undefined;
+        return createEntity(account, ctx.mainKey, ctx.description, {
+          aliases,
+          richText: ctx.richText,
+          repoId: ctx.repoId,
+        });
+      }
+
+      case "lingo_entity_get":
+        return getEntity(account, ctx.entityId, { repoId: ctx.repoId });
+
+      case "lingo_entity_update": {
+        const aliases = ctx.aliases
+          ? Array.isArray(ctx.aliases)
+            ? ctx.aliases
+            : ctx.aliases.split(",").map((a: string) => a.trim())
+          : undefined;
+        return updateEntity(account, ctx.entityId, {
+          mainKey: ctx.mainKey,
+          description: ctx.description,
+          aliases,
+          repoId: ctx.repoId,
+        });
+      }
+
+      case "lingo_entity_delete":
+        return deleteEntity(account, ctx.entityId, { repoId: ctx.repoId });
+
+      case "lingo_entity_list":
+        return listEntities(account, { repoId: ctx.repoId });
+
+      case "lingo_entity_search":
+        return searchEntities(account, ctx.query, { repoId: ctx.repoId });
+
+      case "lingo_entity_match":
+        return matchEntity(account, ctx.word, { repoId: ctx.repoId });
+
+      case "lingo_entity_highlight":
+        return highlightEntities(account, ctx.text, { repoId: ctx.repoId });
+
+      // 词典 - 分类/词库
+      case "lingo_classifications":
+        return listClassifications(account, { repoId: ctx.repoId });
+
+      case "lingo_repos":
+        return listRepos(account);
+
+      // 词典 - 草稿
+      case "lingo_draft_create":
+        return createDraft(account, ctx.entityId || null, ctx.mainKey, ctx.description, {
+          repoId: ctx.repoId,
+        });
+
+      case "lingo_draft_update":
+        return updateDraft(account, ctx.draftId, {
+          mainKey: ctx.mainKey,
+          description: ctx.description,
+          repoId: ctx.repoId,
+        });
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
