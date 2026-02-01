@@ -62,6 +62,10 @@ cd ~/.openclaw/extensions/feishu && npm install
 - `im:message.group_at_msg` - Receive @bot messages
 - `im:chat` - Get chat info
 
+**Voice (Optional):**
+
+- `im:message:speech_to_text` - Voice message transcription (语音转文字)
+
 **Documents:**
 
 - `docx:document` - Read/write documents
