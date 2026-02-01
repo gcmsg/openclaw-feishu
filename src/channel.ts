@@ -16,6 +16,7 @@ import {
   sendCardMessage,
   downloadImageByKey,
   downloadMessageFile,
+  sendSmartMessage,
 } from "./client.js";
 import {
   createDocument,
@@ -508,7 +509,8 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               deliver: async (payload) => {
                 const text = payload.text ?? "";
                 if (text) {
-                  await sendTextMessage(account, message.chatId, text);
+                  // 自动检测 Markdown，转换为飞书富文本
+                  await sendSmartMessage(account, message.chatId, text);
                 }
               },
             },

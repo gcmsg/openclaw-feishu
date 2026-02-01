@@ -376,3 +376,58 @@ export async function downloadMessageFile(
     return { ok: false, error: String(error) };
   }
 }
+
+// ==================== 智能发送 ====================
+
+import { markdownToPost, hasMarkdown, type PostContent } from "./markdown.js";
+
+/**
+ * 发送 Post 格式消息（直接传 PostContent）
+ */
+export async function sendPost(
+  account: ResolvedFeishuAccount,
+  chatId: string,
+  postContent: PostContent
+): Promise<ApiResult<{ messageId: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.message.create({
+      params: { receive_id_type: "chat_id" },
+      data: {
+        receive_id: chatId,
+        msg_type: "post",
+        content: JSON.stringify(postContent),
+      },
+    });
+
+    if (result.code === 0) {
+      return { ok: true, data: { messageId: result.data?.message_id || "" } };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 智能发送消息
+ * - 检测 Markdown 格式，自动转换为 Post 富文本
+ * - 普通文本直接发送
+ */
+export async function sendSmartMessage(
+  account: ResolvedFeishuAccount,
+  chatId: string,
+  text: string,
+  options?: { forceRichText?: boolean }
+): Promise<ApiResult<{ messageId: string }>> {
+  // 检测是否需要富文本
+  const useRichText = options?.forceRichText || hasMarkdown(text);
+
+  if (useRichText) {
+    const postContent = markdownToPost(text);
+    return sendPost(account, chatId, postContent);
+  }
+
+  return sendTextMessage(account, chatId, text);
+}
