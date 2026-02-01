@@ -401,12 +401,13 @@ export async function getChatMembers(
 }
 
 /**
- * 判断用户是否在群中
+ * 判断当前用户是否在群中
+ * 注意: 飞书 API 只能检查当前 Bot/用户是否在群中
  */
 export async function isUserInChat(
   account: ResolvedFeishuAccount,
   chatId: string,
-  userId: string
+  _userId?: string // 保留参数用于接口兼容，实际检查的是当前用户
 ): Promise<ApiResult<boolean>> {
   const client = getFeishuClient(account);
 
