@@ -567,6 +567,909 @@ async function getAccessToken(account: ResolvedFeishuAccount): Promise<string> {
   throw new Error(data.msg || "Failed to get access token");
 }
 
+// ==================== 高级操作 ====================
+
+/** 单元格样式 */
+export interface CellStyle {
+  /** 字体加粗 */
+  bold?: boolean;
+  /** 字体斜体 */
+  italic?: boolean;
+  /** 字体大小 */
+  fontSize?: number;
+  /** 字体颜色 (hex, 如 "#FF0000") */
+  textColor?: string;
+  /** 背景颜色 (hex) */
+  backgroundColor?: string;
+  /** 水平对齐: left, center, right */
+  hAlign?: "left" | "center" | "right";
+  /** 垂直对齐: top, middle, bottom */
+  vAlign?: "top" | "middle" | "bottom";
+  /** 文本换行 */
+  wrapText?: boolean;
+}
+
+/**
+ * 设置单元格样式
+ */
+export async function setCellStyle(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  range: string,
+  style: CellStyle
+): Promise<ApiResult> {
+  try {
+    const styleObj: any = {};
+
+    if (style.bold !== undefined) {
+      styleObj.bold = style.bold;
+    }
+    if (style.italic !== undefined) {
+      styleObj.italic = style.italic;
+    }
+    if (style.fontSize !== undefined) {
+      styleObj.fontSize = `${style.fontSize}pt`;
+    }
+    if (style.textColor) {
+      styleObj.foreColor = style.textColor;
+    }
+    if (style.backgroundColor) {
+      styleObj.backColor = style.backgroundColor;
+    }
+    if (style.hAlign) {
+      const hAlignMap = { left: 0, center: 1, right: 2 };
+      styleObj.hAlign = hAlignMap[style.hAlign];
+    }
+    if (style.vAlign) {
+      const vAlignMap = { top: 0, middle: 1, bottom: 2 };
+      styleObj.vAlign = vAlignMap[style.vAlign];
+    }
+    if (style.wrapText !== undefined) {
+      styleObj.textOverflow = style.wrapText ? 1 : 0;
+    }
+
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/style`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          appendStyle: {
+            range,
+            style: styleObj,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 批量设置单元格样式
+ */
+export async function batchSetCellStyle(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  styles: Array<{ range: string; style: CellStyle }>
+): Promise<ApiResult> {
+  try {
+    const data = styles.map(({ range, style }) => {
+      const styleObj: any = {};
+      if (style.bold !== undefined) styleObj.bold = style.bold;
+      if (style.italic !== undefined) styleObj.italic = style.italic;
+      if (style.fontSize !== undefined) styleObj.fontSize = `${style.fontSize}pt`;
+      if (style.textColor) styleObj.foreColor = style.textColor;
+      if (style.backgroundColor) styleObj.backColor = style.backgroundColor;
+      if (style.hAlign) {
+        const hAlignMap = { left: 0, center: 1, right: 2 };
+        styleObj.hAlign = hAlignMap[style.hAlign];
+      }
+      if (style.vAlign) {
+        const vAlignMap = { top: 0, middle: 1, bottom: 2 };
+        styleObj.vAlign = vAlignMap[style.vAlign];
+      }
+      if (style.wrapText !== undefined) styleObj.textOverflow = style.wrapText ? 1 : 0;
+      return { range, style: styleObj };
+    });
+
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/styles_batch_update`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ data }),
+      }
+    );
+
+    const result = await response.json();
+    if (result.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: result.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 合并单元格
+ */
+export async function mergeCells(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  range: string,
+  mergeType: "MERGE_ALL" | "MERGE_ROWS" | "MERGE_COLUMNS" = "MERGE_ALL"
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/merge_cells`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          range,
+          mergeType,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 拆分单元格
+ */
+export async function unmergeCells(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  range: string
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/unmerge_cells`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ range }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 设置数据验证
+ */
+export async function setDataValidation(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  range: string,
+  options: {
+    /** 验证类型 */
+    type: "list" | "number" | "text" | "date" | "checkbox";
+    /** 下拉选项（type=list 时使用） */
+    values?: string[];
+    /** 数值范围（type=number 时使用） */
+    min?: number;
+    max?: number;
+    /** 是否严格验证 */
+    strict?: boolean;
+    /** 提示信息 */
+    inputMessage?: string;
+  }
+): Promise<ApiResult> {
+  try {
+    const conditionType = {
+      list: "list",
+      number: "number",
+      text: "textLength",
+      date: "date",
+      checkbox: "checkbox",
+    }[options.type];
+
+    const rule: any = {
+      conditionType,
+      strict: options.strict ?? true,
+    };
+
+    if (options.type === "list" && options.values) {
+      rule.conditionValues = options.values;
+      rule.options = { multipleValues: false, highlightValidData: false };
+    }
+    if (options.type === "number") {
+      if (options.min !== undefined) rule.conditionValues = [String(options.min)];
+      if (options.max !== undefined) {
+        rule.conditionValues = rule.conditionValues || [];
+        rule.conditionValues.push(String(options.max));
+      }
+    }
+    if (options.inputMessage) {
+      rule.inputMessage = options.inputMessage;
+    }
+
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/dataValidation`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetId,
+          range,
+          dataValidationType: conditionType,
+          dataValidation: rule,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 设置条件格式
+ */
+export async function setConditionalFormat(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  ranges: string[],
+  options: {
+    /** 规则类型 */
+    ruleType: "containsText" | "cellIs" | "colorScale" | "dataBar";
+    /** 条件（cellIs 类型） */
+    operator?: "greaterThan" | "lessThan" | "equal" | "between";
+    /** 条件值 */
+    values?: (string | number)[];
+    /** 包含的文本（containsText 类型） */
+    text?: string;
+    /** 满足条件时的样式 */
+    style?: CellStyle;
+  }
+): Promise<ApiResult> {
+  try {
+    const rule: any = {
+      ranges,
+      ruleType: options.ruleType,
+    };
+
+    if (options.ruleType === "containsText" && options.text) {
+      rule.condition = { type: "containsText", values: [options.text] };
+    } else if (options.ruleType === "cellIs" && options.operator) {
+      const operatorMap = {
+        greaterThan: "greaterThan",
+        lessThan: "lessThan",
+        equal: "equal",
+        between: "between",
+      };
+      rule.condition = {
+        type: operatorMap[options.operator],
+        values: options.values?.map(String) || [],
+      };
+    }
+
+    if (options.style) {
+      rule.style = {};
+      if (options.style.textColor) rule.style.font = { color: options.style.textColor };
+      if (options.style.backgroundColor) rule.style.background = options.style.backgroundColor;
+      if (options.style.bold) rule.style.font = { ...rule.style.font, bold: true };
+    }
+
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/condition_formats`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetId,
+          conditionFormat: rule,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 创建筛选视图
+ */
+export async function createFilter(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  range: string
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/filters`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetId,
+          range,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除筛选视图
+ */
+export async function deleteFilter(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/filters?sheetId=${sheetId}`,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+        },
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 设置筛选条件
+ */
+export async function setFilterCondition(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  column: string,
+  condition: {
+    /** 筛选类型 */
+    filterType: "multiValue" | "number" | "text" | "color";
+    /** 筛选值（multiValue 类型） */
+    values?: string[];
+    /** 比较运算符 */
+    operator?: "equal" | "notEqual" | "greaterThan" | "lessThan" | "contains" | "notContains";
+    /** 比较值 */
+    value?: string | number;
+  }
+): Promise<ApiResult> {
+  try {
+    const filterCondition: any = {
+      filterType: condition.filterType,
+    };
+
+    if (condition.filterType === "multiValue" && condition.values) {
+      filterCondition.filterValue = condition.values;
+    } else if (condition.operator && condition.value !== undefined) {
+      filterCondition.compareType = condition.operator;
+      filterCondition.expected = [String(condition.value)];
+    }
+
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/filters/${sheetId}/condition`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          col: column,
+          condition: filterCondition,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 排序
+ */
+export async function sortRange(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  range: string,
+  sortSpecs: Array<{
+    /** 排序列 (A, B, C...) */
+    column: string;
+    /** 排序顺序 */
+    order: "asc" | "desc";
+  }>
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/sort`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetId,
+          range,
+          sortSpecs: sortSpecs.map((s) => ({
+            sortCol: s.column,
+            order: s.order === "asc" ? "ASCENDING" : "DESCENDING",
+          })),
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 冻结行列
+ */
+export async function freezeRowsAndColumns(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  frozenRows: number,
+  frozenColumns: number
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/sheets/${sheetId}/frozen`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          frozenRowCount: frozenRows,
+          frozenColCount: frozenColumns,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 查找替换
+ */
+export async function findReplace(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  find: string,
+  replace: string,
+  options?: {
+    /** 区分大小写 */
+    matchCase?: boolean;
+    /** 完全匹配 */
+    matchEntireCell?: boolean;
+    /** 搜索范围 */
+    range?: string;
+  }
+): Promise<ApiResult<{ replacedCount: number }>> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/find_replace`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          sheetId,
+          find,
+          replacement: replace,
+          matchCase: options?.matchCase ?? false,
+          matchEntireCell: options?.matchEntireCell ?? false,
+          range: options?.range,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return {
+        ok: true,
+        data: { replacedCount: data.data?.replace_count || 0 },
+      };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 设置列宽
+ */
+export async function setColumnWidth(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  startColumn: number,
+  endColumn: number,
+  width: number
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/dimension_range`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dimension: {
+            sheetId,
+            majorDimension: "COLUMNS",
+            startIndex: startColumn,
+            endIndex: endColumn,
+          },
+          dimensionProperties: {
+            pixelSize: width,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 设置行高
+ */
+export async function setRowHeight(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  startRow: number,
+  endRow: number,
+  height: number
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/dimension_range`,
+      {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          dimension: {
+            sheetId,
+            majorDimension: "ROWS",
+            startIndex: startRow,
+            endIndex: endRow,
+          },
+          dimensionProperties: {
+            pixelSize: height,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 复制工作表
+ */
+export async function copySheet(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sourceSheetId: string,
+  targetTitle?: string
+): Promise<ApiResult<{ sheetId: string }>> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/sheets/${sourceSheetId}/copy`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: targetTitle,
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return {
+        ok: true,
+        data: { sheetId: data.data?.sheetId || "" },
+      };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 添加工作表
+ */
+export async function addSheet(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  title: string,
+  index?: number
+): Promise<ApiResult<Sheet>> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/sheets_batch_update`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requests: [
+            {
+              addSheet: {
+                properties: {
+                  title,
+                  index,
+                },
+              },
+            },
+          ],
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      const reply = data.data?.replies?.[0]?.addSheet?.properties;
+      return {
+        ok: true,
+        data: {
+          sheetId: reply?.sheetId || "",
+          title: reply?.title || title,
+          index: reply?.index || 0,
+          rowCount: 0,
+          columnCount: 0,
+        },
+      };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 删除工作表
+ */
+export async function deleteSheet(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/sheets_batch_update`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requests: [
+            {
+              deleteSheet: {
+                sheetId,
+              },
+            },
+          ],
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
+ * 保护工作表
+ */
+export async function protectSheet(
+  account: ResolvedFeishuAccount,
+  spreadsheetToken: string,
+  sheetId: string,
+  options?: {
+    /** 允许编辑的用户 ID 列表 */
+    allowedUsers?: string[];
+    /** 锁定信息 */
+    lockInfo?: string;
+  }
+): Promise<ApiResult> {
+  try {
+    const response = await fetch(
+      `https://open.feishu.cn/open-apis/sheets/v2/spreadsheets/${spreadsheetToken}/protected_dimension`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${await getAccessToken(account)}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          addProtectedDimension: {
+            dimension: {
+              sheetId,
+              majorDimension: "ROWS",
+              startIndex: 0,
+              endIndex: 999999,
+            },
+            protectedRange: {
+              sheetId,
+            },
+            lockInfo: options?.lockInfo || "Protected",
+            editors: options?.allowedUsers
+              ? { users: options.allowedUsers }
+              : undefined,
+          },
+        }),
+      }
+    );
+
+    const data = await response.json();
+    if (data.code === 0) {
+      return { ok: true };
+    }
+    return { ok: false, error: data.msg };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+// ==================== 辅助函数 ====================
+
+/**
+ * 获取访问令牌
+ */
+async function getAccessToken(account: ResolvedFeishuAccount): Promise<string> {
+  const response = await fetch(
+    "https://open.feishu.cn/open-apis/auth/v3/tenant_access_token/internal",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        app_id: account.appId,
+        app_secret: account.appSecret,
+      }),
+    }
+  );
+
+  const data = await response.json();
+  if (data.code === 0) {
+    return data.tenant_access_token;
+  }
+  throw new Error(data.msg || "Failed to get access token");
+}
+
 /**
  * 将列号转换为字母（1 -> A, 26 -> Z, 27 -> AA）
  */

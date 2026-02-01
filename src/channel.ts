@@ -64,6 +64,21 @@ import {
   deleteRows,
   insertColumns,
   deleteColumns,
+  setCellStyle,
+  mergeCells,
+  unmergeCells,
+  setDataValidation,
+  setConditionalFormat,
+  createFilter,
+  deleteFilter,
+  sortRange,
+  freezeRowsAndColumns,
+  findReplace,
+  setColumnWidth,
+  setRowHeight,
+  addSheet,
+  deleteSheet,
+  copySheet,
 } from "./sheets.js";
 import { startGateway } from "./gateway.js";
 import { getFeishuRuntime } from "./runtime.js";
@@ -286,6 +301,22 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
     { action: "sheet_delete_rows", description: "删除行", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
     { action: "sheet_insert_cols", description: "插入列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
     { action: "sheet_delete_cols", description: "删除列", params: ["spreadsheetToken", "sheetId", "startIndex", "count"] },
+    // 电子表格 - 样式
+    { action: "sheet_style", description: "设置单元格样式", params: ["spreadsheetToken", "range", "style"] },
+    { action: "sheet_merge", description: "合并单元格", params: ["spreadsheetToken", "range", "mergeType?"] },
+    { action: "sheet_unmerge", description: "拆分单元格", params: ["spreadsheetToken", "range"] },
+    // 电子表格 - 高级
+    { action: "sheet_sort", description: "排序", params: ["spreadsheetToken", "sheetId", "range", "sortSpecs"] },
+    { action: "sheet_freeze", description: "冻结行列", params: ["spreadsheetToken", "sheetId", "frozenRows", "frozenColumns"] },
+    { action: "sheet_find_replace", description: "查找替换", params: ["spreadsheetToken", "sheetId", "find", "replace"] },
+    { action: "sheet_filter_create", description: "创建筛选", params: ["spreadsheetToken", "sheetId", "range"] },
+    { action: "sheet_filter_delete", description: "删除筛选", params: ["spreadsheetToken", "sheetId"] },
+    { action: "sheet_col_width", description: "设置列宽", params: ["spreadsheetToken", "sheetId", "startCol", "endCol", "width"] },
+    { action: "sheet_row_height", description: "设置行高", params: ["spreadsheetToken", "sheetId", "startRow", "endRow", "height"] },
+    // 电子表格 - 工作表管理
+    { action: "sheet_add", description: "添加工作表", params: ["spreadsheetToken", "title", "index?"] },
+    { action: "sheet_delete", description: "删除工作表", params: ["spreadsheetToken", "sheetId"] },
+    { action: "sheet_copy", description: "复制工作表", params: ["spreadsheetToken", "sourceSheetId", "targetTitle?"] },
   ],
 
   extractToolSend: (ctx) => ({
@@ -507,6 +538,77 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
           parseInt(ctx.startIndex, 10) || 0,
           parseInt(ctx.count, 10) || 1
         );
+
+      // 电子表格 - 样式
+      case "sheet_style": {
+        const style = typeof ctx.style === "string" ? JSON.parse(ctx.style) : ctx.style;
+        return setCellStyle(account, ctx.spreadsheetToken, ctx.range, style);
+      }
+
+      case "sheet_merge":
+        return mergeCells(account, ctx.spreadsheetToken, ctx.range, ctx.mergeType || "MERGE_ALL");
+
+      case "sheet_unmerge":
+        return unmergeCells(account, ctx.spreadsheetToken, ctx.range);
+
+      // 电子表格 - 高级
+      case "sheet_sort": {
+        const sortSpecs = typeof ctx.sortSpecs === "string" ? JSON.parse(ctx.sortSpecs) : ctx.sortSpecs;
+        return sortRange(account, ctx.spreadsheetToken, ctx.sheetId, ctx.range, sortSpecs);
+      }
+
+      case "sheet_freeze":
+        return freezeRowsAndColumns(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.frozenRows, 10) || 0,
+          parseInt(ctx.frozenColumns, 10) || 0
+        );
+
+      case "sheet_find_replace":
+        return findReplace(account, ctx.spreadsheetToken, ctx.sheetId, ctx.find, ctx.replace);
+
+      case "sheet_filter_create":
+        return createFilter(account, ctx.spreadsheetToken, ctx.sheetId, ctx.range);
+
+      case "sheet_filter_delete":
+        return deleteFilter(account, ctx.spreadsheetToken, ctx.sheetId);
+
+      case "sheet_col_width":
+        return setColumnWidth(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startCol, 10) || 0,
+          parseInt(ctx.endCol, 10) || 1,
+          parseInt(ctx.width, 10) || 100
+        );
+
+      case "sheet_row_height":
+        return setRowHeight(
+          account,
+          ctx.spreadsheetToken,
+          ctx.sheetId,
+          parseInt(ctx.startRow, 10) || 0,
+          parseInt(ctx.endRow, 10) || 1,
+          parseInt(ctx.height, 10) || 20
+        );
+
+      // 电子表格 - 工作表管理
+      case "sheet_add":
+        return addSheet(
+          account,
+          ctx.spreadsheetToken,
+          ctx.title,
+          ctx.index ? parseInt(ctx.index, 10) : undefined
+        );
+
+      case "sheet_delete":
+        return deleteSheet(account, ctx.spreadsheetToken, ctx.sheetId);
+
+      case "sheet_copy":
+        return copySheet(account, ctx.spreadsheetToken, ctx.sourceSheetId, ctx.targetTitle);
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
