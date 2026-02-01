@@ -1,6 +1,6 @@
 # Feishu API Coverage
 
-> 当前版本: 2.7.0 | 总计 Actions: 140+
+> 当前版本: 2.8.0 | 总计 Actions: 160+
 
 ## 模块概览
 
@@ -18,7 +18,8 @@
 | 搜索     | 4       | ✅      |
 | AI       | 5       | ✅      |
 | 邮件     | 26      | ✅      |
-| 通讯录   | 23      | ✅ 新增 |
+| 通讯录   | 23      | ✅      |
+| 审批     | 18      | ✅ 新增 |
 
 ## 详细 Actions 列表
 
@@ -324,7 +325,42 @@
 - `contact_group_members_batch_add` - 批量添加用户组成员
 - `contact_group_members_batch_remove` - 批量移除用户组成员
 
+### 审批 (18 个) ⭐ 新增
+
+定义:
+
+- `approval_definition_get` - 获取审批定义
+
+实例:
+
+- `approval_create` - 发起审批
+- `approval_get` - 获取审批实例详情
+- `approval_list` - 查询审批实例列表
+- `approval_cancel` - 撤销审批
+- `approval_cc` - 抄送审批
+- `approval_add_sign` - 加签
+- `approval_rollback` - 退回审批
+
+任务:
+
+- `approval_approve` - 同意审批
+- `approval_reject` - 拒绝审批
+- `approval_transfer` - 转交审批
+- `approval_tasks` - 查询审批任务列表
+- `approval_tasks_search` - 搜索审批任务
+
+评论:
+
+- `approval_comment_add` - 添加审批评论
+- `approval_comments` - 获取审批评论列表
+- `approval_comment_delete` - 删除审批评论
+
 ## 更新日志
+
+### v2.8.0
+
+- 新增审批模块 (approval.ts): 发起/查询审批、同意/拒绝/转交、抄送/加签/退回、评论
+- 新增 18 个 Actions
 
 ### v2.7.0
 

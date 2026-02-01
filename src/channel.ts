@@ -95,6 +95,24 @@ import {
   batchRemoveGroupMembers,
 } from "./contact.js";
 import {
+  getApprovalDefinition,
+  createApprovalInstance,
+  getApprovalInstance,
+  queryApprovalInstances,
+  cancelApprovalInstance,
+  ccApprovalInstance,
+  addSignToApproval,
+  rollbackApproval,
+  approveTask,
+  rejectTask,
+  transferTask,
+  queryTasks,
+  searchTasks,
+  addApprovalComment,
+  listApprovalComments,
+  deleteApprovalComment,
+} from "./approval.js";
+import {
   createDocument,
   getDocument,
   getDocumentContent,
@@ -1063,6 +1081,70 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       action: "contact_group_members_batch_remove",
       description: "批量移除用户组成员",
       params: ["groupId", "members"],
+    },
+    // 审批 - 定义
+    { action: "approval_definition_get", description: "获取审批定义", params: ["approvalCode"] },
+    // 审批 - 实例
+    {
+      action: "approval_create",
+      description: "发起审批",
+      params: ["approvalCode", "userId", "form"],
+    },
+    { action: "approval_get", description: "获取审批实例详情", params: ["instanceCode"] },
+    {
+      action: "approval_list",
+      description: "查询审批实例列表",
+      params: ["approvalCode", "startTime?", "endTime?"],
+    },
+    { action: "approval_cancel", description: "撤销审批", params: ["instanceCode", "userId"] },
+    {
+      action: "approval_cc",
+      description: "抄送审批",
+      params: ["instanceCode", "userId", "ccUserIds", "comment?"],
+    },
+    {
+      action: "approval_add_sign",
+      description: "加签",
+      params: ["instanceCode", "userId", "taskId", "addSignUserIds", "addSignType", "reason?"],
+    },
+    {
+      action: "approval_rollback",
+      description: "退回审批",
+      params: ["instanceCode", "userId", "taskId", "targetNodeId", "reason?"],
+    },
+    // 审批 - 任务
+    {
+      action: "approval_approve",
+      description: "同意审批",
+      params: ["instanceCode", "userId", "taskId", "comment?"],
+    },
+    {
+      action: "approval_reject",
+      description: "拒绝审批",
+      params: ["instanceCode", "userId", "taskId", "comment?"],
+    },
+    {
+      action: "approval_transfer",
+      description: "转交审批",
+      params: ["instanceCode", "userId", "taskId", "transferUserId", "comment?"],
+    },
+    { action: "approval_tasks", description: "查询审批任务列表", params: ["userId?", "topic?"] },
+    {
+      action: "approval_tasks_search",
+      description: "搜索审批任务",
+      params: ["userId", "approvalCode?", "instanceCode?", "taskStatus?"],
+    },
+    // 审批 - 评论
+    {
+      action: "approval_comment_add",
+      description: "添加审批评论",
+      params: ["instanceCode", "userId", "content"],
+    },
+    { action: "approval_comments", description: "获取审批评论列表", params: ["instanceCode"] },
+    {
+      action: "approval_comment_delete",
+      description: "删除审批评论",
+      params: ["instanceCode", "commentId", "userId"],
     },
   ],
 
@@ -2114,6 +2196,97 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
         const members = Array.isArray(ctx.members) ? ctx.members : JSON.parse(ctx.members);
         return batchRemoveGroupMembers(account, ctx.groupId, members);
       }
+
+      // 审批 - 定义
+      case "approval_definition_get":
+        return getApprovalDefinition(account, ctx.approvalCode);
+
+      // 审批 - 实例
+      case "approval_create": {
+        const form = typeof ctx.form === "string" ? ctx.form : JSON.stringify(ctx.form);
+        return createApprovalInstance(account, ctx.approvalCode, ctx.userId, form);
+      }
+
+      case "approval_get":
+        return getApprovalInstance(account, ctx.instanceCode);
+
+      case "approval_list":
+        return queryApprovalInstances(account, ctx.approvalCode, {
+          startTime: ctx.startTime ? parseInt(ctx.startTime, 10) : undefined,
+          endTime: ctx.endTime ? parseInt(ctx.endTime, 10) : undefined,
+        });
+
+      case "approval_cancel":
+        return cancelApprovalInstance(account, ctx.instanceCode, ctx.userId);
+
+      case "approval_cc": {
+        const ccUserIds = Array.isArray(ctx.ccUserIds)
+          ? ctx.ccUserIds
+          : ctx.ccUserIds.split(",").map((id: string) => id.trim());
+        return ccApprovalInstance(account, ctx.instanceCode, ctx.userId, ccUserIds, ctx.comment);
+      }
+
+      case "approval_add_sign": {
+        const addSignUserIds = Array.isArray(ctx.addSignUserIds)
+          ? ctx.addSignUserIds
+          : ctx.addSignUserIds.split(",").map((id: string) => id.trim());
+        return addSignToApproval(
+          account,
+          ctx.instanceCode,
+          ctx.userId,
+          ctx.taskId,
+          addSignUserIds,
+          parseInt(ctx.addSignType, 10) as 1 | 2 | 3,
+          ctx.reason
+        );
+      }
+
+      case "approval_rollback":
+        return rollbackApproval(
+          account,
+          ctx.instanceCode,
+          ctx.userId,
+          ctx.taskId,
+          ctx.targetNodeId,
+          ctx.reason
+        );
+
+      // 审批 - 任务
+      case "approval_approve":
+        return approveTask(account, ctx.instanceCode, ctx.userId, ctx.taskId, ctx.comment);
+
+      case "approval_reject":
+        return rejectTask(account, ctx.instanceCode, ctx.userId, ctx.taskId, ctx.comment);
+
+      case "approval_transfer":
+        return transferTask(
+          account,
+          ctx.instanceCode,
+          ctx.userId,
+          ctx.taskId,
+          ctx.transferUserId,
+          ctx.comment
+        );
+
+      case "approval_tasks":
+        return queryTasks(account, { userId: ctx.userId, topic: ctx.topic as any });
+
+      case "approval_tasks_search":
+        return searchTasks(account, ctx.userId, {
+          approvalCode: ctx.approvalCode,
+          instanceCode: ctx.instanceCode,
+          taskStatus: ctx.taskStatus as any,
+        });
+
+      // 审批 - 评论
+      case "approval_comment_add":
+        return addApprovalComment(account, ctx.instanceCode, ctx.userId, ctx.content);
+
+      case "approval_comments":
+        return listApprovalComments(account, ctx.instanceCode);
+
+      case "approval_comment_delete":
+        return deleteApprovalComment(account, ctx.instanceCode, ctx.commentId, ctx.userId);
 
       default:
         return { ok: false, error: `Unknown action: ${action}` };
