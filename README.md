@@ -10,22 +10,18 @@
 
 ## English
 
-A Feishu (Lark) channel plugin for OpenClaw with support for messaging, cloud documents, and drive operations.
+A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messaging, cloud documents, spreadsheets, databases, calendar, and tasks.
 
 ### ✨ Features
 
-| Category      | Feature   | Description                |
-| ------------- | --------- | -------------------------- |
-| **Messaging** | Text      | Send/receive text messages |
-|               | Rich Text | Post format support        |
-|               | Cards     | Interactive Card messages  |
-|               | Images    | Auto upload & send         |
-|               | Files     | Auto upload & send         |
-| **Documents** | Create    | Create Feishu docs         |
-|               | Read      | Get document content       |
-|               | Append    | Add text/Markdown          |
-| **Drive**     | Folders   | Create, list               |
-|               | Files     | Upload, download, search   |
+| Category | Features |
+|----------|----------|
+| **Messaging** | Text, Rich Text, Cards, Images, Files, Voice transcription, Quote reply |
+| **Documents** | Create, Read, Update, Delete blocks, Insert at position, Markdown support |
+| **Bitable** | Create apps/tables, Field management, Record CRUD, Batch operations |
+| **Sheets** | Create/read/write cells, Row/column operations, Styles, Merge, Sort, Filter, Freeze |
+| **Calendar** | Create events, List/search events, Attendees, Free/busy query |
+| **Tasks** | Create/complete tasks, Task lists, Reminders |
 
 ### 📦 Quick Install
 
@@ -33,79 +29,47 @@ A Feishu (Lark) channel plugin for OpenClaw with support for messaging, cloud do
 # OpenClaw (latest)
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 
-# Clawdbot (legacy)
+# Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
-```
-
-Or manually:
-
-```bash
-git clone https://github.com/gcmsg/openclaw-feishu ~/.openclaw/extensions/feishu
-cd ~/.openclaw/extensions/feishu && npm install
 ```
 
 ### ⚙️ Configuration
 
-#### 1. Create Feishu App
+1. Create app at [Feishu Open Platform](https://open.feishu.cn/app)
+2. Get **App ID** and **App Secret**
+3. Enable "Bot" capability with "Long Connection" mode
+4. Add required permissions (see below)
+5. Run `openclaw onboard feishu` or `clawdbot onboard feishu`
 
-1. Go to [Feishu Open Platform](https://open.feishu.cn/app)
-2. Create an "Enterprise Self-built App"
-3. Get **App ID** and **App Secret**
-4. Enable "Bot" capability
-5. Set message receive mode to "**Long Connection**"
+#### Required Permissions
 
-#### 2. Add Permissions
-
-**Messaging:**
-
-- `im:message` - Send/receive messages
-- `im:message.group_at_msg` - Receive @bot messages
-- `im:chat` - Get chat info
-
-**Voice (Optional):**
-
-- `im:message:speech_to_text` - Voice message transcription (语音转文字)
-
-**Documents:**
-
-- `docx:document` - Read/write documents
-
-**Drive:**
-
-- `drive:drive` - Manage drive files
-
-#### 3. Configure
-
-```bash
-# OpenClaw
-openclaw onboard feishu
-
-# Clawdbot
-clawdbot onboard feishu
-```
-
-Enter your App ID and App Secret when prompted.
+| Feature | Permissions |
+|---------|-------------|
+| Messaging | `im:message`, `im:chat` |
+| Voice | `im:message:speech_to_text` |
+| Documents | `docx:document` |
+| Drive | `drive:drive` |
+| Bitable | `bitable:app` |
+| Sheets | `sheets:spreadsheet` |
+| Calendar | `calendar:calendar` |
+| Tasks | `task:task` |
 
 ---
 
 ## 中文
 
-OpenClaw 飞书通道插件，支持消息收发、云文档操作、云空间管理。
+OpenClaw 飞书通道插件，支持消息收发、云文档、多维表格、电子表格、日历、任务等全面功能。
 
 ### ✨ 功能特性
 
-| 类别       | 功能       | 说明                    |
-| ---------- | ---------- | ----------------------- |
-| **消息**   | 文本消息   | 发送/接收文本           |
-|            | 富文本消息 | 支持 Post 格式          |
-|            | 卡片消息   | Interactive Card        |
-|            | 图片消息   | 自动上传发送            |
-|            | 文件消息   | 自动上传发送            |
-| **云文档** | 创建文档   | 创建飞书云文档          |
-|            | 读取文档   | 获取文档内容            |
-|            | 追加内容   | 向文档追加文本/Markdown |
-| **云空间** | 文件夹管理 | 创建、列出              |
-|            | 文件操作   | 上传、下载、搜索        |
+| 类别 | 功能 |
+|------|------|
+| **消息** | 文本、富文本、卡片、图片、文件、语音转文字、引用回复 |
+| **云文档** | 创建、读取、更新、删除块、指定位置插入、Markdown 支持 |
+| **多维表格** | 创建应用/数据表、字段管理、记录 CRUD、批量操作 |
+| **电子表格** | 创建/读写单元格、行列操作、样式、合并、排序、筛选、冻结 |
+| **日历** | 创建日程、列出/搜索日程、参与者管理、忙闲查询 |
+| **任务** | 创建/完成任务、任务列表、提醒 |
 
 ### 📦 快速安装
 
@@ -113,90 +77,156 @@ OpenClaw 飞书通道插件，支持消息收发、云文档操作、云空间�
 # OpenClaw（最新版）
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 
-# Clawdbot（旧版）
+# Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
-```
-
-或手动安装：
-
-```bash
-git clone https://github.com/gcmsg/openclaw-feishu ~/.openclaw/extensions/feishu
-cd ~/.openclaw/extensions/feishu && npm install
 ```
 
 ### ⚙️ 配置步骤
 
-#### 1. 创建飞书应用
+1. 在 [飞书开放平台](https://open.feishu.cn/app) 创建应用
+2. 获取 **App ID** 和 **App Secret**
+3. 开启「机器人」能力，消息接收方式选择「使用长连接接收消息」
+4. 添加所需权限（见下表）
+5. 运行 `openclaw onboard feishu` 或 `clawdbot onboard feishu`
 
-1. 访问 [飞书开放平台](https://open.feishu.cn/app)
-2. 创建「企业自建应用」
-3. 获取 **App ID** 和 **App Secret**
-4. 开启「机器人」能力
-5. 消息接收方式选择「**使用长连接接收消息**」
+#### 所需权限
 
-#### 2. 添加权限
-
-**消息相关：**
-
-- `im:message` - 获取与发送消息
-- `im:message.group_at_msg` - 接收群聊@机器人消息
-- `im:chat` - 获取群组信息
-
-**云文档相关：**
-
-- `docx:document` - 查看和编辑文档
-
-**云空间相关：**
-
-- `drive:drive` - 管理云空间文件
-
-#### 3. 配置
-
-```bash
-# OpenClaw
-openclaw onboard feishu
-
-# Clawdbot
-clawdbot onboard feishu
-```
-
-按提示输入 App ID 和 App Secret 即可。
-
-### 🚀 使用示例
-
-配置完成后，通过飞书与 AI 对话：
-
-**操作云文档：**
-
-> "帮我创建一个飞书文档，标题是《会议纪要》"
->
-> "在文档末尾追加一段总结"
-
-**管理云空间：**
-
-> "在云空间创建一个叫'项目资料'的文件夹"
->
-> "搜索一下云空间里有哪些 PDF 文件"
+| 功能 | 权限 |
+|------|------|
+| 消息 | `im:message`, `im:chat` |
+| 语音转文字 | `im:message:speech_to_text` |
+| 云文档 | `docx:document` |
+| 云空间 | `drive:drive` |
+| 多维表格 | `bitable:app` |
+| 电子表格 | `sheets:spreadsheet` |
+| 日历 | `calendar:calendar` |
+| 任务 | `task:task` |
 
 ---
 
 ## 📖 API Reference / API 参考
 
-| Action          | Params                    | Description / 说明         |
-| --------------- | ------------------------- | -------------------------- |
-| `send`          | `target`, `message`       | Send text / 发送文本       |
-| `send_card`     | `target`, `card`          | Send card / 发送卡片       |
-| `send_image`    | `target`, `filePath`      | Send image / 发送图片      |
-| `send_file`     | `target`, `filePath`      | Send file / 发送文件       |
-| `doc_create`    | `title`, `folderId?`      | Create doc / 创建文档      |
-| `doc_read`      | `documentId`              | Read doc / 读取文档        |
-| `doc_append`    | `documentId`, `content`   | Append text / 追加文本     |
-| `doc_append_md` | `documentId`, `markdown`  | Append Markdown            |
-| `folder_create` | `name`, `parentToken?`    | Create folder / 创建文件夹 |
-| `folder_list`   | `folderToken`             | List folder / 列出文件夹   |
-| `file_upload`   | `filePath`, `folderToken` | Upload file / 上传文件     |
-| `file_download` | `fileToken`, `savePath`   | Download file / 下载文件   |
-| `file_search`   | `query`                   | Search files / 搜索文件    |
+### 消息 / Messaging
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `send` | `target`, `message` | 发送文本消息 |
+| `send_card` | `target`, `card` | 发送卡片消息 |
+| `send_image` | `target`, `filePath` | 发送图片 |
+| `send_file` | `target`, `filePath` | 发送文件 |
+
+### 云文档 / Documents
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `doc_create` | `title`, `folderId?` | 创建文档 |
+| `doc_get` | `documentId` | 获取文档信息 |
+| `doc_read` | `documentId` | 读取文档纯文本 |
+| `doc_structure` | `documentId` | 获取文档结构（块列表） |
+| `doc_append` | `documentId`, `content` | 追加文本 |
+| `doc_append_md` | `documentId`, `markdown` | 追加 Markdown |
+| `doc_prepend` | `documentId`, `content` | 在开头插入 |
+| `doc_insert_after` | `documentId`, `blockId`, `content` | 在指定块后插入 |
+| `doc_block_get` | `documentId`, `blockId` | 获取指定块 |
+| `doc_block_update` | `documentId`, `blockId`, `text`, `checked?` | 更新块内容 |
+| `doc_block_delete` | `documentId`, `blockId` | 删除块 |
+| `doc_blocks_delete` | `documentId`, `blockIds` | 批量删除块 |
+
+### 多维表格 / Bitable
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `bitable_create` | `name`, `folderId?` | 创建多维表格 |
+| `bitable_get` | `appToken` | 获取表格信息 |
+| `bitable_tables` | `appToken` | 列出数据表 |
+| `bitable_table_create` | `appToken`, `name` | 创建数据表 |
+| `bitable_fields` | `appToken`, `tableId` | 列出字段 |
+| `bitable_field_create` | `appToken`, `tableId`, `fieldName`, `fieldType` | 创建字段 |
+| `bitable_records` | `appToken`, `tableId`, `pageSize?` | 查询记录 |
+| `bitable_record_get` | `appToken`, `tableId`, `recordId` | 获取单条记录 |
+| `bitable_record_create` | `appToken`, `tableId`, `fields` | 创建记录 |
+| `bitable_record_update` | `appToken`, `tableId`, `recordId`, `fields` | 更新记录 |
+| `bitable_record_delete` | `appToken`, `tableId`, `recordId` | 删除记录 |
+| `bitable_records_delete` | `appToken`, `tableId`, `recordIds` | 批量删除记录 |
+
+### 电子表格 / Sheets
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `sheet_create` | `title`, `folderId?` | 创建电子表格 |
+| `sheet_get` | `spreadsheetToken` | 获取表格信息 |
+| `sheet_list` | `spreadsheetToken` | 列出工作表 |
+| `sheet_info` | `spreadsheetToken`, `sheetId` | 获取工作表信息 |
+| `sheet_read` | `spreadsheetToken`, `range` | 读取单元格 |
+| `sheet_write` | `spreadsheetToken`, `range`, `values` | 写入单元格 |
+| `sheet_append` | `spreadsheetToken`, `range`, `values` | 追加行数据 |
+| `sheet_insert_rows` | `spreadsheetToken`, `sheetId`, `startIndex`, `count` | 插入行 |
+| `sheet_delete_rows` | `spreadsheetToken`, `sheetId`, `startIndex`, `count` | 删除行 |
+| `sheet_insert_cols` | `spreadsheetToken`, `sheetId`, `startIndex`, `count` | 插入列 |
+| `sheet_delete_cols` | `spreadsheetToken`, `sheetId`, `startIndex`, `count` | 删除列 |
+| `sheet_style` | `spreadsheetToken`, `range`, `style` | 设置样式 |
+| `sheet_merge` | `spreadsheetToken`, `range`, `mergeType?` | 合并单元格 |
+| `sheet_unmerge` | `spreadsheetToken`, `range` | 拆分单元格 |
+| `sheet_sort` | `spreadsheetToken`, `sheetId`, `range`, `sortSpecs` | 排序 |
+| `sheet_freeze` | `spreadsheetToken`, `sheetId`, `frozenRows`, `frozenColumns` | 冻结行列 |
+| `sheet_find_replace` | `spreadsheetToken`, `sheetId`, `find`, `replace` | 查找替换 |
+| `sheet_filter_create` | `spreadsheetToken`, `sheetId`, `range` | 创建筛选 |
+| `sheet_filter_delete` | `spreadsheetToken`, `sheetId` | 删除筛选 |
+| `sheet_col_width` | `spreadsheetToken`, `sheetId`, `startCol`, `endCol`, `width` | 设置列宽 |
+| `sheet_row_height` | `spreadsheetToken`, `sheetId`, `startRow`, `endRow`, `height` | 设置行高 |
+| `sheet_add` | `spreadsheetToken`, `title`, `index?` | 添加工作表 |
+| `sheet_delete` | `spreadsheetToken`, `sheetId` | 删除工作表 |
+| `sheet_copy` | `spreadsheetToken`, `sourceSheetId`, `targetTitle?` | 复制工作表 |
+
+### 日历 / Calendar
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `cal_list` | - | 列出日历 |
+| `cal_primary` | - | 获取主日历 |
+| `cal_create` | `summary`, `description?` | 创建日历 |
+| `cal_events` | `calendarId`, `startTime?`, `endTime?` | 列出日程 |
+| `cal_event_get` | `calendarId`, `eventId` | 获取日程详情 |
+| `cal_event_create` | `calendarId`, `summary`, `startTime`, `endTime`, `description?`, `location?` | 创建日程 |
+| `cal_event_update` | `calendarId`, `eventId`, `summary?`, `startTime?`, `endTime?` | 更新日程 |
+| `cal_event_delete` | `calendarId`, `eventId` | 删除日程 |
+| `cal_event_search` | `calendarId`, `query` | 搜索日程 |
+| `cal_attendees` | `calendarId`, `eventId` | 获取参与者 |
+| `cal_attendee_add` | `calendarId`, `eventId`, `userIds` | 添加参与者 |
+| `cal_freebusy` | `userIds`, `startTime`, `endTime` | 查询忙闲状态 |
+
+**支持自然语言时间：** `今天 14:30`、`明天 10:00`、`下周一 9:00`
+
+### 任务 / Tasks
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `task_create` | `summary`, `due?`, `description?` | 创建任务 |
+| `task_get` | `taskId` | 获取任务详情 |
+| `task_update` | `taskId`, `summary?`, `due?`, `description?` | 更新任务 |
+| `task_delete` | `taskId` | 删除任务 |
+| `task_complete` | `taskId` | 完成任务 |
+| `task_uncomplete` | `taskId` | 取消完成 |
+| `task_list` | `tasklistId?`, `completed?` | 列出任务 |
+| `tasklist_create` | `name` | 创建任务列表 |
+| `tasklist_get` | `tasklistId` | 获取任务列表详情 |
+| `tasklist_list` | - | 列出所有任务列表 |
+| `tasklist_delete` | `tasklistId` | 删除任务列表 |
+| `tasklist_add_task` | `tasklistId`, `taskId` | 添加任务到列表 |
+| `tasklist_remove_task` | `tasklistId`, `taskId` | 从列表移除任务 |
+| `task_reminder_add` | `taskId`, `minutes` | 添加任务提醒 |
+
+**支持自然语言截止时间：** `明天`、`3天后`、`下周五`
+
+### 云空间 / Drive
+
+| Action | Params | Description |
+|--------|--------|-------------|
+| `folder_create` | `name`, `parentToken?` | 创建文件夹 |
+| `folder_list` | `folderToken` | 列出文件夹内容 |
+| `file_upload` | `filePath`, `folderToken` | 上传文件 |
+| `file_download` | `fileToken`, `savePath` | 下载文件 |
+| `file_search` | `query` | 搜索文件 |
 
 ---
 
@@ -207,27 +237,70 @@ openclaw-feishu/
 ├── index.ts              # Plugin entry / 插件入口
 ├── clawdbot.plugin.json  # Plugin manifest / 插件配置
 ├── src/
-│   ├── compat.ts         # SDK compatibility layer / SDK 兼容层
 │   ├── channel.ts        # Channel definition / 通道定义
 │   ├── client.ts         # Messaging API / 消息 API
 │   ├── document.ts       # Document API / 云文档 API
+│   ├── bitable.ts        # Bitable API / 多维表格 API
+│   ├── sheets.ts         # Sheets API / 电子表格 API
+│   ├── calendar.ts       # Calendar API / 日历 API
+│   ├── task.ts           # Task API / 任务 API
 │   ├── space.ts          # Drive API / 云空间 API
 │   ├── gateway.ts        # WebSocket gateway / 长连接网关
+│   ├── markdown.ts       # Markdown converter / Markdown 转换
+│   ├── compat.ts         # SDK compatibility / SDK 兼容层
 │   ├── runtime.ts        # Runtime / 运行时
 │   └── types.ts          # Type definitions / 类型定义
-└── package.json
+├── test/                 # Unit tests / 单元测试
+│   ├── setup.ts          # Test setup / 测试配置
+│   ├── client.test.ts
+│   ├── document.test.ts
+│   ├── bitable.test.ts
+│   ├── sheets.test.ts
+│   ├── calendar.test.ts
+│   └── task.test.ts
+└── docs/
+    └── SDK_CAPABILITIES.md  # SDK analysis / SDK 能力分析
 ```
+
+---
+
+## 🧪 Testing / 测试
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- test/calendar.test.ts
+```
+
+**Test Coverage:**
+- 110+ test cases
+- Client, Document, Bitable, Sheets, Calendar, Task modules
+
+---
 
 ## 🔄 Compatibility / 兼容性
 
-This plugin works with all versions:
+| Version | CLI Command | Status |
+|---------|-------------|--------|
+| OpenClaw | `openclaw` | ✅ Latest |
+| Clawdbot | `clawdbot` | ✅ Supported |
+| Moltbot | `moltbot` | ✅ Supported |
 
-| Version  | CLI Command | Status       |
-| -------- | ----------- | ------------ |
-| OpenClaw | `openclaw`  | ✅ Latest    |
-| Clawdbot | `clawdbot`  | ✅ Supported |
-| Moltbot  | `moltbot`   | ✅ Supported |
+---
 
 ## 📄 License
 
 MIT
+
+---
+
+## 🤝 Contributing / 贡献
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+
+Issues and PRs are welcome!
