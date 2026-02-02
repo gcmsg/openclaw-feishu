@@ -73,11 +73,140 @@ AI: [calls feishu tool with action="bitable_records", appToken="xxx", tableId="x
 
 ### ⚙️ Configuration
 
-1. Create app at [Feishu Open Platform](https://open.feishu.cn/app)
-2. Get **App ID** and **App Secret**
-3. Enable "Bot" capability with "Long Connection" mode
-4. Add required permissions (see below)
-5. Run `openclaw onboard feishu` or `clawdbot onboard feishu`
+Follow this step-by-step guide to create your Feishu bot application from scratch.
+
+---
+
+#### 📝 Step 1: Create Application
+
+1. Go to [Feishu Open Platform](https://open.feishu.cn/app)
+2. Click **"Create Custom App"** in the top right
+3. Fill in the application info:
+   - **App Name**: Name your bot (e.g., Nina, My Assistant)
+   - **Description**: Brief description of your app
+   - **App Icon**: Upload an icon (optional)
+4. Click **"Create"** to finish
+
+---
+
+#### 🔑 Step 2: Get Credentials
+
+1. Enter the app you just created
+2. Click **"Credentials & Basic Info"** in the left menu
+3. Note down:
+   - **App ID** (unique app identifier)
+   - **App Secret** (click "Show" to view, keep it secret!)
+
+---
+
+#### 🤖 Step 3: Add Bot Capability
+
+1. Click **"App Capabilities"** → **"Add Capability"** in the left menu
+2. Find **"Bot"** and click **"Add"**
+3. Configure bot info:
+   - **Bot Name**: Name users see in chats
+   - **Bot Description**: Bot functionality description
+4. **Message Receive Method**: Select **"Long Connection"** (Important!)
+   - ✅ Long Connection: No public server needed, good for personal use
+   - ❌ Webhook: Requires a public server to receive callbacks
+
+---
+
+#### 📡 Step 4: Configure Event Subscriptions (Important!)
+
+1. Click **"Development Settings"** → **"Events & Callbacks"** in the left menu
+2. Ensure **"Subscription Method"** is set to **"Long Connection"**
+3. Click **"Add Event"** and add the following events:
+
+| Event Name | Event ID | Purpose |
+|------------|----------|---------|
+| Receive Message | `im.message.receive_v1` | Receive messages from users |
+| Message Read | `im.message.message_read_v1` | Get message read status (optional) |
+| Chat Member Change | `im.chat.member.user.added_v1` | Notify when bot is added to group (optional) |
+
+> 💡 **You must at least add "Receive Message" event**, or the bot won't receive any messages!
+
+---
+
+#### 🔐 Step 5: Configure Permissions
+
+1. Click **"Development Settings"** → **"Permissions & Scopes"** in the left menu
+2. Click **"Add Permission"**
+3. Search and select permissions based on needed features:
+
+**Basic Features (Required):**
+| Permission Name | Permission ID | Description |
+|-----------------|---------------|-------------|
+| Send and receive messages | `im:message` | Basic permission for messaging |
+| Read chat info | `im:chat:readonly` | Read group information |
+| Manage chat | `im:chat` | Manage group chats |
+
+**Advanced Features (As Needed):**
+| Feature | Permission ID |
+|---------|---------------|
+| Documents | `docx:document`, `docx:document:readonly` |
+| Drive | `drive:drive`, `drive:drive:readonly` |
+| Bitable | `bitable:app` |
+| Sheets | `sheets:spreadsheet` |
+| Calendar | `calendar:calendar`, `calendar:calendar:readonly` |
+| Tasks | `task:task`, `task:task:readonly` |
+| Wiki | `wiki:wiki`, `wiki:wiki:readonly` |
+| Contacts | `contact:user.base:readonly`, `contact:department.base:readonly` |
+| Speech to Text | `im:message:speech_to_text` |
+| AI OCR | `optical_char_recognition:image` |
+| AI Translation | `translation:text` |
+| Search Messages | `search:message` |
+| Search Docs | `suite:docs_search` |
+
+> 💡 **Tip**: Start with basic permissions, add more as needed.
+
+---
+
+#### 🚀 Step 6: Publish Application
+
+1. Click **"Version Management"** in the left menu
+2. Click **"Create Version"**
+3. Fill in version info:
+   - **Version Number**: e.g., `1.0.0`
+   - **Release Notes**: Describe this release
+   - **Availability**: Choose who can use it
+     - **All Members**: Everyone in the organization
+     - **Specific Scope**: Only selected departments/users
+4. Click **"Save"**, then click **"Submit for Review"**
+5. Wait for admin approval (if you're admin, approve it directly)
+
+> ⚠️ **Important**: Every time you modify permissions, you need to create a new version and republish!
+
+---
+
+#### ✅ Step 7: Run Onboard Command
+
+After completing the above configuration, run:
+
+```bash
+# OpenClaw
+openclaw onboard feishu
+
+# Clawdbot
+clawdbot onboard feishu
+```
+
+Enter your **App ID** and **App Secret** when prompted.
+
+---
+
+#### 🎉 Verify Success
+
+1. Search for your bot name in Feishu
+2. Send a message
+3. If the bot responds, congratulations!
+
+**Troubleshooting:**
+- ❌ **Not receiving messages**: Check if "Receive Message" event is added
+- ❌ **No permission**: Check if permissions are added and version is published
+- ❌ **Long connection disconnects**: Check if message receive method is "Long Connection"
+
+---
 
 #### Required Permissions
 
@@ -154,11 +283,140 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 
 ### ⚙️ 配置步骤
 
-1. 在 [飞书开放平台](https://open.feishu.cn/app) 创建应用
-2. 获取 **App ID** 和 **App Secret**
-3. 开启「机器人」能力，消息接收方式选择「使用长连接接收消息」
-4. 添加所需权限（见下表）
-5. 运行 `openclaw onboard feishu` 或 `clawdbot onboard feishu`
+下面是完整的手把手教程，指导你从零开始创建飞书机器人应用。
+
+---
+
+#### 📝 第一步：创建应用
+
+1. 打开 [飞书开放平台](https://open.feishu.cn/app)
+2. 点击右上角 **「创建企业自建应用」**
+3. 填写应用信息：
+   - **应用名称**：给你的机器人起个名字（如：Nina、我的助手）
+   - **应用描述**：简单描述应用用途
+   - **应用图标**：上传一个图标（可选）
+4. 点击 **「创建」** 完成
+
+---
+
+#### 🔑 第二步：获取凭证
+
+1. 进入刚创建的应用
+2. 在左侧菜单点击 **「凭证与基础信息」**
+3. 记录下：
+   - **App ID**（应用唯一标识）
+   - **App Secret**（点击「显示」查看，注意保密！）
+
+---
+
+#### 🤖 第三步：添加机器人能力
+
+1. 在左侧菜单点击 **「应用能力」** → **「添加应用能力」**
+2. 找到 **「机器人」**，点击 **「添加」**
+3. 配置机器人信息：
+   - **机器人名称**：用户在聊天中看到的名字
+   - **机器人描述**：机器人功能说明
+4. **消息接收方式**：选择 **「使用长连接接收消息」**（重要！）
+   - ✅ 长连接模式：无需公网服务器，适合个人使用
+   - ❌ Webhook 模式：需要公网服务器接收回调
+
+---
+
+#### 📡 第四步：配置事件订阅（重要！）
+
+1. 在左侧菜单点击 **「开发配置」** → **「事件与回调」**
+2. 确认 **「订阅方式」** 选择了 **「使用长连接接收事件」**
+3. 点击 **「添加事件」**，搜索并添加以下事件：
+
+| 事件名称 | 事件标识 | 用途 |
+|---------|---------|------|
+| 接收消息 | `im.message.receive_v1` | 接收用户发送的消息 |
+| 消息已读 | `im.message.message_read_v1` | 获取消息已读状态（可选） |
+| 群成员变更 | `im.chat.member.user.added_v1` | 机器人被拉入群聊时通知（可选） |
+
+> 💡 **至少要添加「接收消息」事件**，否则机器人收不到任何消息！
+
+---
+
+#### 🔐 第五步：配置权限
+
+1. 在左侧菜单点击 **「开发配置」** → **「权限管理」**
+2. 点击 **「添加权限」**
+3. 根据需要的功能，搜索并勾选对应权限：
+
+**基础功能（必选）：**
+| 权限名称 | 权限标识 | 说明 |
+|---------|---------|------|
+| 获取与发送单聊、群组消息 | `im:message` | 收发消息的基础权限 |
+| 获取群组信息 | `im:chat:readonly` | 读取群信息 |
+| 获取与更新群组信息 | `im:chat` | 管理群聊 |
+
+**进阶功能（按需选择）：**
+| 功能 | 权限标识 |
+|------|---------|
+| 云文档 | `docx:document`、`docx:document:readonly` |
+| 云空间/网盘 | `drive:drive`、`drive:drive:readonly` |
+| 多维表格 | `bitable:app` |
+| 电子表格 | `sheets:spreadsheet` |
+| 日历 | `calendar:calendar`、`calendar:calendar:readonly` |
+| 任务 | `task:task`、`task:task:readonly` |
+| 知识库 | `wiki:wiki`、`wiki:wiki:readonly` |
+| 通讯录 | `contact:user.base:readonly`、`contact:department.base:readonly` |
+| 语音转文字 | `im:message:speech_to_text` |
+| AI OCR | `optical_char_recognition:image` |
+| AI 翻译 | `translation:text` |
+| 搜索消息 | `search:message` |
+| 搜索文档 | `suite:docs_search` |
+
+> 💡 **建议**：先添加基础权限，后续用到什么功能再补充对应权限。
+
+---
+
+#### 🚀 第六步：发布应用
+
+1. 在左侧菜单点击 **「版本管理与发布」**
+2. 点击 **「创建版本」**
+3. 填写版本信息：
+   - **版本号**：如 `1.0.0`
+   - **更新说明**：描述本次发布内容
+   - **可用范围**：选择哪些人可以使用
+     - **全部成员**：企业内所有人都能使用
+     - **指定范围**：只有选中的部门/人员能使用
+4. 点击 **「保存」**，然后点击 **「申请发布」**
+5. 等待管理员审核（如果你是管理员，可以在管理后台直接通过）
+
+> ⚠️ **重要**：每次修改权限后，都需要创建新版本并重新发布！
+
+---
+
+#### ✅ 第七步：运行 onboard 命令
+
+完成上述配置后，运行以下命令完成接入：
+
+```bash
+# OpenClaw
+openclaw onboard feishu
+
+# Clawdbot
+clawdbot onboard feishu
+```
+
+按提示输入 **App ID** 和 **App Secret**，完成配置。
+
+---
+
+#### 🎉 验证是否成功
+
+1. 在飞书中搜索你的机器人名称
+2. 发送一条消息
+3. 如果机器人有回复，恭喜配置成功！
+
+**常见问题排查：**
+- ❌ **收不到消息**：检查是否添加了「接收消息」事件
+- ❌ **没有权限**：检查权限是否已添加，版本是否已发布
+- ❌ **长连接断开**：检查消息接收方式是否选择了「长连接」
+
+---
 
 #### 所需权限
 
