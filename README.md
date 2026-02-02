@@ -31,6 +31,26 @@ A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messa
 | **Approval**  | Create/query approvals, Approve/reject/transfer tasks, Comments, CC, Add sign       |
 | **Lingo**     | Entity CRUD, Search, Match, Highlight, Classifications, Repos, Drafts               |
 
+### ⚠️ Before You Install / 安装前必读
+
+> **Important:** Back up your config file before installing any plugin!
+>
+> **重要：** 安装任何插件前，请先备份配置文件！
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json ~/.clawdbot/clawdbot.json.bak
+```
+
+If something goes wrong after installation, see [Recovery Guide](#-recovery-guide--恢复指南) below.
+
+如果安装后出现问题，请参阅下方的[恢复指南](#-recovery-guide--恢复指南)。
+
+---
+
 ### 📦 Quick Install
 
 ```bash
@@ -240,6 +260,22 @@ OpenClaw 飞书通道插件，支持消息收发、云文档、多维表格、�
 | **电子表格** | 创建/读写单元格、行列操作、样式、合并、排序、筛选、冻结 |
 | **日历**     | 创建日程、列出/搜索日程、参与者管理、忙闲查询           |
 | **任务**     | 创建/完成任务、任务列表、提醒                           |
+
+### ⚠️ 安装前必读
+
+> **重要：** 安装任何插件前，请先备份配置文件！
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json ~/.clawdbot/clawdbot.json.bak
+```
+
+如果安装后出现问题，请参阅下方的[恢复指南](#-recovery-guide--恢复指南)。
+
+---
 
 ### 📦 快速安装
 
@@ -676,6 +712,102 @@ npm test -- test/calendar.test.ts
 ---
 
 ## 🔧 Troubleshooting / 故障排查
+
+### 🔄 Recovery Guide / 恢复指南
+
+If OpenClaw/Clawdbot won't start after installing this plugin, follow these steps to recover:
+
+如果安装本插件后 OpenClaw/Clawdbot 无法启动，请按以下步骤恢复：
+
+#### Option 1: Restore from backup / 方案一：从备份恢复
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json.bak ~/.openclaw/openclaw.json
+openclaw gateway restart
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json.bak ~/.clawdbot/clawdbot.json
+clawdbot gateway restart
+```
+
+#### Option 2: Remove plugin entries manually / 方案二：手动移除插件配置
+
+If you don't have a backup, edit the config file directly:
+
+如果没有备份，直接编辑配置文件：
+
+```bash
+# OpenClaw
+nano ~/.openclaw/openclaw.json
+
+# Clawdbot
+nano ~/.clawdbot/clawdbot.json
+```
+
+Remove or comment out the feishu-related sections:
+
+删除或注释掉 feishu 相关的部分：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      // "feishu": { ... }  ← Remove this
+    },
+    "installs": {
+      // "feishu": { ... }  ← Remove this
+    }
+  },
+  "channels": {
+    // "feishu": { ... }  ← Remove this
+  }
+}
+```
+
+Then restart:
+
+然后重启：
+
+```bash
+# OpenClaw
+openclaw gateway restart
+
+# Clawdbot
+clawdbot gateway restart
+```
+
+#### Option 3: Delete plugin files / 方案三：删除插件文件
+
+```bash
+# OpenClaw
+rm -rf ~/.openclaw/extensions/feishu
+
+# Clawdbot
+rm -rf ~/.clawdbot/extensions/feishu
+```
+
+Then edit config to remove plugin references (see Option 2).
+
+然后编辑配置文件移除插件引用（参见方案二）。
+
+#### Option 4: Factory reset (last resort) / 方案四：恢复出厂（最后手段）
+
+⚠️ **Warning:** This will reset ALL your settings!
+
+⚠️ **警告：** 这将重置所有设置！
+
+```bash
+# OpenClaw - backup first, then reset
+mv ~/.openclaw ~/.openclaw.broken
+openclaw onboard
+
+# Clawdbot - backup first, then reset
+mv ~/.clawdbot ~/.clawdbot.broken
+clawdbot onboard
+```
+
+---
 
 ### ❌ Gateway Won't Start After Install / 安装后无法启动
 
