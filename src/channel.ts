@@ -17,6 +17,7 @@ import {
   sendFileMessage,
   sendCardMessage,
   downloadImageByKey,
+  downloadMessageImage,
   downloadMessageFile,
   sendSmartMessage,
   forwardMessage,
@@ -2521,7 +2522,12 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               if (message.imageKey) {
                 logger.info(`收到图片消息: ${message.imageKey}`);
                 try {
-                  const imgResult = await downloadImageByKey(account, message.imageKey);
+                  // 用户发送的图片需要通过 messageResource API 下载
+                  const imgResult = await downloadMessageImage(
+                    account,
+                    message.messageId,
+                    message.imageKey
+                  );
                   if (imgResult.ok && imgResult.data) {
                     const filePath = await saveMediaToTemp(
                       imgResult.data.buffer,

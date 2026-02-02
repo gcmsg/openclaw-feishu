@@ -530,6 +530,45 @@ export async function downloadImageByKey(
 }
 
 /**
+ * 下载消息中的图片（通过消息 ID 和 image_key）
+ * 注意：用户发送的图片必须通过 messageResource API 下载，不能用 image API
+ */
+export async function downloadMessageImage(
+  account: ResolvedFeishuAccount,
+  messageId: string,
+  imageKey: string
+): Promise<ApiResult<{ buffer: Buffer; mimeType: string }>> {
+  const client = getFeishuClient(account);
+
+  try {
+    const result = await client.im.v1.messageResource.get({
+      path: {
+        message_id: messageId,
+        file_key: imageKey,
+      },
+      params: {
+        type: "image",
+      },
+    });
+
+    const buffer = await responseToBuffer(result);
+    if (buffer) {
+      return {
+        ok: true,
+        data: {
+          buffer,
+          mimeType: "image/png",
+        },
+      };
+    }
+
+    return { ok: false, error: "Unexpected response format" };
+  } catch (error) {
+    return { ok: false, error: String(error) };
+  }
+}
+
+/**
  * 下载文件（通过消息 ID 和 file_key）
  */
 export async function downloadMessageFile(
