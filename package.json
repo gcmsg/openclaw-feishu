@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-feishu",
+  "name": "@openclaw/feishu",
   "version": "2.9.0",
   "description": "飞书通道插件 - 支持消息、云文档、AI能力 | Feishu channel plugin with docs, AI capabilities",
   "type": "module",

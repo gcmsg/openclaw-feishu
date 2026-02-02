@@ -41,6 +41,36 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
+### 🛠️ Agent Tool Architecture
+
+This plugin provides a dedicated **`feishu` agent tool** for Feishu-specific operations (cards, documents, bitable, etc.).
+
+**Why a separate tool?**
+
+The core `message` tool only supports standard messaging actions (`send`, `react`, `delete`, etc.). Feishu's rich features (card messages, cloud documents, bitable, calendar, etc.) require a dedicated tool with its own action schema.
+
+**How it works:**
+
+```
+message tool  →  Basic messaging (send text, react)
+feishu tool   →  Feishu-specific (send_card, doc_create, bitable_records, etc.)
+```
+
+**After installation**, the `feishu` tool is automatically available to AI agents. No additional configuration needed.
+
+**Example usage in AI conversation:**
+
+```
+User: 发一个卡片消息到群里
+AI: [calls feishu tool with action="send_card", target="chat_id", card={...}]
+
+User: 创建一个文档
+AI: [calls feishu tool with action="doc_create", title="新文档"]
+
+User: 查询多维表格的记录
+AI: [calls feishu tool with action="bitable_records", appToken="xxx", tableId="xxx"]
+```
+
 ### ⚙️ Configuration
 
 1. Create app at [Feishu Open Platform](https://open.feishu.cn/app)
@@ -90,6 +120,36 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 
 # Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+```
+
+### 🛠️ Agent 工具架构
+
+本插件提供独立的 **`feishu` Agent 工具**，用于飞书特有的功能（卡片消息、云文档、多维表格等）。
+
+**为什么需要独立工具？**
+
+核心 `message` 工具只支持标准消息操作（`send`、`react`、`delete` 等）。飞书丰富的功能（卡片消息、云文档、多维表格、日历等）需要专用工具和独立的 action schema。
+
+**工作原理：**
+
+```
+message 工具  →  基础消息（发送文本、表情回复）
+feishu 工具   →  飞书专属（send_card、doc_create、bitable_records 等 200+ 操作）
+```
+
+**安装后**，`feishu` 工具自动对 AI 助手可用，无需额外配置。
+
+**AI 对话中的使用示例：**
+
+```
+用户: 发一个卡片消息到群里
+AI: [调用 feishu 工具，action="send_card", target="chat_id", card={...}]
+
+用户: 创建一个文档
+AI: [调用 feishu 工具，action="doc_create", title="新文档"]
+
+用户: 查询多维表格的记录
+AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="xxx"]
 ```
 
 ### ⚙️ 配置步骤
@@ -293,6 +353,7 @@ openclaw-feishu/
 ├── clawdbot.plugin.json  # Plugin manifest / 插件配置
 ├── src/
 │   ├── channel.ts        # Channel definition / 通道定义
+│   ├── agent-tools.ts    # Feishu agent tool / 飞书 Agent 工具
 │   ├── client.ts         # Messaging API / 消息 API
 │   ├── document.ts       # Document API / 云文档 API
 │   ├── bitable.ts        # Bitable API / 多维表格 API

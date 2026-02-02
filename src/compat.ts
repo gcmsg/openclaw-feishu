@@ -21,6 +21,23 @@ export interface ClawdbotConfig {
   [key: string]: any;
 }
 
+export interface ChannelAgentTool {
+  label: string;
+  name: string;
+  description: string;
+  parameters: any;
+  execute: (
+    toolCallId: string,
+    args: Record<string, unknown>,
+    signal?: AbortSignal
+  ) => Promise<{
+    content: Array<{ type: string; text: string }>;
+    details?: Record<string, unknown>;
+  }>;
+}
+
+export type ChannelAgentToolFactory = (params: { cfg?: ClawdbotConfig }) => ChannelAgentTool[];
+
 export interface ChannelPlugin<T = any> {
   id: string;
   meta: {
@@ -38,6 +55,8 @@ export interface ChannelPlugin<T = any> {
   };
   onboarding?: any;
   actions?: any;
+  // Channel-owned agent tools (飞书专属工具等)
+  agentTools?: ChannelAgentToolFactory | ChannelAgentTool[];
   config: {
     listAccountIds: (cfg: ClawdbotConfig) => string[];
     resolveAccount: (cfg: ClawdbotConfig, accountId: string) => T | undefined;

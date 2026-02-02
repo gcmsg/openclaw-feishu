@@ -7,7 +7,9 @@ import type {
   ClawdbotConfig,
   ChannelOnboardingAdapter,
   ChannelMessageActionAdapter,
+  ChannelAgentTool,
 } from "./compat.js";
+import { createFeishuTool } from "./agent-tools.js";
 import type { ResolvedFeishuAccount, FeishuChannelConfig, MsgContext } from "./types.js";
 import {
   sendTextMessage,
@@ -2427,6 +2429,29 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
 
   onboarding: feishuOnboardingAdapter,
   actions: feishuMessageActions,
+
+  // 飞书专属 Agent 工具（卡片消息、云文档、多维表格等）
+  agentTools: ({ cfg }): ChannelAgentTool[] => {
+    const account = resolveFeishuAccount(cfg as ClawdbotConfig, "default");
+    if (!account) return [];
+
+    return [
+      createFeishuTool({
+        getAccount: () => account,
+        handleAction: async (ctx) => {
+          // 复用 feishuMessageActions.handleAction 的逻辑
+          return feishuMessageActions.handleAction({
+            ...ctx,
+            target: ctx.target as string,
+            message: ctx.message as string,
+            card: ctx.card,
+            filePath: ctx.filePath as string,
+            fileName: ctx.fileName as string,
+          } as any);
+        },
+      }),
+    ];
+  },
 
   config: {
     listAccountIds: (cfg) => listFeishuAccountIds(cfg),
