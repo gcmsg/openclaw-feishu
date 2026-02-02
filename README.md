@@ -674,6 +674,158 @@ npm test -- test/calendar.test.ts
 
 ---
 
+## 🔧 Troubleshooting / 故障排查
+
+### ❌ Gateway Won't Start After Install / 安装后无法启动
+
+**Symptom:** After running `plugins install`, OpenClaw/Clawdbot fails to start with a config error.
+
+**症状：** 运行 `plugins install` 后，OpenClaw/Clawdbot 无法启动，提示配置错误。
+
+**Solution / 解决方案：**
+
+1. **Check config file syntax / 检查配置文件语法：**
+
+```bash
+# OpenClaw
+node -e "JSON.parse(require('fs').readFileSync('$HOME/.openclaw/openclaw.json'))"
+
+# Clawdbot
+node -e "JSON.parse(require('fs').readFileSync('$HOME/.clawdbot/clawdbot.json'))"
+```
+
+If you see a syntax error, the JSON is malformed.
+如果看到语法错误，说明 JSON 格式有问题。
+
+2. **Manual fix / 手动修复：**
+
+Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json`) and ensure the `plugins` section looks like this:
+
+打开配置文件，确保 `plugins` 部分格式如下：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "feishu": {
+        "enabled": true,
+        "config": {
+          "appId": "your_app_id",
+          "appSecret": "your_app_secret"
+        }
+      }
+    },
+    "installs": {
+      "feishu": {
+        "source": "archive",
+        "installPath": "/path/to/.openclaw/extensions/feishu",
+        "version": "2.9.0"
+      }
+    }
+  },
+  "channels": {
+    "feishu": {
+      "enabled": true,
+      "appId": "your_app_id",
+      "appSecret": "your_app_secret"
+    }
+  }
+}
+```
+
+3. **Validate after fix / 修复后验证：**
+
+```bash
+# OpenClaw
+openclaw status
+
+# Clawdbot
+clawdbot status
+```
+
+---
+
+### ❌ "No messages received" / 收不到消息
+
+**Checklist / 检查清单：**
+
+1. ✅ Added `im.message.receive_v1` event subscription?
+2. ✅ Using "Long Connection" mode (not Webhook)?
+3. ✅ Published a new version after adding permissions?
+4. ✅ Bot is added to the chat (for group messages)?
+
+1. ✅ 是否添加了 `im.message.receive_v1` 事件订阅？
+2. ✅ 是否选择了「长连接」模式（不是 Webhook）？
+3. ✅ 添加权限后是否发布了新版本？
+4. ✅ 机器人是否被添加到群聊中（群消息的情况）？
+
+---
+
+### ❌ Permission Denied Errors / 权限错误
+
+**Symptom:** API calls fail with 403 or "no permission".
+
+**症状：** API 调用返回 403 或「无权限」错误。
+
+**Solution / 解决方案：**
+
+1. Check which permissions are needed for the API (see table above)
+2. Add missing permissions in Feishu Open Platform
+3. **Create a new version and publish it** (permissions don't take effect until published!)
+
+1. 检查该 API 需要哪些权限（见上方权限表）
+2. 在飞书开放平台添加缺少的权限
+3. **创建新版本并发布**（权限修改后必须发布才能生效！）
+
+---
+
+### ❌ Long Connection Keeps Disconnecting / 长连接频繁断开
+
+**Possible causes / 可能原因：**
+
+1. Network instability / 网络不稳定
+2. Server resources exhausted / 服务器资源不足
+3. Multiple instances running / 多个实例同时运行
+
+**Solution / 解决方案：**
+
+```bash
+# Check if multiple gateway processes are running
+# 检查是否有多个 gateway 进程在运行
+ps aux | grep -E "(openclaw|clawdbot)" | grep gateway
+
+# Kill duplicates and restart
+# 杀掉重复进程并重启
+openclaw gateway stop && openclaw gateway start
+# or
+clawdbot gateway stop && clawdbot gateway start
+```
+
+---
+
+### 💡 Debug Mode / 调试模式
+
+Enable debug logging to see detailed API calls:
+
+启用调试日志查看详细 API 调用：
+
+```bash
+# OpenClaw
+openclaw gateway start --log-level debug
+
+# Clawdbot
+clawdbot gateway start --log-level debug
+```
+
+---
+
+### 📞 Still Stuck? / 仍然有问题？
+
+- Open an issue: https://github.com/gcmsg/openclaw-feishu/issues
+- Community: https://discord.com/invite/clawd
+
+---
+
 ## 📄 License
 
 MIT
