@@ -125,7 +125,7 @@ export async function detectSDK(): Promise<string> {
     }
   }
 
-  // 默认使用 clawdbot（最广泛兼容）
-  detectedPkg = "clawdbot";
+  // 默认使用 openclaw（新版优先）
+  detectedPkg = "openclaw";
   return detectedPkg;
 }

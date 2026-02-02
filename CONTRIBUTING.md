@@ -80,7 +80,8 @@ docs: 更新 README 安装说明
 ```
 openclaw-feishu/
 ├── index.ts           # 插件入口
-├── clawdbot.plugin.json  # 插件配置
+├── openclaw.plugin.json  # 插件配置 (OpenClaw)
+├── clawdbot.plugin.json  # 插件配置（Clawdbot 兼容）
 ├── src/
 │   ├── channel.ts     # 通道插件定义
 │   ├── client.ts      # 消息 API

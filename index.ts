@@ -1,5 +1,5 @@
 /**
- * Clawdbot 飞书通道插件
+ * OpenClaw 飞书通道插件
  *
  * 功能：
  * - 📨 消息收发（文本、富文本、卡片、图片、文件）
@@ -7,10 +7,10 @@
  * - 📁 云空间管理（文件夹、上传、下载、搜索）
  *
  * 安装：
- *   clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+ *   openclaw plugins install https://github.com/gcmsg/openclaw-feishu
  *
  * 配置：
- *   clawdbot onboard feishu
+ *   openclaw onboard feishu
  */
 
 import type { ClawdbotPluginApi } from "./src/compat.js";

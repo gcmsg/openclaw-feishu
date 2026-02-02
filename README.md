@@ -608,7 +608,8 @@ clawdbot onboard feishu
 ```
 openclaw-feishu/
 ├── index.ts              # Plugin entry / 插件入口
-├── clawdbot.plugin.json  # Plugin manifest / 插件配置
+├── openclaw.plugin.json  # Plugin manifest (OpenClaw) / 插件配置
+├── clawdbot.plugin.json  # Plugin manifest (Clawdbot) / 插件配置（兼容）
 ├── src/
 │   ├── channel.ts        # Channel definition / 通道定义
 │   ├── agent-tools.ts    # Feishu agent tool / 飞书 Agent 工具
