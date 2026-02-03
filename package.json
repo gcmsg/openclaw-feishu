@@ -1,6 +1,6 @@
 {
   "name": "@openclaw/feishu",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "飞书通道插件 - 支持消息、云文档、AI能力 | Feishu channel plugin with docs, AI capabilities",
   "type": "module",
   "main": "index.ts",
@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"**/*.{ts,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,json,md}\"",
-    "prepare": "npm run lint && npm run format:check"
+    "prepack": "npm run build"
   },
   "openclaw": {
     "extensions": [
@@ -47,7 +47,8 @@
     "url": "https://github.com/gcmsg/openclaw-feishu"
   },
   "dependencies": {
-    "@larksuiteoapi/node-sdk": "^1.58.0"
+    "@larksuiteoapi/node-sdk": "^1.58.0",
+    "@sinclair/typebox": "^0.34.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
