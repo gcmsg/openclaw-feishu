@@ -76,7 +76,7 @@ npx openclaw onboard
 
 ```bash
 # Clone the repository
-git clone https://github.com/nicholasxuu/openclaw.git
+git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 
 # Install dependencies
@@ -97,7 +97,7 @@ After installation, run the onboard wizard to configure your first channel:
 openclaw onboard
 ```
 
-For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [GitHub Repository](https://github.com/nicholasxuu/openclaw).
+For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [GitHub Repository](https://github.com/openclaw/openclaw).
 
 ---
 
@@ -364,7 +364,7 @@ npx openclaw onboard
 
 ```bash
 # 克隆仓库
-git clone https://github.com/nicholasxuu/openclaw.git
+git clone https://github.com/openclaw/openclaw.git
 cd openclaw
 
 # 安装依赖
@@ -385,7 +385,7 @@ npm link
 openclaw onboard
 ```
 
-更多详情请参阅 [OpenClaw 文档](https://docs.openclaw.bot) 或 [GitHub 仓库](https://github.com/nicholasxuu/openclaw)。
+更多详情请参阅 [OpenClaw 文档](https://docs.openclaw.bot) 或 [GitHub 仓库](https://github.com/openclaw/openclaw)。
 
 ---
 
