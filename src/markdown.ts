@@ -25,11 +25,42 @@ export function markdownToPost(markdown: string, title?: string): PostContent {
   const lines = markdown.split("\n");
   const content: PostElement[][] = [];
 
+  let inCodeBlock = false;
+  let codeBlockLang = "";
+
   for (const line of lines) {
+    // 检测代码块开始/结束
+    const codeBlockMatch = line.match(/^```(\w*)$/);
+    if (codeBlockMatch) {
+      if (!inCodeBlock) {
+        // 代码块开始
+        inCodeBlock = true;
+        codeBlockLang = codeBlockMatch[1] || "code";
+        content.push([{ tag: "text", text: `┌─ ${codeBlockLang} ─┐` }]);
+      } else {
+        // 代码块结束
+        inCodeBlock = false;
+        content.push([{ tag: "text", text: "└───────────┘" }]);
+        codeBlockLang = "";
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      // 代码块内容，保持原样，加前缀
+      content.push([{ tag: "text", text: `│ ${line}` }]);
+      continue;
+    }
+
     const elements = parseLine(line);
     if (elements.length > 0) {
       content.push(elements);
     }
+  }
+
+  // 如果代码块未闭合，补上结束标记
+  if (inCodeBlock) {
+    content.push([{ tag: "text", text: "└───────────┘" }]);
   }
 
   return {
@@ -158,6 +189,7 @@ export function hasMarkdown(text: string): boolean {
     /^[-*]\s+\[[ xX]\]/m, // Checkbox
     /`[^`]+`/, // 行内代码
     /^[-*_]{3,}$/m, // 分隔线
+    /^```\w*$/m, // 代码块
   ];
 
   return patterns.some((p) => p.test(text));
