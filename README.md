@@ -111,9 +111,36 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
-### 🔒 Security: Enable Plugin in Allowlist
+### 🛠️ Easy Setup (Clawdbot v2.10+)
 
-After installation, you **must** add the plugin to the allowlist in your config file:
+After installation, use the interactive setup wizard:
+
+```bash
+clawdbot feishu setup
+```
+
+This command will:
+- ✅ Guide you through entering App ID and App Secret
+- ✅ **Automatically add to allowlist** if needed
+- ✅ Save configuration
+- ✅ Optionally restart the gateway
+
+**Non-interactive mode:**
+
+```bash
+clawdbot feishu setup --app-id cli_xxx --app-secret xxx --non-interactive
+```
+
+**Other CLI commands:**
+
+```bash
+clawdbot feishu status   # Check plugin status
+clawdbot feishu test     # Test Feishu connection
+```
+
+### 🔒 Security: Plugin Allowlist (Manual Setup)
+
+If you prefer manual configuration, or if `plugins.allow` is already set, add "feishu" to the allowlist:
 
 ```jsonc
 // ~/.clawdbot/clawdbot.json or ~/.openclaw/openclaw.json
@@ -124,7 +151,7 @@ After installation, you **must** add the plugin to the allowlist in your config 
 }
 ```
 
-> ⚠️ **CRITICAL:** If `plugins.allow` is not set, the plugin will not be loaded for security reasons.
+> ⚠️ **Note:** If `plugins.allow` is set but doesn't include "feishu", the plugin won't load. The `clawdbot feishu setup` command handles this automatically.
 
 ### 💡 Pro Tip: Add Feishu Skill
 
@@ -276,9 +303,18 @@ Follow this step-by-step guide to create your Feishu bot application from scratc
 
 ---
 
-#### ✅ Step 7: Run Onboard Command
+#### ✅ Step 7: Configure Plugin
 
-After completing the above configuration, run:
+After completing the above configuration, choose one of these methods:
+
+**Option A: Interactive Setup (Recommended)**
+
+```bash
+# Clawdbot - interactive wizard
+clawdbot feishu setup
+```
+
+**Option B: Onboard Command**
 
 ```bash
 # OpenClaw
@@ -288,7 +324,13 @@ openclaw onboard feishu
 clawdbot onboard feishu
 ```
 
-Enter your **App ID** and **App Secret** when prompted.
+**Option C: Non-interactive Setup**
+
+```bash
+clawdbot feishu setup --app-id YOUR_APP_ID --app-secret YOUR_APP_SECRET --non-interactive
+```
+
+Enter your **App ID** and **App Secret** when prompted (for Option A or B).
 
 ---
 
@@ -414,9 +456,36 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
-### 🔒 安全配置：启用插件白名单
+### 🛠️ 便捷配置 (Clawdbot v2.10+)
 
-安装完成后，你**必须**在配置文件中将插件添加到白名单：
+安装后，使用交互式配置向导：
+
+```bash
+clawdbot feishu setup
+```
+
+这个命令会：
+- ✅ 引导你输入 App ID 和 App Secret
+- ✅ **自动添加到白名单**（如果需要）
+- ✅ 保存配置
+- ✅ 可选择重启 Gateway
+
+**非交互模式：**
+
+```bash
+clawdbot feishu setup --app-id cli_xxx --app-secret xxx --non-interactive
+```
+
+**其他 CLI 命令：**
+
+```bash
+clawdbot feishu status   # 查看插件状态
+clawdbot feishu test     # 测试飞书连接
+```
+
+### 🔒 安全配置：插件白名单（手动配置）
+
+如果你偏好手动配置，或者 `plugins.allow` 已经设置，需要将 "feishu" 添加到白名单：
 
 ```jsonc
 // ~/.clawdbot/clawdbot.json 或 ~/.openclaw/openclaw.json
@@ -427,7 +496,7 @@ clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 }
 ```
 
-> ⚠️ **重要：** 如果未设置 `plugins.allow`，出于安全原因插件将不会被加载。
+> ⚠️ **注意：** 如果 `plugins.allow` 已设置但不包含 "feishu"，插件将无法加载。`clawdbot feishu setup` 命令会自动处理这个问题。
 
 ### 💡 小技巧：添加飞书 Skill
 
@@ -579,9 +648,18 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 
 ---
 
-#### ✅ 第七步：运行 onboard 命令
+#### ✅ 第七步：配置插件
 
-完成上述配置后，运行以下命令完成接入：
+完成上述配置后，选择以下任一方式配置：
+
+**方式 A：交互式配置（推荐）**
+
+```bash
+# Clawdbot - 交互式向导
+clawdbot feishu setup
+```
+
+**方式 B：Onboard 命令**
 
 ```bash
 # OpenClaw
@@ -591,7 +669,13 @@ openclaw onboard feishu
 clawdbot onboard feishu
 ```
 
-按提示输入 **App ID** 和 **App Secret**，完成配置。
+**方式 C：非交互式配置**
+
+```bash
+clawdbot feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-interactive
+```
+
+按提示输入 **App ID** 和 **App Secret**（方式 A 或 B）。
 
 ---
 

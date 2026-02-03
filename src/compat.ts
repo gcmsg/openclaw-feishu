@@ -2,10 +2,52 @@
  * SDK 兼容层 - 支持 OpenClaw / Clawdbot / Moltbot
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Command = any;
+
+// Logger 接口
+export interface PluginLogger {
+  info: (message: string) => void;
+  warn: (message: string) => void;
+  error: (message: string) => void;
+  debug?: (message: string) => void;
+}
+
+// Prompter 接口（用于交互式 CLI）
+export interface PluginPrompter {
+  text(opts: { message: string; validate?: (v: string) => string | undefined }): Promise<string>;
+  confirm(opts: { message: string; initialValue?: boolean }): Promise<boolean>;
+  note(message: string, title?: string): Promise<void>;
+  select?<T>(opts: { message: string; options: Array<{ value: T; label: string }> }): Promise<T>;
+}
+
+// CLI 注册上下文
+export interface CliRegistrationContext {
+  program: Command;
+  prompter?: PluginPrompter;
+}
+
 // 类型定义（编译时使用，不影响运行时）
 export interface ClawdbotPluginApi {
+  /** 插件运行时 */
   runtime: PluginRuntime;
+  /** 完整配置 */
+  config: ClawdbotConfig;
+  /** 插件自身配置 (plugins.entries.<id>.config) */
+  pluginConfig?: unknown;
+  /** 日志器 */
+  logger: PluginLogger;
+  /** 注册通道 */
   registerChannel: (opts: { plugin: any }) => void;
+  /** 注册 CLI 命令 */
+  registerCli: (
+    factory: (ctx: CliRegistrationContext) => void,
+    opts?: { commands?: string[] }
+  ) => void;
+  /** 注册 Gateway 方法 */
+  registerGatewayMethod?: (name: string, handler: (ctx: any) => void) => void;
+  /** 注册后台服务 */
+  registerService?: (opts: { id: string; start: () => Promise<void>; stop: () => Promise<void> }) => void;
 }
 
 export interface PluginRuntime {
@@ -14,6 +56,10 @@ export interface PluginRuntime {
       dispatchReplyWithBufferedBlockDispatcher: (opts: any) => Promise<void>;
     };
   };
+  /** 更新配置 */
+  configPatch?: (patch: Partial<ClawdbotConfig>) => Promise<void>;
+  /** 重启 Gateway */
+  restart?: () => Promise<void>;
 }
 
 export interface ClawdbotConfig {

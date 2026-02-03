@@ -13,9 +13,10 @@
  *   openclaw onboard feishu
  */
 
-import type { ClawdbotPluginApi } from "./src/compat.js";
+import type { ClawdbotPluginApi, ClawdbotConfig, PluginPrompter } from "./src/compat.js";
 import { feishuPlugin } from "./src/channel.js";
 import { setFeishuRuntime } from "./src/runtime.js";
+import { registerFeishuCli } from "./src/cli.js";
 
 export const plugin = {
   id: "feishu",
@@ -25,6 +26,31 @@ export const plugin = {
   register(api: ClawdbotPluginApi) {
     setFeishuRuntime(api.runtime);
     api.registerChannel({ plugin: feishuPlugin });
+
+    // 注册 CLI 命令: clawdbot feishu setup/status/test
+    api.registerCli(
+      ({ program, prompter }) => {
+        registerFeishuCli({
+          program,
+          config: api.config,
+          prompter: prompter as PluginPrompter | undefined,
+          updateConfig: async (patch) => {
+            // 使用 Clawdbot 的配置更新机制
+            if (api.runtime?.configPatch) {
+              await api.runtime.configPatch(patch);
+            }
+          },
+          restartGateway: async () => {
+            // 使用 Clawdbot 的重启机制
+            if (api.runtime?.restart) {
+              await api.runtime.restart();
+            }
+          },
+          logger: api.logger,
+        });
+      },
+      { commands: ["feishu"] }
+    );
   },
 };
 
