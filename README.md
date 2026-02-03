@@ -51,6 +51,56 @@ If something goes wrong after installation, see [Recovery Guide](#-recovery-guid
 
 ---
 
+### 🚀 Prerequisites: Install OpenClaw
+
+Before installing this plugin, you need to have OpenClaw (or Clawdbot) installed.
+
+#### Option 1: Quick Install (Recommended)
+
+```bash
+# Install OpenClaw globally via npm
+npm install -g openclaw
+
+# Verify installation
+openclaw --version
+```
+
+#### Option 2: Using npx (No Install)
+
+```bash
+# Run directly without installing
+npx openclaw onboard
+```
+
+#### Option 3: From Source
+
+```bash
+# Clone the repository
+git clone https://github.com/nicholasxuu/openclaw.git
+cd openclaw
+
+# Install dependencies
+pnpm install
+
+# Build
+pnpm build
+
+# Link globally
+npm link
+```
+
+#### First-time Setup
+
+After installation, run the onboard wizard to configure your first channel:
+
+```bash
+openclaw onboard
+```
+
+For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [GitHub Repository](https://github.com/nicholasxuu/openclaw).
+
+---
+
 ### 📦 Quick Install
 
 ```bash
@@ -274,6 +324,56 @@ cp ~/.clawdbot/clawdbot.json ~/.clawdbot/clawdbot.json.bak
 ```
 
 如果安装后出现问题，请参阅下方的[恢复指南](#-recovery-guide--恢复指南)。
+
+---
+
+### 🚀 前置条件：安装 OpenClaw
+
+在安装本插件之前，你需要先安装 OpenClaw（或 Clawdbot）。
+
+#### 方式一：快速安装（推荐）
+
+```bash
+# 通过 npm 全局安装 OpenClaw
+npm install -g openclaw
+
+# 验证安装
+openclaw --version
+```
+
+#### 方式二：使用 npx（无需安装）
+
+```bash
+# 直接运行，无需安装
+npx openclaw onboard
+```
+
+#### 方式三：从源码安装
+
+```bash
+# 克隆仓库
+git clone https://github.com/nicholasxuu/openclaw.git
+cd openclaw
+
+# 安装依赖
+pnpm install
+
+# 构建
+pnpm build
+
+# 全局链接
+npm link
+```
+
+#### 首次配置
+
+安装完成后，运行 onboard 向导配置你的第一个通道：
+
+```bash
+openclaw onboard
+```
+
+更多详情请参阅 [OpenClaw 文档](https://docs.openclaw.bot) 或 [GitHub 仓库](https://github.com/nicholasxuu/openclaw)。
 
 ---
 
