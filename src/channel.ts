@@ -2493,7 +2493,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
 
     sendText: async (ctx) => {
       const account = ctx.account as ResolvedFeishuAccount;
-      const result = await sendTextMessage(account, ctx.to, ctx.text);
+      const result = await sendSmartMessage(account, ctx.to, ctx.text);
       return { ok: result.ok, error: result.error ? new Error(result.error) : undefined };
     },
 
