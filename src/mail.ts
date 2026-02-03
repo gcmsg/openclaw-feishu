@@ -181,13 +181,14 @@ export async function listMails(
   const client = getFeishuClient(account);
 
   try {
+    const params: { page_size: number; folder_id?: string; page_token?: string } = {
+      page_size: options?.pageSize || 50,
+    };
+    if (options?.folderId) params.folder_id = options.folderId;
+    if (options?.pageToken) params.page_token = options.pageToken;
     const result = await client.mail.v1.userMailboxMessage.list({
       path: { user_mailbox_id: userMailboxId },
-      params: {
-        folder_id: options?.folderId,
-        page_size: options?.pageSize || 50,
-        page_token: options?.pageToken,
-      },
+      params: params as any,
     });
 
     if (result.code === 0) {
@@ -297,12 +298,11 @@ export async function createMailFolder(
   const client = getFeishuClient(account);
 
   try {
+    const data: { name: string; parent_folder_id?: string } = { name };
+    if (parentFolderId) data.parent_folder_id = parentFolderId;
     const result = await client.mail.v1.userMailboxFolder.create({
       path: { user_mailbox_id: userMailboxId },
-      data: {
-        name,
-        parent_folder_id: parentFolderId,
-      },
+      data: data as any,
     });
 
     if (result.code === 0) {

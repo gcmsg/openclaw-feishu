@@ -544,14 +544,21 @@ export async function queryTasks(
   const client = getFeishuClient(account);
 
   try {
+    const params: {
+      page_size: number;
+      page_token?: string;
+      user_id?: string;
+      topic: string;
+      user_id_type: string;
+    } = {
+      page_size: options?.pageSize || 100,
+      topic: options?.topic || "1",
+      user_id_type: "open_id",
+    };
+    if (options?.pageToken) params.page_token = options.pageToken;
+    if (options?.userId) params.user_id = options.userId;
     const result = await client.approval.v4.task.query({
-      params: {
-        page_size: options?.pageSize || 100,
-        page_token: options?.pageToken,
-        user_id: options?.userId,
-        topic: options?.topic || "1",
-        user_id_type: "open_id",
-      },
+      params: params as any,
     });
 
     if (result.code === 0) {

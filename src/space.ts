@@ -18,11 +18,10 @@ export async function createFolder(
   const client = getFeishuClient(account);
 
   try {
+    const data: { name: string; folder_token?: string } = { name };
+    if (parentToken) data.folder_token = parentToken;
     const result = await client.drive.v1.file.createFolder({
-      data: {
-        name,
-        folder_token: parentToken,
-      },
+      data: data as any,
     });
 
     if (result.code === 0 && result.data) {
@@ -234,12 +233,11 @@ export async function copyFile(
   const client = getFeishuClient(account);
 
   try {
+    const data: { folder_token: string; name?: string } = { folder_token: targetFolderToken };
+    if (newName) data.name = newName;
     const result = await client.drive.v1.file.copy({
       path: { file_token: fileToken },
-      data: {
-        folder_token: targetFolderToken,
-        name: newName,
-      },
+      data: data as any,
     });
 
     if (result.code === 0 && result.data?.file) {
