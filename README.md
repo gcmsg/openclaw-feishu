@@ -111,6 +111,18 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
+### 💡 Pro Tip: Add Feishu Skill
+
+After installation, tell your AI assistant to add Feishu capabilities as a skill for easier use:
+
+> "Add the complete Feishu API capabilities as a skill so you can help me with Feishu operations."
+
+Or simply say:
+
+> "Learn all Feishu tool actions and remember them."
+
+This helps your assistant understand 200+ Feishu operations including documents, bitable, calendar, tasks, approvals, and more!
+
 ### 🛠️ Agent Tool Architecture
 
 This plugin provides a dedicated **`feishu` agent tool** for Feishu-specific operations (cards, documents, bitable, etc.).
@@ -386,6 +398,18 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 # Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
+
+### 💡 小技巧：添加飞书 Skill
+
+安装完成后，告诉你的 AI 助手添加飞书能力作为 skill，方便日后使用：
+
+> "把飞书的全部 API 能力添加为 skill，这样你就能帮我处理飞书相关的操作了。"
+
+或者简单说：
+
+> "学习并记住所有飞书工具的操作。"
+
+这样助手就能理解 200+ 种飞书操作，包括云文档、多维表格、日历、任务、审批等！
 
 ### 🛠️ Agent 工具架构
 
