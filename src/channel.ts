@@ -312,7 +312,7 @@ async function saveMediaToTemp(
 const CHANNEL_ID = "feishu" as const;
 
 function getFeishuConfig(cfg: ClawdbotConfig): FeishuChannelConfig | undefined {
-  return (cfg as any).channels?.feishu as FeishuChannelConfig | undefined;
+  return (cfg as any).channels?.["openclaw-feishu"] as FeishuChannelConfig | undefined;
 }
 
 function listFeishuAccountIds(cfg: ClawdbotConfig): string[] {
@@ -453,8 +453,8 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
       ...next,
       channels: {
         ...(next as any).channels,
-        feishu: {
-          ...(next as any).channels?.feishu,
+        "openclaw-feishu": {
+          ...(next as any).channels?.["openclaw-feishu"],
           enabled: true,
           ...(appId ? { appId } : {}),
           ...(appSecret ? { appSecret } : {}),
@@ -470,7 +470,7 @@ const feishuOnboardingAdapter: ChannelOnboardingAdapter = {
       ...cfg,
       channels: {
         ...(cfg as any).channels,
-        feishu: { ...(cfg as any).channels?.feishu, enabled: false },
+        "openclaw-feishu": { ...(cfg as any).channels?.["openclaw-feishu"], enabled: false },
       },
     }) as ClawdbotConfig,
 };
@@ -2437,10 +2437,10 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 // ========== Channel Plugin ==========
 
 export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
-  id: "feishu",
+  id: "openclaw-feishu",
 
   meta: {
-    id: "feishu",
+    id: "openclaw-feishu",
     label: "Feishu",
     selectionLabel: "飞书 (消息/文档/云空间)",
     docsPath: "https://github.com/gcmsg/openclaw-feishu",
@@ -2492,6 +2492,8 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
     textChunkLimit: 4000,
 
     sendText: async (ctx) => {
+      const fs = await import("fs");
+      fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] outbound.sendText called, to=${ctx.to}, len=${ctx.text?.length}\n`);
       const account = ctx.account as ResolvedFeishuAccount;
       const result = await sendSmartMessage(account, ctx.to, ctx.text);
       return { ok: result.ok, error: result.error ? new Error(result.error) : undefined };
@@ -2530,6 +2532,8 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
         account,
         abortSignal: ctx.abortSignal,
         onMessage: async (message) => {
+          const fs = await import("fs");
+          fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] onMessage called, msgId=${message.messageId}\n`);
           const logger = {
             info: (msg: string) => console.info(`[feishu-plus:${account.accountId}] ${msg}`),
             error: (msg: string) => console.error(`[feishu-plus:${account.accountId}] ${msg}`),
@@ -2735,9 +2739,10 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             cfg,
             dispatcherOptions: {
               deliver: async (payload) => {
+                const fs = await import("fs");
                 const text = payload.text ?? "";
+                fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] deliver called, len=${text.length}\n`);
                 if (text) {
-                  // 自动检测 Markdown，转换为飞书富文本
                   await sendSmartMessage(account, message.chatId, text);
                 }
               },

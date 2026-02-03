@@ -19,7 +19,7 @@ import { setFeishuRuntime } from "./src/runtime.js";
 import { registerFeishuCli } from "./src/cli.js";
 
 export const plugin = {
-  id: "feishu",
+  id: "openclaw-feishu",
   name: "Feishu",
   description: "飞书通道插件 - 支持消息、云文档、云空间",
 

@@ -804,22 +804,31 @@ export async function sendSmartMessage(
   text: string,
   options?: { forceText?: boolean; forceCard?: boolean }
 ): Promise<ApiResult<{ messageId: string }>> {
+  const hasMd = hasMarkdown(text);
+  const fs = await import("fs");
+  fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] sendSmartMessage hasMd=${hasMd}, len=${text.length}, preview=${text.slice(0, 80).replace(/\n/g, "\\n")}\n`);
+
   // 强制使用指定格式
   if (options?.forceText) {
+    console.info("[sendSmartMessage] -> forceText");
     return sendTextMessage(account, chatId, text);
   }
 
   if (options?.forceCard) {
+    console.info("[sendSmartMessage] -> forceCard");
     const card = buildFeishuCard(text);
     return sendCardMessage(account, chatId, card);
   }
 
   // 智能检测：纯文本用 text，其他用卡片
-  if (!hasMarkdown(text)) {
+  if (!hasMd) {
+    console.info("[sendSmartMessage] -> text (no markdown)");
     return sendTextMessage(account, chatId, text);
   }
 
   // 使用卡片消息
+  console.info("[sendSmartMessage] -> card (has markdown)");
   const card = buildFeishuCard(text);
+  console.info("[sendSmartMessage] card elements:", card.elements?.length);
   return sendCardMessage(account, chatId, card);
 }

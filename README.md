@@ -104,32 +104,32 @@ For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [Gi
 ### 📦 Quick Install
 
 ```bash
-# OpenClaw (latest)
-openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# Recommended: Install from npm
+openclaw plugins install @zeneo/openclaw-feishu
+# or: clawdbot plugins install @zeneo/openclaw-feishu
 
-# Clawdbot
-clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+# Alternative: Install from GitHub
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# or: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
 ### 🔄 Update to Latest Version
 
-To update an existing installation to the latest version:
-
 ```bash
-# Step 1: Remove old version
+# If installed from npm (recommended)
+openclaw plugins update feishu
+# or: clawdbot plugins update feishu
+
+# If installed from GitHub, reinstall:
 rm -rf ~/.openclaw/extensions/feishu  # or: ~/.clawdbot/extensions/feishu
+openclaw plugins install @zeneo/openclaw-feishu
+# or: clawdbot plugins install @zeneo/openclaw-feishu
 
-# Step 2: Reinstall from GitHub
-openclaw plugins install https://github.com/gcmsg/openclaw-feishu
-# or: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
-
-# Step 3: Restart gateway
+# Restart gateway after update
 openclaw gateway restart  # or: clawdbot gateway restart
 ```
 
 > 💡 **Tip:** Your configuration (appId, appSecret in config file) will be preserved — only the plugin code is replaced.
->
-> ⚠️ **Note:** `plugins update` only works for npm-installed plugins. Since this plugin is installed from GitHub archive, use the reinstall method above.
 
 ### 🔧 Post-Install Configuration
 
@@ -143,9 +143,9 @@ clawdbot config set 'plugins.allow' '["feishu"]'
 # clawdbot config set 'plugins.allow' '["telegram", "feishu"]'
 
 # Step 2: Configure credentials
-clawdbot config set channels.feishu.appId "cli_your_app_id"
-clawdbot config set channels.feishu.appSecret "your_app_secret"
-clawdbot config set channels.feishu.enabled true
+clawdbot config set channels.openclaw-feishu.appId "cli_your_app_id"
+clawdbot config set channels.openclaw-feishu.appSecret "your_app_secret"
+clawdbot config set channels.openclaw-feishu.enabled true
 
 # Step 3: Restart gateway
 clawdbot gateway restart
@@ -497,9 +497,9 @@ clawdbot config set 'plugins.allow' '["feishu"]'
 # clawdbot config set 'plugins.allow' '["telegram", "feishu"]'
 
 # 第二步：配置凭证
-clawdbot config set channels.feishu.appId "cli_你的应用ID"
-clawdbot config set channels.feishu.appSecret "你的应用密钥"
-clawdbot config set channels.feishu.enabled true
+clawdbot config set channels.openclaw-feishu.appId "cli_你的应用ID"
+clawdbot config set channels.openclaw-feishu.appSecret "你的应用密钥"
+clawdbot config set channels.openclaw-feishu.enabled true
 
 # 第三步：重启 Gateway
 clawdbot gateway restart

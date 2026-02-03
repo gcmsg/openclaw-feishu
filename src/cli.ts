@@ -30,7 +30,7 @@ interface CliContext {
 }
 
 function getFeishuConfig(cfg: ClawdbotConfig): FeishuChannelConfig | undefined {
-  return (cfg as any).channels?.feishu;
+  return (cfg as any).channels?.["openclaw-feishu"];
 }
 
 function getPluginsAllow(cfg: ClawdbotConfig): string[] {
@@ -122,9 +122,9 @@ export function registerFeishuCli(ctx: CliContext) {
         } else {
           // 直接输出配置指令
           console.info("\n请运行以下命令完成配置:\n");
-          console.info(`clawdbot config set channels.feishu.enabled true`);
-          console.info(`clawdbot config set channels.feishu.appId "${options.appId}"`);
-          console.info(`clawdbot config set channels.feishu.appSecret "${options.appSecret}"`);
+          console.info(`clawdbot config set channels.openclaw-feishu.enabled true`);
+          console.info(`clawdbot config set channels.openclaw-feishu.appId "${options.appId}"`);
+          console.info(`clawdbot config set channels.openclaw-feishu.appSecret "${options.appSecret}"`);
           if (needsAllowlistUpdate(config)) {
             const currentAllow = getPluginsAllow(config);
             console.info(
@@ -229,9 +229,9 @@ export function registerFeishuCli(ctx: CliContext) {
       } else {
         // 没有 prompter，输出手动配置说明
         console.info("请手动配置:\n");
-        console.info("clawdbot config set channels.feishu.enabled true");
-        console.info('clawdbot config set channels.feishu.appId "cli_xxxxxxxx"');
-        console.info('clawdbot config set channels.feishu.appSecret "xxxxxxxx"');
+        console.info("clawdbot config set channels.openclaw-feishu.enabled true");
+        console.info('clawdbot config set channels.openclaw-feishu.appId "cli_xxxxxxxx"');
+        console.info('clawdbot config set channels.openclaw-feishu.appSecret "xxxxxxxx"');
         if (needsAllowlistUpdate(config)) {
           const currentAllow = getPluginsAllow(config);
           console.info(
