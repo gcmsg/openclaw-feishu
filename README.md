@@ -727,12 +727,20 @@ clawdbot feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-
 
 ### 消息 / Messaging
 
-| Action       | Params               | Description  |
-| ------------ | -------------------- | ------------ |
-| `send`       | `target`, `message`  | 发送文本消息 |
-| `send_card`  | `target`, `card`     | 发送卡片消息 |
-| `send_image` | `target`, `filePath` | 发送图片     |
-| `send_file`  | `target`, `filePath` | 发送文件     |
+| Action       | Params               | Description                            |
+| ------------ | -------------------- | -------------------------------------- |
+| `send`       | `target`, `message`  | 发送消息（支持 Markdown 自动转富文本） |
+| `send_card`  | `target`, `card`     | 发送卡片消息                           |
+| `send_image` | `target`, `filePath` | 发送图片                               |
+| `send_file`  | `target`, `filePath` | 发送文件                               |
+
+**Markdown 富文本支持：** `send` action 会自动检测消息中的 Markdown 格式，转换为飞书富文本（Post）消息。支持的格式：
+- `**加粗**` / `*斜体*`
+- `[链接](url)`
+- `# 标题`（转为加粗）
+- `- 列表项` / `1. 有序列表`
+- `` `行内代码` ``
+- `---` 分隔线
 
 ### 云文档 / Documents
 
