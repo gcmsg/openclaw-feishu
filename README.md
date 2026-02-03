@@ -111,6 +111,21 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
+### 🔒 Security: Enable Plugin in Allowlist
+
+After installation, you **must** add the plugin to the allowlist in your config file:
+
+```jsonc
+// ~/.clawdbot/clawdbot.json or ~/.openclaw/openclaw.json
+{
+  "plugins": {
+    "allow": ["feishu"]  // Add "feishu" to the allowlist
+  }
+}
+```
+
+> ⚠️ **CRITICAL:** If `plugins.allow` is not set, the plugin will not be loaded for security reasons.
+
 ### 💡 Pro Tip: Add Feishu Skill
 
 After installation, tell your AI assistant to add Feishu capabilities as a skill for easier use:
@@ -398,6 +413,21 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 # Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
+
+### 🔒 安全配置：启用插件白名单
+
+安装完成后，你**必须**在配置文件中将插件添加到白名单：
+
+```jsonc
+// ~/.clawdbot/clawdbot.json 或 ~/.openclaw/openclaw.json
+{
+  "plugins": {
+    "allow": ["feishu"]  // 将 "feishu" 添加到白名单
+  }
+}
+```
+
+> ⚠️ **重要：** 如果未设置 `plugins.allow`，出于安全原因插件将不会被加载。
 
 ### 💡 小技巧：添加飞书 Skill
 
