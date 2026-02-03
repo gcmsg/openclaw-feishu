@@ -707,7 +707,7 @@ function parseMarkdownTable(tableText: string): { headers: string[]; rows: strin
 }
 
 /**
- * 将表格转换为 column_set 布局
+ * 将表格转换为 column_set 布局（带分隔线）
  */
 function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[] {
   const elements: any[] = [];
@@ -725,11 +725,16 @@ function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[]
     })),
   });
 
-  // 数据行
-  for (const row of table.rows) {
+  // 表头下方分隔线
+  elements.push({ tag: "hr" });
+
+  // 数据行（奇偶行不同背景）
+  for (let i = 0; i < table.rows.length; i++) {
+    const row = table.rows[i];
     elements.push({
       tag: "column_set",
       flex_mode: "none",
+      background_style: i % 2 === 1 ? "grey" : "default",
       columns: row.map((cell) => ({
         tag: "column",
         width: "weighted",
@@ -739,25 +744,137 @@ function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[]
     });
   }
 
+  // 表格底部分隔线
+  elements.push({ tag: "hr" });
+
   return elements;
+}
+
+/**
+ * 代码块占位符（用于先提取代码块，后续单独渲染）
+ */
+const CODE_BLOCK_PLACEHOLDER = "___CODE_BLOCK_PLACEHOLDER___";
+
+/**
+ * 提取代码块，返回处理后的文本和代码块数组
+ */
+function extractCodeBlocks(text: string): { text: string; codeBlocks: string[] } {
+  const codeBlocks: string[] = [];
+  const processed = text.replace(/```([\w]*)\n([\s\S]*?)```/g, (_match, lang, code) => {
+    const trimmed = code.trim();
+    const langLabel = lang ? `📄 ${lang.toUpperCase()}` : "📄 CODE";
+    codeBlocks.push(`${langLabel}\n${trimmed}`);
+    return `\n${CODE_BLOCK_PLACEHOLDER}_${codeBlocks.length - 1}\n`;
+  });
+  return { text: processed, codeBlocks };
+}
+
+/**
+ * 预处理 Markdown：将飞书不支持的语法转换为支持的格式
+ * 飞书 lark_md 支持：**加粗** *斜体* ~~删除线~~ [链接](url)
+ * 不支持：# 标题、``` 代码块、` 行内代码、> 引用、- 列表
+ */
+function preprocessMarkdown(text: string): string {
+  let result = text;
+
+  // 1. 行内代码 `code` → 「code」（用中文引号标记）
+  result = result.replace(/`([^`]+)`/g, "「$1」");
+
+  // 2. 标题 ## xxx → **xxx**（加粗 + 换行分隔）
+  result = result.replace(/^#{1,6}\s+(.+)$/gm, "\n**$1**\n");
+
+  // 3. 引用 > text → 💬 text
+  result = result.replace(/^>\s*(.+)$/gm, "💬 $1");
+
+  // 4. 无序列表 - item → • item
+  result = result.replace(/^[-*]\s+(.+)$/gm, "• $1");
+
+  // 5. 有序列表保持不变（1. 2. 3. 本身可读）
+
+  // 6. 分隔线 --- 或 *** → ─────────────
+  result = result.replace(/^[-*]{3,}$/gm, "─────────────");
+
+  // 7. 清理多余空行（最多保留两个）
+  result = result.replace(/\n{3,}/g, "\n\n");
+
+  return result.trim();
+}
+
+/**
+ * 构建代码块元素（灰色背景）
+ */
+function buildCodeBlockElement(code: string): any {
+  return {
+    tag: "column_set",
+    flex_mode: "none",
+    background_style: "grey",
+    columns: [
+      {
+        tag: "column",
+        width: "weighted",
+        weight: 1,
+        elements: [
+          {
+            tag: "div",
+            text: { tag: "plain_text", content: code },
+          },
+        ],
+      },
+    ],
+  };
 }
 
 /**
  * 构建飞书卡片（大模型输出的 markdown 表格自动转 column_set）
  */
 function buildFeishuCard(text: string): Record<string, any> {
+  // 1. 先提取代码块
+  const { text: textWithoutCode, codeBlocks } = extractCodeBlocks(text);
+  
   const elements: any[] = [];
 
-  // 匹配 markdown 表格：连续多行以 | 开头和结尾
+  // 2. 处理文本中的代码块占位符、表格和普通文本
+  const processTextSegment = (segment: string) => {
+    // 检查是否包含代码块占位符
+    const placeholderRegex = new RegExp(`${CODE_BLOCK_PLACEHOLDER}_(\\d+)`, "g");
+    let lastIdx = 0;
+    let placeholderMatch;
+    
+    while ((placeholderMatch = placeholderRegex.exec(segment)) !== null) {
+      // 占位符前的文本
+      const beforePlaceholder = segment.slice(lastIdx, placeholderMatch.index).trim();
+      if (beforePlaceholder) {
+        const processed = preprocessMarkdown(beforePlaceholder);
+        elements.push({ tag: "div", text: { tag: "lark_md", content: processed } });
+      }
+      
+      // 代码块
+      const codeIndex = parseInt(placeholderMatch[1], 10);
+      if (codeBlocks[codeIndex]) {
+        elements.push(buildCodeBlockElement(codeBlocks[codeIndex]));
+      }
+      
+      lastIdx = placeholderMatch.index + placeholderMatch[0].length;
+    }
+    
+    // 占位符后的文本
+    const afterPlaceholder = segment.slice(lastIdx).trim();
+    if (afterPlaceholder) {
+      const processed = preprocessMarkdown(afterPlaceholder);
+      elements.push({ tag: "div", text: { tag: "lark_md", content: processed } });
+    }
+  };
+
+  // 3. 匹配 markdown 表格：连续多行以 | 开头和结尾
   const tableRegex = /(?:^\|.+\|$\n?)+/gm;
   let lastIndex = 0;
   let match;
 
-  while ((match = tableRegex.exec(text)) !== null) {
+  while ((match = tableRegex.exec(textWithoutCode)) !== null) {
     // 表格前的文本
-    const before = text.slice(lastIndex, match.index).trim();
+    const before = textWithoutCode.slice(lastIndex, match.index).trim();
     if (before) {
-      elements.push({ tag: "div", text: { tag: "lark_md", content: before } });
+      processTextSegment(before);
     }
 
     // 解析并转换表格
@@ -772,15 +889,15 @@ function buildFeishuCard(text: string): Record<string, any> {
     lastIndex = match.index + match[0].length;
   }
 
-  // 表格后的文本
-  const after = text.slice(lastIndex).trim();
+  // 4. 表格后的文本
+  const after = textWithoutCode.slice(lastIndex).trim();
   if (after) {
-    elements.push({ tag: "div", text: { tag: "lark_md", content: after } });
+    processTextSegment(after);
   }
 
-  // 如果没有匹配到任何内容，直接用原文
+  // 5. 如果没有匹配到任何内容，处理整个文本
   if (elements.length === 0) {
-    elements.push({ tag: "div", text: { tag: "lark_md", content: text } });
+    processTextSegment(textWithoutCode);
   }
 
   return {
