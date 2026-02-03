@@ -280,7 +280,10 @@ export async function queryApprovalInstances(
       return {
         ok: true,
         data: {
-          instanceCodes: data?.instance_code_list || data?.instance_list?.map((i: any) => i.instance?.code) || [],
+          instanceCodes:
+            data?.instance_code_list ||
+            data?.instance_list?.map((i: any) => i.instance?.code) ||
+            [],
           pageToken: data?.page_token,
           hasMore: data?.has_more,
         },

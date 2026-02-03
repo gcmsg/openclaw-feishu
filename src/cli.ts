@@ -44,7 +44,7 @@ function needsAllowlistUpdate(cfg: ClawdbotConfig): boolean {
 }
 
 export function registerFeishuCli(ctx: CliContext) {
-  const { program, config, logger } = ctx;
+  const { program, config } = ctx;
 
   const root = program
     .command("feishu")
@@ -127,7 +127,9 @@ export function registerFeishuCli(ctx: CliContext) {
           console.info(`clawdbot config set channels.feishu.appSecret "${options.appSecret}"`);
           if (needsAllowlistUpdate(config)) {
             const currentAllow = getPluginsAllow(config);
-            console.info(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
+            console.info(
+              `clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`
+            );
           }
           console.info(`clawdbot gateway restart`);
         }
@@ -138,7 +140,7 @@ export function registerFeishuCli(ctx: CliContext) {
       console.info("\n📖 飞书插件配置向导\n");
       console.info("  1) 登录飞书开放平台 → 创建企业自建应用");
       console.info("  2) 获取 App ID 和 App Secret");
-      console.info('  3) 启用机器人能力 → 消息接收方式选「使用长连接接收消息」');
+      console.info("  3) 启用机器人能力 → 消息接收方式选「使用长连接接收消息」");
       console.info("  4) 添加权限：im:message, im:chat, docx:document, drive:drive");
       console.info("  5) 发布应用并授权");
       console.info("\n  📚 文档: https://open.feishu.cn/document\n");
@@ -227,12 +229,14 @@ export function registerFeishuCli(ctx: CliContext) {
       } else {
         // 没有 prompter，输出手动配置说明
         console.info("请手动配置:\n");
-        console.info('clawdbot config set channels.feishu.enabled true');
+        console.info("clawdbot config set channels.feishu.enabled true");
         console.info('clawdbot config set channels.feishu.appId "cli_xxxxxxxx"');
         console.info('clawdbot config set channels.feishu.appSecret "xxxxxxxx"');
         if (needsAllowlistUpdate(config)) {
           const currentAllow = getPluginsAllow(config);
-          console.info(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
+          console.info(
+            `clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`
+          );
         }
         console.info("clawdbot gateway restart");
       }

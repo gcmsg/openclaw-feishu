@@ -12,17 +12,16 @@ import type {
 import { createFeishuTool } from "./agent-tools.js";
 import type { ResolvedFeishuAccount, FeishuChannelConfig, MsgContext } from "./types.js";
 import {
-  sendTextMessage,
   sendImageMessage,
   sendFileMessage,
   sendCardMessage,
-  downloadImageByKey,
   downloadMessageImage,
   downloadMessageFile,
   sendSmartMessage,
   forwardMessage,
   mergeForwardMessages,
   sendUrgentMessage,
+  replyMessage,
   getMessageReadUsers,
 } from "./client.js";
 import {
@@ -142,7 +141,6 @@ import {
   prependDocumentBlocks,
   appendText,
   appendMarkdown,
-  appendDocumentBlocks,
 } from "./document.js";
 import {
   createFolder,
@@ -166,10 +164,8 @@ import {
   listBitableFields,
   createBitableField,
   listBitableRecords,
-  searchBitableRecords,
   getBitableRecord,
   createBitableRecord,
-  createBitableRecords,
   updateBitableRecord,
   deleteBitableRecord,
   deleteBitableRecords,
@@ -337,7 +333,7 @@ function resolveFeishuAccount(
 ): ResolvedFeishuAccount {
   // 使用默认账号 ID
   const effectiveAccountId = accountId || DEFAULT_ACCOUNT_ID;
-  
+
   // 仅支持默认账号
   if (effectiveAccountId !== DEFAULT_ACCOUNT_ID) {
     // 返回空账号对象（isConfigured 会检测到这是未配置的）
@@ -348,7 +344,7 @@ function resolveFeishuAccount(
       config: {} as FeishuChannelConfig,
     };
   }
-  
+
   const feishuCfg = getFeishuConfig(cfg);
   if (!feishuCfg) {
     // 配置不存在，返回空账号
@@ -496,6 +492,7 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
       params: ["messageIds", "targetChatId"],
     },
     { action: "msg_urgent", description: "发送加急消息", params: ["messageId", "userIds"] },
+    { action: "msg_reply", description: "引用回复消息", params: ["messageId", "message"] },
     { action: "msg_read_users", description: "获取消息已读用户", params: ["messageId"] },
     // 聊天管理
     {
@@ -1270,6 +1267,9 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
           : ctx.userIds.split(",").map((id: string) => id.trim());
         return sendUrgentMessage(account, ctx.messageId, userIds);
       }
+
+      case "msg_reply":
+        return replyMessage(account, ctx.messageId, ctx.message);
 
       case "msg_read_users":
         return getMessageReadUsers(account, ctx.messageId);

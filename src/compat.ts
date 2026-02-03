@@ -46,7 +46,11 @@ export interface ClawdbotPluginApi {
   /** 注册 Gateway 方法 */
   registerGatewayMethod?: (name: string, handler: (ctx: any) => void) => void;
   /** 注册后台服务 */
-  registerService?: (opts: { id: string; start: () => Promise<void>; stop: () => Promise<void> }) => void;
+  registerService?: (opts: {
+    id: string;
+    start: () => Promise<void>;
+    stop: () => Promise<void>;
+  }) => void;
 }
 
 export interface PluginRuntime {

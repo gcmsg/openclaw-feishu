@@ -1,11 +1,12 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import prettier from "eslint-config-prettier";
+import globals from "globals";
 
 export default tseslint.config(
   // 忽略的文件
   {
-    ignores: ["node_modules/**", "dist/**", "*.js", "*.d.ts"],
+    ignores: ["node_modules/**", "dist/**", "**/*.js", "**/*.d.ts"],
   },
 
   // 基础规则
@@ -21,6 +22,9 @@ export default tseslint.config(
   {
     files: ["**/*.ts"],
     languageOptions: {
+      globals: {
+        ...globals.node,
+      },
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,

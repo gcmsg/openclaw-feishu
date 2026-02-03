@@ -103,14 +103,14 @@ export async function uploadFile(
     const fileSize = fileBuffer.length;
 
     // 准备上传
-    const prepareResult = await client.drive.v1.media.uploadPrepare({
+    const prepareResult = (await client.drive.v1.media.uploadPrepare({
       data: {
         file_name: actualFileName,
         parent_type: "explorer" as any,
         parent_node: parentToken,
         size: fileSize,
       },
-    }) as any;
+    })) as any;
 
     if (prepareResult.code !== 0) {
       return { ok: false, error: prepareResult.msg };
@@ -127,14 +127,14 @@ export async function uploadFile(
       const chunk = fileBuffer.subarray(start, end);
 
       // 使用 Buffer 而非 Blob（Node.js 环境兼容性更好）
-      const partResult = await client.drive.v1.media.uploadPart({
+      const partResult = (await client.drive.v1.media.uploadPart({
         data: {
           upload_id: uploadId!,
           seq: i,
           size: chunk.length,
           file: chunk,
         },
-      }) as any;
+      })) as any;
 
       if (partResult.code !== 0) {
         return { ok: false, error: `Upload part ${i} failed: ${partResult.msg}` };
@@ -177,9 +177,9 @@ export async function downloadFile(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.drive.v1.media.download({
+    const result = (await client.drive.v1.media.download({
       path: { file_token: fileToken },
-    }) as any;
+    })) as any;
 
     if (result && (result instanceof Buffer || result instanceof ArrayBuffer || result.writeFile)) {
       if (result.writeFile) {

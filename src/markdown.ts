@@ -29,8 +29,8 @@ export function markdownToPost(markdown: string, title?: string): PostContent {
   let codeBlockLang = "";
 
   for (const line of lines) {
-    // 检测代码块开始/结束
-    const codeBlockMatch = line.match(/^```(\w*)$/);
+    // 检测代码块开始/结束（允许前后空格）
+    const codeBlockMatch = line.match(/^\s*```(\w*)\s*$/);
     if (codeBlockMatch) {
       if (!inCodeBlock) {
         // 代码块开始
@@ -149,6 +149,16 @@ function parseInline(text: string): PostElement[] {
       continue;
     }
 
+    // 单行代码块 ```language code``` 或 ```code```
+    const inlineCodeBlockMatch =
+      remaining.match(/^```(\w*)\s+(.+?)```/) || remaining.match(/^```(.+?)```/);
+    if (inlineCodeBlockMatch) {
+      const code = inlineCodeBlockMatch[2] || inlineCodeBlockMatch[1];
+      elements.push({ tag: "text", text: `「${code}」` });
+      remaining = remaining.slice(inlineCodeBlockMatch[0].length);
+      continue;
+    }
+
     // 行内代码 `code`
     const codeMatch = remaining.match(/^`([^`]+)`/);
     if (codeMatch) {
@@ -183,14 +193,29 @@ export function hasMarkdown(text: string): boolean {
   const patterns = [
     /^#{1,6}\s/m, // 标题
     /\*\*[^*]+\*\*/, // 加粗
+    /\*[^*]+\*/, // 斜体
     /\[[^\]]+\]\([^)]+\)/, // 链接
     /^[-*]\s/m, // 列表
     /^\d+\.\s/m, // 有序列表
     /^[-*]\s+\[[ xX]\]/m, // Checkbox
     /`[^`]+`/, // 行内代码
     /^[-*_]{3,}$/m, // 分隔线
-    /^```\w*$/m, // 代码块
+    /^```/m, // 代码块
+    /^\|.+\|/m, // 表格
+    /^>/m, // 引用
   ];
 
   return patterns.some((p) => p.test(text));
+}
+
+/**
+ * 检测文本是否包含复杂格式（需要用卡片消息）
+ */
+export function hasComplexMarkdown(text: string): boolean {
+  const complexPatterns = [
+    /^\|.+\|$/m, // 表格行
+    /^```\w*\s*$/m, // 多行代码块
+  ];
+
+  return complexPatterns.some((p) => p.test(text));
 }

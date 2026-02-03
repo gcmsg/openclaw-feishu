@@ -104,7 +104,7 @@ export async function sendMail(
         bcc: options.bcc?.map((t) => ({ mail_address: t.email, name: t.name })),
         body_html: options.bodyHtml,
         body_plain_text: options.bodyPlainText,
-        head_from: options.replyTo ? { mail_address: options.replyTo } as any : undefined,
+        head_from: options.replyTo ? ({ mail_address: options.replyTo } as any) : undefined,
       },
     });
 
@@ -142,7 +142,9 @@ export async function getMail(
         data: {
           messageId: m.message_id || messageId,
           subject: m.subject,
-          from: m.head_from ? { email: m.head_from.mail_address || "", name: m.head_from.name } : undefined,
+          from: m.head_from
+            ? { email: m.head_from.mail_address || "", name: m.head_from.name }
+            : undefined,
           to: m.to?.map((t: any) => ({ email: t.mail_address, name: t.name })),
           cc: m.cc?.map((t: any) => ({ email: t.mail_address, name: t.name })),
           body: {
@@ -408,7 +410,10 @@ export async function getMailGroup(
           email: g.email || "",
           name: g.name,
           description: g.description,
-          memberCount: g.members_count || g.direct_members_count ? parseInt(String(g.members_count || g.direct_members_count), 10) : undefined,
+          memberCount:
+            g.members_count || g.direct_members_count
+              ? parseInt(String(g.members_count || g.direct_members_count), 10)
+              : undefined,
           permissionType: g.permission_type || g.who_can_send_mail,
         },
       };

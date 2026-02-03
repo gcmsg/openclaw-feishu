@@ -184,9 +184,9 @@ export async function searchDocs(
       }
     }
 
-    const result = await (client as any).suite?.v1?.docsSearch?.create({
+    const result = (await (client as any).suite?.v1?.docsSearch?.create({
       data: searchData,
-    }) || { code: -1, msg: "Suite API not available" };
+    })) || { code: -1, msg: "Suite API not available" };
 
     if (result.code === 0) {
       const results = (result.data?.docs_entities || []).map((doc: any) => ({

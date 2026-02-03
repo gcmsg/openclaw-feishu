@@ -746,7 +746,11 @@ export async function subscribeCalendar(
             calendarId: c.calendar_id!,
             summary: c.summary || "",
             description: c.description,
-            color: c.color ? (typeof c.color === 'string' ? parseInt(c.color, 10) : c.color) : undefined,
+            color: c.color
+              ? typeof c.color === "string"
+                ? parseInt(c.color, 10)
+                : c.color
+              : undefined,
             type: c.type as any,
             role: c.role as any,
           },

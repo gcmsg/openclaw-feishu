@@ -153,11 +153,11 @@ clawdbot gateway restart
 
 ### 🔒 Understanding the Allowlist
 
-| Scenario | Plugin Loads? |
-|----------|---------------|
-| `plugins.allow` not set or empty | ✅ Yes (all plugins enabled by default) |
-| `plugins.allow: ["telegram"]` (feishu not included) | ❌ No |
-| `plugins.allow: ["telegram", "feishu"]` | ✅ Yes |
+| Scenario                                            | Plugin Loads?                           |
+| --------------------------------------------------- | --------------------------------------- |
+| `plugins.allow` not set or empty                    | ✅ Yes (all plugins enabled by default) |
+| `plugins.allow: ["telegram"]` (feishu not included) | ❌ No                                   |
+| `plugins.allow: ["telegram", "feishu"]`             | ✅ Yes                                  |
 
 > 💡 **Tip:** Check your current allowlist with `clawdbot config get plugins.allow`
 
@@ -250,10 +250,10 @@ Follow this step-by-step guide to create your Feishu bot application from scratc
 2. Ensure **"Subscription Method"** is set to **"Long Connection"**
 3. Click **"Add Event"** and add the following events:
 
-| Event Name | Event ID | Purpose |
-|------------|----------|---------|
-| Receive Message | `im.message.receive_v1` | Receive messages from users |
-| Message Read | `im.message.message_read_v1` | Get message read status (optional) |
+| Event Name         | Event ID                       | Purpose                                      |
+| ------------------ | ------------------------------ | -------------------------------------------- |
+| Receive Message    | `im.message.receive_v1`        | Receive messages from users                  |
+| Message Read       | `im.message.message_read_v1`   | Get message read status (optional)           |
 | Chat Member Change | `im.chat.member.user.added_v1` | Notify when bot is added to group (optional) |
 
 > 💡 **You must at least add "Receive Message" event**, or the bot won't receive any messages!
@@ -349,6 +349,7 @@ Enter your **App ID** and **App Secret** when prompted (for Option A or B).
 3. If the bot responds, congratulations!
 
 **Troubleshooting:**
+
 - ❌ **Not receiving messages**: Check if "Receive Message" event is added
 - ❌ **No permission**: Check if permissions are added and version is published
 - ❌ **Long connection disconnects**: Check if message receive method is "Long Connection"
@@ -506,11 +507,11 @@ clawdbot gateway restart
 
 ### 🔒 理解白名单机制
 
-| 场景 | 插件是否加载？ |
-|------|---------------|
-| `plugins.allow` 未设置或为空 | ✅ 是（所有插件默认启用） |
-| `plugins.allow: ["telegram"]`（不含 feishu） | ❌ 否 |
-| `plugins.allow: ["telegram", "feishu"]` | ✅ 是 |
+| 场景                                         | 插件是否加载？            |
+| -------------------------------------------- | ------------------------- |
+| `plugins.allow` 未设置或为空                 | ✅ 是（所有插件默认启用） |
+| `plugins.allow: ["telegram"]`（不含 feishu） | ❌ 否                     |
+| `plugins.allow: ["telegram", "feishu"]`      | ✅ 是                     |
 
 > 💡 **提示：** 用 `clawdbot config get plugins.allow` 查看当前白名单
 
@@ -603,10 +604,10 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 2. 确认 **「订阅方式」** 选择了 **「使用长连接接收事件」**
 3. 点击 **「添加事件」**，搜索并添加以下事件：
 
-| 事件名称 | 事件标识 | 用途 |
-|---------|---------|------|
-| 接收消息 | `im.message.receive_v1` | 接收用户发送的消息 |
-| 消息已读 | `im.message.message_read_v1` | 获取消息已读状态（可选） |
+| 事件名称   | 事件标识                       | 用途                           |
+| ---------- | ------------------------------ | ------------------------------ |
+| 接收消息   | `im.message.receive_v1`        | 接收用户发送的消息             |
+| 消息已读   | `im.message.message_read_v1`   | 获取消息已读状态（可选）       |
 | 群成员变更 | `im.chat.member.user.added_v1` | 机器人被拉入群聊时通知（可选） |
 
 > 💡 **至少要添加「接收消息」事件**，否则机器人收不到任何消息！
@@ -702,6 +703,7 @@ clawdbot feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-
 3. 如果机器人有回复，恭喜配置成功！
 
 **常见问题排查：**
+
 - ❌ **收不到消息**：检查是否添加了「接收消息」事件
 - ❌ **没有权限**：检查权限是否已添加，版本是否已发布
 - ❌ **长连接断开**：检查消息接收方式是否选择了「长连接」
@@ -735,6 +737,7 @@ clawdbot feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-
 | `send_file`  | `target`, `filePath` | 发送文件                               |
 
 **Markdown 富文本支持：** `send` action 会自动检测消息中的 Markdown 格式，转换为飞书富文本（Post）消息。支持的格式：
+
 - `**加粗**` / `*斜体*`
 - `[链接](url)`
 - `# 标题`（转为加粗）
@@ -1149,10 +1152,10 @@ clawdbot status
 3. ✅ Published a new version after adding permissions?
 4. ✅ Bot is added to the chat (for group messages)?
 
-1. ✅ 是否添加了 `im.message.receive_v1` 事件订阅？
-2. ✅ 是否选择了「长连接」模式（不是 Webhook）？
-3. ✅ 添加权限后是否发布了新版本？
-4. ✅ 机器人是否被添加到群聊中（群消息的情况）？
+5. ✅ 是否添加了 `im.message.receive_v1` 事件订阅？
+6. ✅ 是否选择了「长连接」模式（不是 Webhook）？
+7. ✅ 添加权限后是否发布了新版本？
+8. ✅ 机器人是否被添加到群聊中（群消息的情况）？
 
 ---
 
@@ -1168,9 +1171,9 @@ clawdbot status
 2. Add missing permissions in Feishu Open Platform
 3. **Create a new version and publish it** (permissions don't take effect until published!)
 
-1. 检查该 API 需要哪些权限（见上方权限表）
-2. 在飞书开放平台添加缺少的权限
-3. **创建新版本并发布**（权限修改后必须发布才能生效！）
+4. 检查该 API 需要哪些权限（见上方权限表）
+5. 在飞书开放平台添加缺少的权限
+6. **创建新版本并发布**（权限修改后必须发布才能生效！）
 
 ---
 

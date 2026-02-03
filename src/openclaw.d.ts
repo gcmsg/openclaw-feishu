@@ -64,7 +64,7 @@ declare module "openclaw/plugin-sdk" {
    */
   export interface ChannelConfigAdapter<TAccount = unknown> {
     listAccountIds: (cfg: OpenClawConfig) => string[];
-    /** 
+    /**
      * 注意：OpenClaw 期望此函数始终返回 TAccount（非 undefined）
      * 如果 accountId 无效，应返回一个默认/空账号或抛出错误
      */

@@ -133,7 +133,7 @@ export async function getChat(
           chatMode: d.chat_mode,
           chatType: d.chat_type,
           external: d.external,
-          memberCount: typeof d.user_count === 'string' ? parseInt(d.user_count, 10) : d.user_count,
+          memberCount: typeof d.user_count === "string" ? parseInt(d.user_count, 10) : d.user_count,
         },
       };
     }

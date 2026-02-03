@@ -221,20 +221,36 @@ export async function replyMessage(
   account: ResolvedFeishuAccount,
   messageId: string,
   text: string
-): Promise<ApiResult> {
+): Promise<ApiResult<{ messageId: string }>> {
   const client = getFeishuClient(account);
 
+  // 智能检测：纯文本用 text，其他用卡片
+  const usePlainText = !hasMarkdown(text);
+
   try {
-    const result = await client.im.v1.message.reply({
-      path: { message_id: messageId },
-      data: {
-        msg_type: "text",
-        content: JSON.stringify({ text }),
-      },
-    });
+    let result;
+    if (usePlainText) {
+      result = await client.im.v1.message.reply({
+        path: { message_id: messageId },
+        data: {
+          msg_type: "text",
+          content: JSON.stringify({ text }),
+        },
+      });
+    } else {
+      // 使用卡片消息（表格自动转 column_set）
+      const card = buildFeishuCard(text);
+      result = await client.im.v1.message.reply({
+        path: { message_id: messageId },
+        data: {
+          msg_type: "interactive",
+          content: JSON.stringify(card),
+        },
+      });
+    }
 
     if (result.code === 0) {
-      return { ok: true };
+      return { ok: true, data: { messageId: result.data?.message_id || "" } };
     }
     return { ok: false, error: result.msg };
   } catch (error) {
@@ -301,9 +317,40 @@ export async function getMessage(
             return "";
           };
           text = extractText(parsed);
+        } else if (messageType === "image") {
+          text = "[图片]";
+        } else if (messageType === "file") {
+          text = `[文件: ${parsed.file_name || "未知文件"}]`;
+        } else if (messageType === "audio") {
+          text = "[语音]";
+        } else if (messageType === "video") {
+          text = "[视频]";
+        } else if (messageType === "sticker") {
+          text = "[表情]";
+        } else if (messageType === "interactive") {
+          text = "[卡片消息]";
+        } else if (messageType === "share_card") {
+          text = "[分享卡片]";
+        } else if (messageType === "share_user") {
+          text = "[分享用户]";
+        } else if (messageType === "share_chat") {
+          text = "[分享群组]";
+        } else if (messageType === "system") {
+          text = "[系统消息]";
+        } else if (messageType === "location") {
+          text = "[位置]";
+        } else if (messageType === "media") {
+          text = "[媒体]";
+        } else {
+          text = `[${messageType || "未知类型"}消息]`;
         }
       } catch {
-        // ignore
+        // JSON 解析失败时，根据消息类型返回描述
+        if (messageType === "image") {
+          text = "[图片]";
+        } else if (messageType) {
+          text = `[${messageType}消息]`;
+        }
       }
 
       return {
@@ -601,7 +648,7 @@ export async function downloadMessageFile(
 
 // ==================== 智能发送 ====================
 
-import { markdownToPost, hasMarkdown, type PostContent } from "./markdown.js";
+import { hasMarkdown, type PostContent } from "./markdown.js";
 
 /**
  * 发送 Post 格式消息（直接传 PostContent）
@@ -633,23 +680,150 @@ export async function sendPost(
 }
 
 /**
+ * 检测是否为纯文本（只包含文字和标点符号）
+ */
+/**
+ * 解析 markdown 表格为行列数据
+ */
+function parseMarkdownTable(text: string): { headers: string[]; rows: string[][] } | null {
+  const lines = text.trim().split("\n");
+  const tableLines: string[] = [];
+
+  for (const line of lines) {
+    if (/^\|.+\|$/.test(line.trim())) {
+      tableLines.push(line.trim());
+    }
+  }
+
+  if (tableLines.length < 2) return null;
+
+  // 解析表头
+  const headerLine = tableLines[0];
+  const headers = headerLine
+    .split("|")
+    .filter((cell) => cell.trim())
+    .map((cell) => cell.trim());
+
+  // 跳过分隔线，解析数据行
+  const rows: string[][] = [];
+  for (let i = 2; i < tableLines.length; i++) {
+    const cells = tableLines[i]
+      .split("|")
+      .filter((cell) => cell.trim() !== "")
+      .map((cell) => cell.trim());
+    if (cells.length > 0) {
+      rows.push(cells);
+    }
+  }
+
+  return { headers, rows };
+}
+
+/**
+ * 构建飞书卡片（支持表格转 column_set）
+ */
+function buildFeishuCard(text: string): Record<string, any> {
+  const elements: any[] = [];
+
+  // 检测是否包含表格
+  const tableMatch = text.match(/(\|.+\|\n)+/);
+  if (tableMatch) {
+    const tableText = tableMatch[0];
+    const tableData = parseMarkdownTable(tableText);
+
+    if (tableData && tableData.headers.length > 0) {
+      // 表格前的内容
+      const beforeTable = text.slice(0, text.indexOf(tableText)).trim();
+      if (beforeTable) {
+        elements.push({
+          tag: "div",
+          text: { tag: "lark_md", content: beforeTable },
+        });
+      }
+
+      // 表头行（灰色背景）
+      elements.push({
+        tag: "column_set",
+        flex_mode: "none",
+        background_style: "grey",
+        columns: tableData.headers.map((header) => ({
+          tag: "column",
+          width: "weighted",
+          weight: 1,
+          elements: [{ tag: "div", text: { tag: "lark_md", content: `**${header}**` } }],
+        })),
+      });
+
+      // 数据行
+      for (const row of tableData.rows) {
+        elements.push({
+          tag: "column_set",
+          flex_mode: "none",
+          columns: row.map((cell) => ({
+            tag: "column",
+            width: "weighted",
+            weight: 1,
+            elements: [{ tag: "div", text: { tag: "lark_md", content: cell } }],
+          })),
+        });
+      }
+
+      // 表格后的内容
+      const afterTable = text.slice(text.indexOf(tableText) + tableText.length).trim();
+      if (afterTable) {
+        elements.push({
+          tag: "div",
+          text: { tag: "lark_md", content: afterTable },
+        });
+      }
+    }
+  }
+
+  // 如果没有表格或解析失败，直接用 lark_md
+  if (elements.length === 0) {
+    elements.push({
+      tag: "div",
+      text: { tag: "lark_md", content: text },
+    });
+  }
+
+  return {
+    config: { wide_screen_mode: true },
+    header: {
+      template: "blue",
+      title: { tag: "plain_text", content: "📝" },
+    },
+    elements,
+  };
+}
+
+/**
  * 智能发送消息
- * - 检测 Markdown 格式，自动转换为 Post 富文本
- * - 普通文本直接发送
+ * - 纯文字+标点 → text 消息
+ * - 其他所有格式（Markdown）→ 飞书卡片（表格自动转 column_set）
  */
 export async function sendSmartMessage(
   account: ResolvedFeishuAccount,
   chatId: string,
   text: string,
-  options?: { forceRichText?: boolean }
+  options?: { forceText?: boolean; forceCard?: boolean }
 ): Promise<ApiResult<{ messageId: string }>> {
-  // 检测是否需要富文本
-  const useRichText = options?.forceRichText || hasMarkdown(text);
-
-  if (useRichText) {
-    const postContent = markdownToPost(text);
-    return sendPost(account, chatId, postContent);
+  // 强制使用指定格式
+  if (options?.forceText) {
+    return sendTextMessage(account, chatId, text);
   }
 
-  return sendTextMessage(account, chatId, text);
+  if (options?.forceCard) {
+    const card = buildFeishuCard(text);
+    return sendCardMessage(account, chatId, card);
+  }
+
+  // 智能检测：纯文本用 text，其他用卡片
+  if (!hasMarkdown(text)) {
+    return sendTextMessage(account, chatId, text);
+  }
+
+  // 使用卡片消息
+  const card = buildFeishuCard(text);
+  return sendCardMessage(account, chatId, card);
 }
