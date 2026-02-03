@@ -89,7 +89,12 @@ export interface MsgContext {
   ReplyToId?: string;
   SenderName?: string;
   Mentions?: string[];
+  MediaPath?: string;
+  MediaPaths?: string[];
+  MediaUrl?: string;
   MediaUrls?: string[];
+  MediaType?: string;
+  MediaTypes?: string[];
 }
 
 /**

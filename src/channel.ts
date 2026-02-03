@@ -2537,6 +2537,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
 
           let bodyText = "";
           const mediaUrls: string[] = [];
+          const mediaTypes: string[] = [];
 
           // 处理不同类型的消息
           switch (message.messageType) {
@@ -2556,12 +2557,14 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
                     message.imageKey
                   );
                   if (imgResult.ok && imgResult.data) {
+                    const mimeType = imgResult.data.mimeType || "image/png";
                     const filePath = await saveMediaToTemp(
                       imgResult.data.buffer,
                       "png",
                       "feishu_img"
                     );
                     mediaUrls.push(filePath);
+                    mediaTypes.push(mimeType);
                     bodyText = "[图片]";
                     logger.info(`图片已下载: ${filePath}`);
                   } else {
@@ -2593,6 +2596,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
                       "feishu_file"
                     );
                     mediaUrls.push(filePath);
+                    mediaTypes.push("application/octet-stream");
                     bodyText = `[文件: ${fileName}]`;
                     logger.info(`文件已下载: ${filePath}`);
                   } else {
@@ -2690,7 +2694,13 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             MessageId: message.messageId,
             ReplyToId: message.parentId,
             Mentions: message.mentions?.map((m) => m.name),
+            // 媒体字段 - Clawdbot 需要 MediaPath/MediaPaths 来附加媒体
+            MediaPath: mediaUrls[0],
+            MediaPaths: mediaUrls.length > 0 ? mediaUrls : undefined,
+            MediaUrl: mediaUrls[0],
             MediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+            MediaType: mediaTypes[0],
+            MediaTypes: mediaTypes.length > 0 ? mediaTypes : undefined,
           };
 
           await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
