@@ -116,33 +116,20 @@ clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 To update an existing installation to the latest version:
 
 ```bash
-# OpenClaw
-openclaw plugins update feishu
-
-# Clawdbot
-clawdbot plugins update feishu
-
-# Then restart gateway
-openclaw gateway restart  # or: clawdbot gateway restart
-```
-
-**Alternative method (reinstall):**
-
-If `plugins update` doesn't work, you can reinstall:
-
-```bash
-# Remove old version first
+# Step 1: Remove old version
 rm -rf ~/.openclaw/extensions/feishu  # or: ~/.clawdbot/extensions/feishu
 
-# Reinstall
+# Step 2: Reinstall from GitHub
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 # or: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 
-# Restart gateway
+# Step 3: Restart gateway
 openclaw gateway restart  # or: clawdbot gateway restart
 ```
 
-> 💡 **Tip:** Your configuration (appId, appSecret) will be preserved during update.
+> 💡 **Tip:** Your configuration (appId, appSecret in config file) will be preserved — only the plugin code is replaced.
+>
+> ⚠️ **Note:** `plugins update` only works for npm-installed plugins. Since this plugin is installed from GitHub archive, use the reinstall method above.
 
 ### 🔧 Post-Install Configuration
 
@@ -482,33 +469,20 @@ clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 将已安装的插件更新到最新版本：
 
 ```bash
-# OpenClaw
-openclaw plugins update feishu
-
-# Clawdbot
-clawdbot plugins update feishu
-
-# 然后重启 Gateway
-openclaw gateway restart  # 或: clawdbot gateway restart
-```
-
-**备选方法（重装）：**
-
-如果 `plugins update` 不生效，可以重新安装：
-
-```bash
-# 先删除旧版本
+# 第一步：删除旧版本
 rm -rf ~/.openclaw/extensions/feishu  # 或: ~/.clawdbot/extensions/feishu
 
-# 重新安装
+# 第二步：从 GitHub 重新安装
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 # 或: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 
-# 重启 Gateway
+# 第三步：重启 Gateway
 openclaw gateway restart  # 或: clawdbot gateway restart
 ```
 
-> 💡 **提示：** 更新时你的配置（appId、appSecret）会被保留。
+> 💡 **提示：** 配置文件中的设置（appId、appSecret）会被保留，只替换插件代码。
+>
+> ⚠️ **注意：** `plugins update` 命令仅支持通过 npm 安装的插件。由于本插件通过 GitHub archive 安装，请使用上述重装方法更新。
 
 ### 🔧 安装后配置
 
