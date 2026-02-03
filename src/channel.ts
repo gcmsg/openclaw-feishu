@@ -2515,7 +2515,7 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       }
 
       const text = ctx.text ? `${ctx.text}\n${mediaUrl}` : mediaUrl || "";
-      const result = await sendTextMessage(account, ctx.to, text);
+      const result = await sendSmartMessage(account, ctx.to, text);
       return { ok: result.ok, error: result.error ? new Error(result.error) : undefined };
     },
   },
