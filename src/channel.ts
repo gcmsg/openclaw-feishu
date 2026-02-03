@@ -2666,6 +2666,33 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               logger.info("收到用户名片消息");
               break;
 
+            case "interactive":
+              // 卡片消息，尝试提取文本内容
+              try {
+                const cardContent = JSON.parse(message.content);
+                // 尝试从卡片中提取可读文本
+                const extractCardText = (obj: any): string => {
+                  if (!obj) return "";
+                  if (typeof obj === "string") return obj;
+                  if (obj.text) return obj.text;
+                  if (obj.content) return extractCardText(obj.content);
+                  if (obj.elements && Array.isArray(obj.elements)) {
+                    return obj.elements.map(extractCardText).filter(Boolean).join(" ");
+                  }
+                  if (Array.isArray(obj)) {
+                    return obj.map(extractCardText).filter(Boolean).join(" ");
+                  }
+                  return "";
+                };
+                const cardText = extractCardText(cardContent);
+                bodyText = cardText ? `[卡片消息] ${cardText.slice(0, 200)}` : "[卡片消息]";
+                logger.info(`收到卡片消息: ${bodyText.slice(0, 50)}...`);
+              } catch {
+                bodyText = "[卡片消息]";
+                logger.info("收到卡片消息（无法解析）");
+              }
+              break;
+
             default:
               bodyText = `[未知消息类型: ${message.messageType}]`;
               logger.info(`收到未知类型消息: ${message.messageType}`);

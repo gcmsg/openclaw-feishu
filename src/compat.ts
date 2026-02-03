@@ -2,7 +2,6 @@
  * SDK 兼容层 - 支持 OpenClaw / Clawdbot / Moltbot
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Command = any;
 
 // Logger 接口

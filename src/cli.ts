@@ -60,13 +60,13 @@ export function registerFeishuCli(ctx: CliContext) {
       const configured = !!(feishuCfg?.appId && feishuCfg?.appSecret);
       const enabled = feishuCfg?.enabled !== false;
 
-      console.log("\n📱 飞书插件状态\n");
-      console.log(`  状态: ${configured ? "✅ 已配置" : "❌ 未配置"}`);
-      console.log(`  启用: ${enabled ? "✅ 是" : "❌ 否"}`);
+      console.info("\n📱 飞书插件状态\n");
+      console.info(`  状态: ${configured ? "✅ 已配置" : "❌ 未配置"}`);
+      console.info(`  启用: ${enabled ? "✅ 是" : "❌ 否"}`);
       if (feishuCfg?.appId) {
-        console.log(`  App ID: ${feishuCfg.appId.slice(0, 10)}...`);
+        console.info(`  App ID: ${feishuCfg.appId.slice(0, 10)}...`);
       }
-      console.log();
+      console.info();
     });
 
   // clawdbot feishu setup
@@ -85,8 +85,8 @@ export function registerFeishuCli(ctx: CliContext) {
           console.error("❌ 非交互模式需要提供 --app-id 和 --app-secret");
           process.exit(1);
         }
-        console.log("📝 正在配置飞书插件...");
-        console.log(`  App ID: ${options.appId.slice(0, 10)}...`);
+        console.info("📝 正在配置飞书插件...");
+        console.info(`  App ID: ${options.appId.slice(0, 10)}...`);
 
         if (ctx.updateConfig) {
           // 构建配置更新
@@ -109,39 +109,39 @@ export function registerFeishuCli(ctx: CliContext) {
               ...(config as any).plugins,
               allow: [...currentAllow, "feishu"],
             };
-            console.log("  已自动添加到插件白名单 ✓");
+            console.info("  已自动添加到插件白名单 ✓");
           }
 
           await ctx.updateConfig(patch);
-          console.log("✅ 配置已保存");
+          console.info("✅ 配置已保存");
 
           if (ctx.restartGateway) {
-            console.log("🔄 正在重启 Gateway...");
+            console.info("🔄 正在重启 Gateway...");
             await ctx.restartGateway();
           }
         } else {
           // 直接输出配置指令
-          console.log("\n请运行以下命令完成配置:\n");
-          console.log(`clawdbot config set channels.feishu.enabled true`);
-          console.log(`clawdbot config set channels.feishu.appId "${options.appId}"`);
-          console.log(`clawdbot config set channels.feishu.appSecret "${options.appSecret}"`);
+          console.info("\n请运行以下命令完成配置:\n");
+          console.info(`clawdbot config set channels.feishu.enabled true`);
+          console.info(`clawdbot config set channels.feishu.appId "${options.appId}"`);
+          console.info(`clawdbot config set channels.feishu.appSecret "${options.appSecret}"`);
           if (needsAllowlistUpdate(config)) {
             const currentAllow = getPluginsAllow(config);
-            console.log(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
+            console.info(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
           }
-          console.log(`clawdbot gateway restart`);
+          console.info(`clawdbot gateway restart`);
         }
         return;
       }
 
       // 交互模式
-      console.log("\n📖 飞书插件配置向导\n");
-      console.log("  1) 登录飞书开放平台 → 创建企业自建应用");
-      console.log("  2) 获取 App ID 和 App Secret");
-      console.log('  3) 启用机器人能力 → 消息接收方式选「使用长连接接收消息」');
-      console.log("  4) 添加权限：im:message, im:chat, docx:document, drive:drive");
-      console.log("  5) 发布应用并授权");
-      console.log("\n  📚 文档: https://open.feishu.cn/document\n");
+      console.info("\n📖 飞书插件配置向导\n");
+      console.info("  1) 登录飞书开放平台 → 创建企业自建应用");
+      console.info("  2) 获取 App ID 和 App Secret");
+      console.info('  3) 启用机器人能力 → 消息接收方式选「使用长连接接收消息」');
+      console.info("  4) 添加权限：im:message, im:chat, docx:document, drive:drive");
+      console.info("  5) 发布应用并授权");
+      console.info("\n  📚 文档: https://open.feishu.cn/document\n");
 
       // 如果有 prompter，使用交互式输入
       if (ctx.prompter) {
@@ -213,28 +213,28 @@ export function registerFeishuCli(ctx: CliContext) {
               ...(config as any).plugins,
               allow: [...currentAllow, "feishu"],
             };
-            console.log("\n  已自动添加到插件白名单 ✓");
+            console.info("\n  已自动添加到插件白名单 ✓");
           }
 
           await ctx.updateConfig(patch);
-          console.log("\n✅ 配置已保存");
+          console.info("\n✅ 配置已保存");
 
           if (ctx.restartGateway) {
-            console.log("🔄 正在重启 Gateway...");
+            console.info("🔄 正在重启 Gateway...");
             await ctx.restartGateway();
           }
         }
       } else {
         // 没有 prompter，输出手动配置说明
-        console.log("请手动配置:\n");
-        console.log('clawdbot config set channels.feishu.enabled true');
-        console.log('clawdbot config set channels.feishu.appId "cli_xxxxxxxx"');
-        console.log('clawdbot config set channels.feishu.appSecret "xxxxxxxx"');
+        console.info("请手动配置:\n");
+        console.info('clawdbot config set channels.feishu.enabled true');
+        console.info('clawdbot config set channels.feishu.appId "cli_xxxxxxxx"');
+        console.info('clawdbot config set channels.feishu.appSecret "xxxxxxxx"');
         if (needsAllowlistUpdate(config)) {
           const currentAllow = getPluginsAllow(config);
-          console.log(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
+          console.info(`clawdbot config set 'plugins.allow' '${JSON.stringify([...currentAllow, "feishu"])}'`);
         }
-        console.log("clawdbot gateway restart");
+        console.info("clawdbot gateway restart");
       }
     });
 
@@ -250,7 +250,7 @@ export function registerFeishuCli(ctx: CliContext) {
         process.exit(1);
       }
 
-      console.log("🔍 正在测试飞书连接...\n");
+      console.info("🔍 正在测试飞书连接...\n");
 
       try {
         // 动态导入并测试获取群列表（简单的 API 调用测试）
@@ -264,8 +264,8 @@ export function registerFeishuCli(ctx: CliContext) {
 
         const result = await listChats(account);
         if (result.ok) {
-          console.log("✅ 连接成功！");
-          console.log(`   已获取 ${result.data?.chats?.length || 0} 个群聊`);
+          console.info("✅ 连接成功！");
+          console.info(`   已获取 ${result.data?.chats?.length || 0} 个群聊`);
         } else {
           console.error("❌ API 调用失败:", result.error);
           process.exit(1);

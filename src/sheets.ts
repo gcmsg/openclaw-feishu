@@ -195,8 +195,6 @@ export async function readRange(
   spreadsheetToken: string,
   range: string
 ): Promise<ApiResult<RangeData>> {
-  const client = getFeishuClient(account);
-
   try {
     // 使用 v2 API 读取值
     const response = await fetch(
