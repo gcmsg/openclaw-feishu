@@ -680,21 +680,116 @@ export async function sendPost(
 }
 
 /**
- * 构建飞书卡片
+ * 解析 markdown 表格
+ */
+function parseMarkdownTable(tableText: string): { headers: string[]; rows: string[][] } | null {
+  const lines = tableText.trim().split("\n");
+  if (lines.length < 2) return null;
+
+  // 第一行是表头
+  const headers = lines[0]
+    .split("|")
+    .map((c) => c.trim())
+    .filter((c) => c);
+
+  // 第二行是分隔线，跳过
+  // 剩余行是数据
+  const rows: string[][] = [];
+  for (let i = 2; i < lines.length; i++) {
+    const cells = lines[i]
+      .split("|")
+      .map((c) => c.trim())
+      .filter((c) => c);
+    if (cells.length > 0) rows.push(cells);
+  }
+
+  return headers.length > 0 ? { headers, rows } : null;
+}
+
+/**
+ * 将表格转换为 column_set 布局
+ */
+function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[] {
+  const elements: any[] = [];
+
+  // 表头行（灰色背景）
+  elements.push({
+    tag: "column_set",
+    flex_mode: "none",
+    background_style: "grey",
+    columns: table.headers.map((h) => ({
+      tag: "column",
+      width: "weighted",
+      weight: 1,
+      elements: [{ tag: "div", text: { tag: "lark_md", content: `**${h}**` } }],
+    })),
+  });
+
+  // 数据行
+  for (const row of table.rows) {
+    elements.push({
+      tag: "column_set",
+      flex_mode: "none",
+      columns: row.map((cell) => ({
+        tag: "column",
+        width: "weighted",
+        weight: 1,
+        elements: [{ tag: "div", text: { tag: "lark_md", content: cell } }],
+      })),
+    });
+  }
+
+  return elements;
+}
+
+/**
+ * 构建飞书卡片（大模型输出的 markdown 表格自动转 column_set）
  */
 function buildFeishuCard(text: string): Record<string, any> {
+  const elements: any[] = [];
+
+  // 匹配 markdown 表格：连续多行以 | 开头和结尾
+  const tableRegex = /(?:^\|.+\|$\n?)+/gm;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = tableRegex.exec(text)) !== null) {
+    // 表格前的文本
+    const before = text.slice(lastIndex, match.index).trim();
+    if (before) {
+      elements.push({ tag: "div", text: { tag: "lark_md", content: before } });
+    }
+
+    // 解析并转换表格
+    const table = parseMarkdownTable(match[0]);
+    if (table && table.headers.length > 0) {
+      elements.push(...tableToColumnSet(table));
+    } else {
+      // 解析失败，原样保留
+      elements.push({ tag: "div", text: { tag: "lark_md", content: match[0] } });
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // 表格后的文本
+  const after = text.slice(lastIndex).trim();
+  if (after) {
+    elements.push({ tag: "div", text: { tag: "lark_md", content: after } });
+  }
+
+  // 如果没有匹配到任何内容，直接用原文
+  if (elements.length === 0) {
+    elements.push({ tag: "div", text: { tag: "lark_md", content: text } });
+  }
+
   return {
     config: { wide_screen_mode: true },
     header: {
       template: "blue",
       title: { tag: "plain_text", content: "📝" },
     },
-    elements: [
-      {
-        tag: "div",
-        text: { tag: "lark_md", content: text },
-      },
-    ],
+    elements,
   };
 }
 
