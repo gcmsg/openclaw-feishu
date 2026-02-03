@@ -108,7 +108,7 @@ export async function getSpreadsheet(
           spreadsheetToken: token,
           title: ss.title || "",
           url: ss.url || `https://feishu.cn/sheets/${token}`,
-          ownerUser: ss.owner_id,
+          ownerUser: (ss as any).owner_user || ss.owner_id,
         },
       };
     }

@@ -145,12 +145,9 @@ describe("消息客户端 API", () => {
 
   describe("sendImageMessage", () => {
     it("应该成功发送图片消息", async () => {
-      // Mock 上传图片
+      // Mock 上传图片 (新版 SDK 直接返回数据对象)
       mockClient.im.v1.image.create.mockResolvedValueOnce({
-        code: 0,
-        data: {
-          image_key: "img_key_123",
-        },
+        image_key: "img_key_123",
       });
 
       // Mock 发送消息
@@ -176,26 +173,21 @@ describe("消息客户端 API", () => {
     });
 
     it("应该处理图片上传失败", async () => {
-      mockClient.im.v1.image.create.mockResolvedValueOnce({
-        code: 1,
-        msg: "上传失败",
-      });
+      // 新版 SDK 上传失败返回 null 或无 image_key
+      mockClient.im.v1.image.create.mockResolvedValueOnce(null);
 
       const result = await sendImageMessage(mockAccount, "chat_123", "/path/to/image.png");
 
       expect(result.ok).toBe(false);
-      expect(result.error).toBe("上传失败");
+      expect(result.error).toBe("Failed to get image key");
     });
   });
 
   describe("sendFileMessage", () => {
     it("应该成功发送文件消息", async () => {
-      // Mock 上传文件
+      // Mock 上传文件 (新版 SDK 直接返回数据对象)
       mockClient.im.v1.file.create.mockResolvedValueOnce({
-        code: 0,
-        data: {
-          file_key: "file_key_123",
-        },
+        file_key: "file_key_123",
       });
 
       // Mock 发送消息

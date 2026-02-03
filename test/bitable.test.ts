@@ -313,7 +313,10 @@ describe("多维表格 API", () => {
       mockClient.bitable.v1.appTableRecord.batchDelete.mockResolvedValueOnce({
         code: 0,
         data: {
-          records: ["rec_1", "rec_2"],
+          records: [
+            { record_id: "rec_1", deleted: true },
+            { record_id: "rec_2", deleted: true },
+          ],
         },
       });
 

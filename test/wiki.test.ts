@@ -18,6 +18,7 @@ mockClient.wiki = {
       list: vi.fn(),
       get: vi.fn(),
       create: vi.fn(),
+      getNode: vi.fn(), // 获取节点详情的实际 API
     },
     spaceNode: {
       list: vi.fn(),
@@ -175,7 +176,8 @@ describe("知识库 API", () => {
 
   describe("getWikiNode", () => {
     it("应该成功获取节点详情", async () => {
-      mockClient.wiki.v2.spaceNode.get.mockResolvedValueOnce({
+      // 实现调用的是 space.getNode 而非 spaceNode.get
+      mockClient.wiki.v2.space.getNode.mockResolvedValueOnce({
         code: 0,
         data: {
           node: {

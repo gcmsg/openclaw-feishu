@@ -25,6 +25,11 @@ import {
   appendMarkdown,
 } from "../src/document.js";
 
+// 确保 batchDelete mock 存在
+if (!mockClient.docx.v1.documentBlockChildren.batchDelete) {
+  mockClient.docx.v1.documentBlockChildren.batchDelete = vi.fn();
+}
+
 describe("云文档 API", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -185,7 +190,8 @@ describe("云文档 API", () => {
 
   describe("deleteBlock", () => {
     it("应该成功删除块", async () => {
-      mockClient.docx.v1.documentBlock.delete.mockResolvedValueOnce({
+      // 实现使用的是 documentBlockChildren.batchDelete
+      mockClient.docx.v1.documentBlockChildren.batchDelete.mockResolvedValueOnce({
         code: 0,
       });
 

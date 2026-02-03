@@ -57,6 +57,7 @@ export function createMockClient(): MockClient {
         documentBlockChildren: {
           create: vi.fn(),
           get: vi.fn(),
+          batchDelete: vi.fn(),
         },
       },
     },

@@ -305,7 +305,7 @@ describe("任务 API", () => {
       expect(mockClient.task.v2.task.list).toHaveBeenCalledWith(
         expect.objectContaining({
           params: expect.objectContaining({
-            completed: "true",
+            completed: true,
           }),
         })
       );
