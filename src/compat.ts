@@ -38,6 +38,28 @@ export interface ChannelAgentTool {
 
 export type ChannelAgentToolFactory = (params: { cfg?: ClawdbotConfig }) => ChannelAgentTool[];
 
+/**
+ * Channel Config Adapter - 与 OpenClaw 类型兼容
+ */
+export interface ChannelConfigAdapter<T = any> {
+  listAccountIds: (cfg: ClawdbotConfig) => string[];
+  /**
+   * 解析账号 - OpenClaw 期望始终返回有效账号
+   * 如果 accountId 无效，应返回默认账号或抛出错误
+   */
+  resolveAccount: (cfg: ClawdbotConfig, accountId?: string | null) => T;
+  defaultAccountId?: (cfg: ClawdbotConfig) => string;
+  isEnabled?: (account: T, cfg: ClawdbotConfig) => boolean;
+  disabledReason?: (account: T, cfg: ClawdbotConfig) => string;
+  /**
+   * 检查账号是否已配置
+   * @param account 已解析的账号
+   * @param cfg 完整配置（OpenClaw/Clawdbot 会传入此参数）
+   */
+  isConfigured?: (account: T, cfg: ClawdbotConfig) => boolean | Promise<boolean>;
+  unconfiguredReason?: (account: T, cfg: ClawdbotConfig) => string;
+}
+
 export interface ChannelPlugin<T = any> {
   id: string;
   meta: {
@@ -57,11 +79,7 @@ export interface ChannelPlugin<T = any> {
   actions?: any;
   // Channel-owned agent tools (飞书专属工具等)
   agentTools?: ChannelAgentToolFactory | ChannelAgentTool[];
-  config: {
-    listAccountIds: (cfg: ClawdbotConfig) => string[];
-    resolveAccount: (cfg: ClawdbotConfig, accountId: string) => T | undefined;
-    isConfigured: (account: T) => Promise<boolean>;
-  };
+  config: ChannelConfigAdapter<T>;
   outbound: {
     deliveryMode: string;
     textChunkLimit: number;

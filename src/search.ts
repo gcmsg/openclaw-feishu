@@ -121,10 +121,10 @@ export async function searchMessages(
     });
 
     if (result.code === 0) {
-      const results = (result.data?.items || []).map((item: any) => ({
+      const results: MessageSearchResult[] = (result.data?.items || []).map((item: any) => ({
         messageId: item.message_id,
         chatId: item.chat_id,
-        chatType: item.chat_type === "p2p" ? "p2p" : "group",
+        chatType: (item.chat_type === "p2p" ? "p2p" : "group") as "p2p" | "group",
         senderId: item.sender?.sender_id?.open_id || "",
         senderName: item.sender?.sender_id?.name,
         content: extractMessageContent(item),
@@ -184,9 +184,9 @@ export async function searchDocs(
       }
     }
 
-    const result = await client.suite.v1.docsSearch.create({
+    const result = await (client as any).suite?.v1?.docsSearch?.create({
       data: searchData,
-    } as any);
+    }) || { code: -1, msg: "Suite API not available" };
 
     if (result.code === 0) {
       const results = (result.data?.docs_entities || []).map((doc: any) => ({
@@ -300,7 +300,7 @@ export async function searchAppData(
         page_size: options?.pageSize || 20,
         page_token: options?.pageToken,
         data_source_ids: options?.dataSourceIds,
-      },
+      } as any,
     });
 
     if (result.code === 0) {

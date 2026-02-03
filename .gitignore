@@ -137,3 +137,9 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Compiled output
+*.js
+*.js.map
+!vitest.config.js
+!eslint.config.js

@@ -520,7 +520,7 @@ export async function addAttendees(
 
   try {
     const attendeeList = attendees.map((a) => ({
-      type: a.userId ? "user" : "third_party",
+      type: (a.userId ? "user" : "third_party") as "user" | "third_party",
       user_id: a.userId,
       third_party_email: a.email,
       is_optional: a.isOptional,
@@ -529,7 +529,7 @@ export async function addAttendees(
     const result = await client.calendar.v4.calendarEventAttendee.create({
       path: { calendar_id: calendarId, event_id: eventId },
       params: { user_id_type: "open_id" },
-      data: { attendees: attendeeList },
+      data: { attendees: attendeeList as any },
     });
 
     if (result.code === 0) {
@@ -729,7 +729,7 @@ export function parseTimeString(timeStr: string): number | null {
 export async function subscribeCalendar(
   account: ResolvedFeishuAccount,
   calendarId: string
-): Promise<ApiResult<{ calendar: CalendarInfo }>> {
+): Promise<ApiResult<{ calendar: Calendar }>> {
   const client = getFeishuClient(account);
 
   try {
@@ -746,7 +746,7 @@ export async function subscribeCalendar(
             calendarId: c.calendar_id!,
             summary: c.summary || "",
             description: c.description,
-            color: c.color ? parseInt(c.color) : undefined,
+            color: c.color ? (typeof c.color === 'string' ? parseInt(c.color, 10) : c.color) : undefined,
             type: c.type as any,
             role: c.role as any,
           },

@@ -26,6 +26,8 @@ import {
 // Mock fs
 vi.mock("fs", () => ({
   readFileSync: vi.fn(() => Buffer.from("mock file content")),
+  existsSync: vi.fn(() => true),
+  createReadStream: vi.fn(() => ({ pipe: vi.fn() })),
 }));
 
 describe("消息客户端 API", () => {

@@ -11,6 +11,15 @@
 import type { ResolvedFeishuAccount, ApiResult } from "./types.js";
 import { getFeishuClient } from "./client.js";
 
+// ==================== 通用 API 响应类型 ====================
+
+/** 飞书 API 标准响应 */
+interface FeishuApiResponse<T = any> {
+  code: number;
+  msg?: string;
+  data?: T;
+}
+
 // ==================== 类型定义 ====================
 
 /** 电子表格信息 */
@@ -92,13 +101,14 @@ export async function getSpreadsheet(
 
     if (result.code === 0 && result.data?.spreadsheet) {
       const ss = result.data.spreadsheet;
+      const token = ss.token || spreadsheetToken;
       return {
         ok: true,
         data: {
-          spreadsheetToken: ss.spreadsheet_token!,
+          spreadsheetToken: token,
           title: ss.title || "",
-          url: `https://feishu.cn/sheets/${ss.spreadsheet_token}`,
-          ownerUser: ss.owner_user,
+          url: ss.url || `https://feishu.cn/sheets/${token}`,
+          ownerUser: ss.owner_id,
         },
       };
     }
@@ -198,7 +208,7 @@ export async function readRange(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return {
         ok: true,
@@ -243,7 +253,7 @@ export async function writeRange(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return {
         ok: true,
@@ -285,7 +295,7 @@ export async function appendRows(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return {
         ok: true,
@@ -320,7 +330,7 @@ export async function batchReadRanges(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       const results = (data.data?.valueRanges || []).map((vr: any) => ({
         range: vr.range,
@@ -360,7 +370,7 @@ export async function batchWriteRanges(
       }
     );
 
-    const result = await response.json();
+    const result = await response.json() as FeishuApiResponse;
     if (result.code === 0) {
       return {
         ok: true,
@@ -406,7 +416,7 @@ export async function insertRows(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -446,7 +456,7 @@ export async function deleteRows(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -487,7 +497,7 @@ export async function insertColumns(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -527,7 +537,7 @@ export async function deleteColumns(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -555,8 +565,8 @@ async function getAccessToken(account: ResolvedFeishuAccount): Promise<string> {
     }
   );
 
-  const data = await response.json();
-  if (data.code === 0) {
+  const data = await response.json() as FeishuApiResponse & { tenant_access_token?: string };
+  if (data.code === 0 && data.tenant_access_token) {
     return data.tenant_access_token;
   }
   throw new Error(data.msg || "Failed to get access token");
@@ -640,7 +650,7 @@ export async function setCellStyle(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -690,7 +700,7 @@ export async function batchSetCellStyle(
       }
     );
 
-    const result = await response.json();
+    const result = await response.json() as FeishuApiResponse;
     if (result.code === 0) {
       return { ok: true };
     }
@@ -725,7 +735,7 @@ export async function mergeCells(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -756,7 +766,7 @@ export async function unmergeCells(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -834,7 +844,7 @@ export async function setDataValidation(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -908,7 +918,7 @@ export async function setConditionalFormat(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -943,7 +953,7 @@ export async function createFilter(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -972,7 +982,7 @@ export async function deleteFilter(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1028,7 +1038,7 @@ export async function setFilterCondition(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1073,7 +1083,7 @@ export async function sortRange(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1109,7 +1119,7 @@ export async function freezeRowsAndColumns(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1157,7 +1167,7 @@ export async function findReplace(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return {
         ok: true,
@@ -1204,7 +1214,7 @@ export async function setColumnWidth(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1248,7 +1258,7 @@ export async function setRowHeight(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1282,7 +1292,7 @@ export async function copySheet(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return {
         ok: true,
@@ -1328,7 +1338,7 @@ export async function addSheet(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       const reply = data.data?.replies?.[0]?.addSheet?.properties;
       return {
@@ -1377,7 +1387,7 @@ export async function deleteSheet(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }
@@ -1428,7 +1438,7 @@ export async function protectSheet(
       }
     );
 
-    const data = await response.json();
+    const data = await response.json() as FeishuApiResponse;
     if (data.code === 0) {
       return { ok: true };
     }

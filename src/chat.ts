@@ -121,18 +121,19 @@ export async function getChat(
     });
 
     if (result.code === 0 && result.data) {
+      const d = result.data as any;
       return {
         ok: true,
         data: {
-          chatId: result.data.chat_id || chatId,
-          name: result.data.name || "",
-          avatar: result.data.avatar,
-          description: result.data.description,
-          ownerId: result.data.owner_id,
-          chatMode: result.data.chat_mode as any,
-          chatType: result.data.chat_type as any,
-          external: result.data.external,
-          memberCount: result.data.user_count,
+          chatId: d.chat_id || chatId,
+          name: d.name || "",
+          avatar: d.avatar,
+          description: d.description,
+          ownerId: d.owner_id,
+          chatMode: d.chat_mode,
+          chatType: d.chat_type,
+          external: d.external,
+          memberCount: typeof d.user_count === 'string' ? parseInt(d.user_count, 10) : d.user_count,
         },
       };
     }
@@ -415,7 +416,7 @@ export async function isUserInChat(
     const result = await client.im.v1.chatMembers.isInChat({
       path: { chat_id: chatId },
       params: { member_id_type: "open_id" },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true, data: result.data?.is_in_chat || false };
@@ -582,7 +583,7 @@ export async function updateChatTab(
           {
             tab_id: tabId,
             tab_name: tabName,
-          },
+          } as any,
         ],
       },
     });
@@ -740,7 +741,7 @@ export async function updateChatAnnouncement(
             },
           },
         ],
-      },
+      } as any,
     });
 
     if (result.code === 0) {

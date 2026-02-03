@@ -111,7 +111,7 @@ export async function createEntity(
             }
           : undefined,
       },
-    });
+    } as any);
 
     if (result.code === 0 && result.data?.entity) {
       return {
@@ -141,7 +141,7 @@ export async function getEntity(
     const result = await client.lingo.v1.entity.get({
       path: { entity_id: entityId },
       params: { repo_id: options?.repoId, user_id_type: "open_id" },
-    });
+    } as any);
 
     if (result.code === 0 && result.data?.entity) {
       return {
@@ -181,7 +181,7 @@ export async function updateEntity(
         description: updates.description,
         rich_text: updates.richText,
       },
-    });
+    } as any);
 
     if (result.code === 0 && result.data?.entity) {
       return {
@@ -211,7 +211,7 @@ export async function deleteEntity(
     const result = await client.lingo.v1.entity.delete({
       path: { entity_id: entityId },
       params: { repo_id: options?.repoId },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -334,11 +334,12 @@ export async function matchEntity(
     const result = await client.lingo.v1.entity.match({
       params: { repo_id: options?.repoId, user_id_type: "open_id" },
       data: { word },
-    });
+    } as any);
 
     if (result.code === 0) {
-      if (result.data?.entity) {
-        return { ok: true, data: mapEntity(result.data.entity) };
+      const data = result.data as any;
+      if (data?.entity) {
+        return { ok: true, data: mapEntity(data.entity) };
       }
       return { ok: true, data: null };
     }
@@ -365,15 +366,16 @@ export async function highlightEntities(
     const result = await client.lingo.v1.entity.highlight({
       params: { repo_id: options?.repoId },
       data: { text },
-    });
+    } as any);
 
     if (result.code === 0) {
+      const data = result.data as any;
       return {
         ok: true,
         data: {
-          text: result.data?.text || text,
+          text: data?.text || text,
           phrases:
-            result.data?.phrases?.map((p: any) => ({
+            data?.phrases?.map((p: any) => ({
               name: p.name,
               entityIds: p.entity_ids || [],
               start: p.start,
@@ -495,14 +497,15 @@ export async function createDraft(
         description,
         rich_text: options?.richText,
       },
-    });
+    } as any);
 
     if (result.code === 0 && result.data?.draft) {
+      const draft = result.data.draft as any;
       return {
         ok: true,
         data: {
-          draftId: result.data.draft.id || "",
-          entity: mapEntity(result.data.draft),
+          draftId: draft.draft_id || draft.id || "",
+          entity: mapEntity(draft.entity || draft),
         },
       };
     }
@@ -538,13 +541,14 @@ export async function updateDraft(
         description: updates.description,
         rich_text: updates.richText,
       },
-    });
+    } as any);
 
     if (result.code === 0 && result.data?.draft) {
+      const draft = result.data.draft as any;
       return {
         ok: true,
         data: {
-          entity: mapEntity(result.data.draft),
+          entity: mapEntity(draft.entity || draft),
         },
       };
     }

@@ -107,11 +107,11 @@ export async function uploadFile(
     const prepareResult = await client.drive.v1.media.uploadPrepare({
       data: {
         file_name: actualFileName,
-        parent_type: "explorer",
+        parent_type: "explorer" as any,
         parent_node: parentToken,
         size: fileSize,
       },
-    });
+    }) as any;
 
     if (prepareResult.code !== 0) {
       return { ok: false, error: prepareResult.msg };
@@ -127,14 +127,15 @@ export async function uploadFile(
       const end = Math.min(start + blockSize, fileSize);
       const chunk = fileBuffer.subarray(start, end);
 
+      // 使用 Buffer 而非 Blob（Node.js 环境兼容性更好）
       const partResult = await client.drive.v1.media.uploadPart({
         data: {
           upload_id: uploadId!,
           seq: i,
           size: chunk.length,
-          file: new Blob([chunk]),
+          file: chunk,
         },
-      });
+      }) as any;
 
       if (partResult.code !== 0) {
         return { ok: false, error: `Upload part ${i} failed: ${partResult.msg}` };
@@ -179,11 +180,15 @@ export async function downloadFile(
   try {
     const result = await client.drive.v1.media.download({
       path: { file_token: fileToken },
-    });
+    }) as any;
 
-    if (result instanceof Buffer || result instanceof ArrayBuffer) {
-      const buffer = Buffer.from(result);
-      fs.writeFileSync(savePath, buffer);
+    if (result && (result instanceof Buffer || result instanceof ArrayBuffer || result.writeFile)) {
+      if (result.writeFile) {
+        await result.writeFile(savePath);
+      } else {
+        const buffer = Buffer.from(result);
+        fs.writeFileSync(savePath, buffer);
+      }
       return { ok: true, data: savePath };
     }
     return { ok: false, error: "Invalid response" };
@@ -265,6 +270,7 @@ export async function deleteFile(
 
   try {
     const result = await client.drive.v1.file.delete({
+      params: { type: "file" as any },
       path: { file_token: fileToken },
     });
 
@@ -309,12 +315,12 @@ export async function getFileMeta(
     });
 
     if (result.code === 0 && result.data?.metas?.[0]) {
-      const meta = result.data.metas[0];
+      const meta = result.data.metas[0] as any;
       return {
         ok: true,
         data: {
           name: meta.title || "",
-          owner: meta.owner_id ? { id: meta.owner_id, name: meta.owner?.name } : undefined,
+          owner: meta.owner_id ? { id: meta.owner_id, name: meta.owner?.name || "" } : undefined,
           createTime: meta.create_time ? parseInt(meta.create_time) * 1000 : undefined,
           modifiedTime: meta.latest_modify_time
             ? parseInt(meta.latest_modify_time) * 1000
@@ -341,7 +347,7 @@ export async function getBatchDownloadUrls(
   try {
     const result = await client.drive.v1.media.batchGetTmpDownloadUrl({
       params: {
-        file_tokens: fileTokens.join(","),
+        file_tokens: fileTokens,
       },
     });
 
@@ -377,7 +383,7 @@ export async function createShortcut(
         parent_token: parentFolderToken,
         refer_entity: {
           refer_token: targetToken,
-          refer_type: targetType,
+          refer_type: targetType as any,
         },
       },
     });
@@ -406,7 +412,7 @@ export async function transferFileOwner(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.drive.v1.permissionMember.transfer({
+    const result = await (client.drive.v1.permissionMember as any).transfer({
       path: { token: fileToken },
       params: {
         type: fileType,
@@ -438,13 +444,13 @@ export async function searchFiles(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.suite.docsApi.search.object({
+    const result = await ((client as any).suite?.docsApi?.search?.object?.({
       data: {
         search_key: query,
         count: 50,
         page_token: pageToken,
       },
-    });
+    }) || { code: -1, msg: "Suite API not available" });
 
     if (result.code === 0) {
       const files: FileInfo[] = (result.data?.docs_entities || []).map((d: any) => ({

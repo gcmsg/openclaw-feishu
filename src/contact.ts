@@ -403,8 +403,9 @@ export async function getParentDepartments(
       params: {
         user_id_type: "open_id",
         department_id_type: "open_department_id",
+        department_id: departmentId,
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       const departments = (result.data?.items || []).map(mapDepartment);
@@ -509,7 +510,7 @@ export async function getGroup(
           groupId: g.id || groupId,
           name: g.name || "",
           description: g.description,
-          memberCount: g.member_count,
+          memberCount: (g.member_user_count || 0) + (g.member_department_count || 0),
           memberUserCount: g.member_user_count,
           memberDepartmentCount: g.member_department_count,
           type: g.type,
@@ -770,9 +771,10 @@ export async function addGroupMember(
       params: { member_id_type: "open_id" },
       data: {
         member_id: memberId,
-        member_type: memberType,
+        member_type: memberType as "user",
+        member_id_type: "open_id",
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -800,10 +802,10 @@ export async function batchAddGroupMembers(
       data: {
         members: members.map((m) => ({
           member_id: m.memberId,
-          member_type: m.memberType,
+          member_type: m.memberType as "user",
         })),
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -831,9 +833,10 @@ export async function removeGroupMember(
       params: { member_id_type: "open_id" },
       data: {
         member_id: memberId,
-        member_type: memberType,
+        member_type: memberType as "user",
+        member_id_type: "open_id",
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -861,10 +864,10 @@ export async function batchRemoveGroupMembers(
       data: {
         members: members.map((m) => ({
           member_id: m.memberId,
-          member_type: m.memberType,
+          member_type: m.memberType as "user",
         })),
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };

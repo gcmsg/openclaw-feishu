@@ -120,8 +120,8 @@ export async function getWikiSpace(
           spaceId: s.space_id!,
           name: s.name || "",
           description: s.description,
-          visibility: s.visibility || "private",
-          openSharing: s.open_sharing,
+          visibility: (s.visibility as "public" | "private") || "private",
+          openSharing: s.open_sharing === "open",
         },
       };
     }
@@ -149,7 +149,7 @@ export async function createWikiSpace(
       data: {
         name,
         description: options?.description,
-        visibility: options?.visibility,
+        open_sharing: options?.visibility === "public" ? "open" : "closed",
       },
     });
 
@@ -223,7 +223,7 @@ export async function getWikiNode(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.wiki.v2.spaceNode.get({
+    const result = await client.wiki.v2.space.getNode({
       params: { token: nodeToken },
     });
 
@@ -480,7 +480,7 @@ export async function removeWikiMember(
     const result = await client.wiki.v2.spaceMember.delete({
       path: { space_id: spaceId, member_id: memberId },
       params: { member_type: memberType },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };

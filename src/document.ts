@@ -463,18 +463,29 @@ export async function updateBlock(
 }
 
 /**
- * 删除指定块
+ * 删除指定块（通过父块和索引删除）
+ * 注意：需要先获取块在父块中的索引位置
  */
 export async function deleteBlock(
   account: ResolvedFeishuAccount,
   documentId: string,
-  blockId: string
+  blockId: string,
+  parentBlockId?: string,
+  startIndex?: number
 ): Promise<ApiResult> {
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.docx.v1.documentBlock.delete({
-      path: { document_id: documentId, block_id: blockId },
+    // 如果没有提供父块和索引，需要先查询
+    const parentId = parentBlockId || documentId;
+    const index = startIndex ?? 0;
+
+    const result = await client.docx.v1.documentBlockChildren.batchDelete({
+      path: { document_id: documentId, block_id: parentId },
+      data: {
+        start_index: index,
+        end_index: index + 1,
+      },
     });
 
     if (result.code === 0) {

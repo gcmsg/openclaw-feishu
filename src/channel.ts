@@ -326,13 +326,39 @@ function listFeishuAccountIds(cfg: ClawdbotConfig): string[] {
   return [DEFAULT_ACCOUNT_ID];
 }
 
+/**
+ * 解析飞书账号
+ * 注意：OpenClaw 期望此函数始终返回有效账号对象（非 undefined）
+ * 如果配置不存在，返回一个"未配置"的空账号对象
+ */
 function resolveFeishuAccount(
   cfg: ClawdbotConfig,
-  accountId: string
-): ResolvedFeishuAccount | undefined {
-  if (accountId !== DEFAULT_ACCOUNT_ID) return undefined;
+  accountId?: string | null
+): ResolvedFeishuAccount {
+  // 使用默认账号 ID
+  const effectiveAccountId = accountId || DEFAULT_ACCOUNT_ID;
+  
+  // 仅支持默认账号
+  if (effectiveAccountId !== DEFAULT_ACCOUNT_ID) {
+    // 返回空账号对象（isConfigured 会检测到这是未配置的）
+    return {
+      accountId: effectiveAccountId,
+      appId: "",
+      appSecret: "",
+      config: {} as FeishuChannelConfig,
+    };
+  }
+  
   const feishuCfg = getFeishuConfig(cfg);
-  if (!feishuCfg) return undefined;
+  if (!feishuCfg) {
+    // 配置不存在，返回空账号
+    return {
+      accountId: DEFAULT_ACCOUNT_ID,
+      appId: "",
+      appSecret: "",
+      config: {} as FeishuChannelConfig,
+    };
+  }
 
   return {
     accountId: DEFAULT_ACCOUNT_ID,
@@ -2457,7 +2483,8 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
   config: {
     listAccountIds: (cfg) => listFeishuAccountIds(cfg),
     resolveAccount: (cfg, accountId) => resolveFeishuAccount(cfg, accountId),
-    isConfigured: async (account) => !!(account.appId && account.appSecret),
+    // OpenClaw 签名: isConfigured(account, cfg) => boolean | Promise<boolean>
+    isConfigured: async (account, _cfg) => !!(account.appId && account.appSecret),
   },
 
   outbound: {

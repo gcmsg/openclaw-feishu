@@ -28,8 +28,18 @@ export function createMockResponse(data: any, code = 0, msg = "success") {
   };
 }
 
+// Mock 飞书客户端类型 - 支持动态扩展
+export interface MockClient {
+  [key: string]: any;
+  docx: any;
+  bitable: any;
+  sheets: any;
+  im: any;
+  drive: any;
+}
+
 // Mock 飞书客户端
-export function createMockClient() {
+export function createMockClient(): MockClient {
   return {
     docx: {
       v1: {
@@ -116,12 +126,15 @@ export function createMockClient() {
           createFolder: vi.fn(),
           uploadAll: vi.fn(),
         },
+        file: {
+          list: vi.fn(),
+        },
         medias: {
           download: vi.fn(),
         },
       },
     },
-  };
+  } as MockClient;
 }
 
 // 设置 global fetch mock

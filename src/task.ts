@@ -231,7 +231,7 @@ export async function completeTask(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.task.complete({
+    const result = await (client.task.v2.task as any).complete({
       path: { task_guid: taskId },
     });
 
@@ -254,7 +254,7 @@ export async function uncompleteTask(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.task.uncomplete({
+    const result = await (client.task.v2.task as any).uncomplete({
       path: { task_guid: taskId },
     });
 
@@ -284,7 +284,7 @@ export async function listTasks(
   try {
     // 如果指定了任务列表，从任务列表获取
     if (options?.tasklistId) {
-      const result = await client.task.v2.tasklistTask.list({
+      const result = await (client.task.v2 as any).tasklistTask.list({
         path: { tasklist_guid: options.tasklistId },
         params: {
           page_size: options?.pageSize || 50,
@@ -311,9 +311,9 @@ export async function listTasks(
       params: {
         page_size: options?.pageSize || 50,
         page_token: options?.pageToken,
-        completed: options?.completed?.toString(),
+        completed: options?.completed,
         user_id_type: "open_id",
-      },
+      } as any,
     });
 
     if (result.code === 0) {
@@ -489,7 +489,7 @@ export async function addTaskToList(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.tasklistTask.create({
+    const result = await (client.task.v2 as any).tasklistTask.create({
       path: { tasklist_guid: tasklistId },
       data: { task_guid: taskId },
     });
@@ -514,7 +514,7 @@ export async function removeTaskFromList(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.tasklistTask.delete({
+    const result = await (client.task.v2 as any).tasklistTask.delete({
       path: { tasklist_guid: tasklistId, task_guid: taskId },
     });
 
@@ -540,7 +540,7 @@ export async function addTaskReminder(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.taskReminder.create({
+    const result = await (client.task.v2 as any).taskReminder.create({
       path: { task_guid: taskId },
       data: {
         relative_fire_minute: relativeFireMinutes,
@@ -566,7 +566,7 @@ export async function listTaskReminders(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.taskReminder.list({
+    const result = await (client.task.v2 as any).taskReminder.list({
       path: { task_guid: taskId },
       params: { page_size: 50 },
     });
@@ -595,7 +595,7 @@ export async function deleteTaskReminder(
   const client = getFeishuClient(account);
 
   try {
-    const result = await client.task.v2.taskReminder.delete({
+    const result = await (client.task.v2 as any).taskReminder.delete({
       path: { task_guid: taskId, reminder_id: reminderId },
     });
 

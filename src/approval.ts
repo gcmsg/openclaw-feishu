@@ -99,20 +99,21 @@ export async function getApprovalDefinition(
     });
 
     if (result.code === 0 && result.data) {
+      const d = result.data as any;
       return {
         ok: true,
         data: {
-          approvalCode: result.data.approval_code || approvalCode,
-          approvalName: result.data.approval_name || "",
-          status: result.data.status as any,
-          form: result.data.form,
-          nodeList: result.data.node_list?.map((n: any) => ({
+          approvalCode: d.approval_code || approvalCode,
+          approvalName: d.approval_name || "",
+          status: d.status,
+          form: d.form,
+          nodeList: d.node_list?.map((n: any) => ({
             nodeId: n.node_id,
             nodeName: n.name,
             nodeType: n.node_type,
             approverList: n.approver?.map((a: any) => ({ userId: a.user_id })),
           })),
-          viewers: result.data.viewers?.map((v: any) => ({
+          viewers: d.viewers?.map((v: any) => ({
             type: v.viewer_type,
             userId: v.viewer_user_id,
             departmentId: v.viewer_department_id,
@@ -193,19 +194,19 @@ export async function getApprovalInstance(
 
   try {
     const result = await client.approval.v4.instance.get({
-      path: { instance_code: instanceCode },
+      path: { instance_id: instanceCode },
       params: { locale: locale || "zh-CN", user_id_type: "open_id" },
-    });
+    } as any);
 
     if (result.code === 0 && result.data) {
-      const d = result.data;
+      const d = result.data as any;
       return {
         ok: true,
         data: {
           instanceCode: d.instance_code || instanceCode,
           approvalCode: d.approval_code || "",
           approvalName: d.approval_name,
-          status: d.status as any,
+          status: d.status,
           form: d.form,
           userId: d.user_id,
           openId: d.open_id,
@@ -272,15 +273,16 @@ export async function queryApprovalInstances(
         page_size: options?.pageSize || 100,
         page_token: options?.pageToken,
       },
-    });
+    } as any);
 
     if (result.code === 0) {
+      const data = result.data as any;
       return {
         ok: true,
         data: {
-          instanceCodes: result.data?.instance_code_list || [],
-          pageToken: result.data?.page_token,
-          hasMore: result.data?.has_more,
+          instanceCodes: data?.instance_code_list || data?.instance_list?.map((i: any) => i.instance?.code) || [],
+          pageToken: data?.page_token,
+          hasMore: data?.has_more,
         },
       };
     }
@@ -378,7 +380,7 @@ export async function addSignToApproval(
         reason,
       },
       params: { user_id_type: "open_id" },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -553,7 +555,8 @@ export async function queryTasks(
     });
 
     if (result.code === 0) {
-      const tasks = (result.data?.items || []).map((t: any) => ({
+      const data = result.data as any;
+      const tasks = (data?.tasks || data?.items || []).map((t: any) => ({
         taskId: t.task_id || t.id,
         userId: t.user_id,
         openId: t.open_id,
@@ -568,8 +571,8 @@ export async function queryTasks(
         ok: true,
         data: {
           tasks,
-          pageToken: result.data?.page_token,
-          hasMore: result.data?.has_more,
+          pageToken: data?.page_token,
+          hasMore: data?.has_more,
         },
       };
     }
@@ -638,21 +641,22 @@ export async function searchTasks(
     });
 
     if (result.code === 0) {
-      const tasks = (result.data?.items || []).map((t: any) => ({
-        taskId: t.task_id,
-        instanceCode: t.instance_code,
-        approvalCode: t.approval_code,
+      const data = result.data as any;
+      const tasks = (data?.task_list || data?.items || []).map((t: any) => ({
+        taskId: t.task?.id || t.task_id,
+        instanceCode: t.instance?.code || t.instance_code,
+        approvalCode: t.approval?.code || t.approval_code,
         approvalName: t.approval?.name,
         taskTitle: t.title,
-        status: t.status,
+        status: t.task?.status || t.status,
       }));
 
       return {
         ok: true,
         data: {
           tasks,
-          pageToken: result.data?.page_token,
-          hasMore: result.data?.has_more,
+          pageToken: data?.page_token,
+          hasMore: data?.has_more,
         },
       };
     }
@@ -677,13 +681,12 @@ export async function addApprovalComment(
 
   try {
     const result = await client.approval.v4.instanceComment.create({
-      path: { instance_code: instanceCode },
-      params: { user_id_type: "open_id" },
+      path: { instance_id: instanceCode },
+      params: { user_id_type: "open_id", user_id: userId },
       data: {
-        user_id: userId,
         content,
       },
-    });
+    } as any);
 
     if (result.code === 0) {
       return {
@@ -718,16 +721,17 @@ export async function listApprovalComments(
 
   try {
     const result = await client.approval.v4.instanceComment.list({
-      path: { instance_code: instanceCode },
+      path: { instance_id: instanceCode },
       params: {
         user_id_type: "open_id",
         page_size: options?.pageSize || 50,
-        page_token: options?.pageToken,
+        page_token: options?.pageToken || "",
       },
-    });
+    } as any);
 
     if (result.code === 0) {
-      const comments = (result.data?.items || []).map((c: any) => ({
+      const data = result.data as any;
+      const comments = (data?.comments || data?.items || []).map((c: any) => ({
         commentId: c.id || c.comment_id,
         userId: c.user_id,
         openId: c.open_id,
@@ -739,8 +743,8 @@ export async function listApprovalComments(
         ok: true,
         data: {
           comments,
-          pageToken: result.data?.page_token,
-          hasMore: result.data?.has_more,
+          pageToken: data?.page_token,
+          hasMore: data?.has_more,
         },
       };
     }
@@ -763,9 +767,9 @@ export async function deleteApprovalComment(
 
   try {
     const result = await client.approval.v4.instanceComment.delete({
-      path: { instance_code: instanceCode, comment_id: commentId },
+      path: { instance_id: instanceCode, comment_id: commentId },
       params: { user_id_type: "open_id", user_id: userId },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };

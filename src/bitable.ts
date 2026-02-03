@@ -310,7 +310,7 @@ export async function searchBitableRecords(
         field_names: options?.fieldNames,
         page_size: options?.pageSize || 100,
         page_token: options?.pageToken,
-      },
+      } as any,
     });
 
     if (result.code === 0) {
@@ -582,9 +582,12 @@ export async function deleteBitableRecords(
     });
 
     if (result.code === 0) {
+      const deletedIds = (result.data?.records || [])
+        .filter((r: any) => r.deleted)
+        .map((r: any) => r.record_id as string);
       return {
         ok: true,
-        data: { deleted: result.data?.records || [] },
+        data: { deleted: deletedIds },
       };
     }
     return { ok: false, error: result.msg };
@@ -820,11 +823,11 @@ export async function createBitableRole(
         role_name: roleName,
         table_perm: options?.tablePerm,
         rec_perm: options?.recPerm,
-      },
+      } as any,
     });
 
     if (result.code === 0 && result.data?.role) {
-      const r = result.data.role;
+      const r = result.data.role as any;
       return {
         ok: true,
         data: {
@@ -863,7 +866,7 @@ export async function updateBitableRole(
         role_name: updates.roleName,
         table_perm: updates.tablePerm,
         rec_perm: updates.recPerm,
-      },
+      } as any,
     });
 
     if (result.code === 0) {
@@ -962,7 +965,7 @@ export async function addBitableRoleMember(
       data: {
         member_id: memberId,
         member_type: memberType,
-      },
+      } as any,
     });
 
     if (result.code === 0) {
@@ -990,7 +993,7 @@ export async function removeBitableRoleMember(
     const result = await client.bitable.v1.appRoleMember.delete({
       path: { app_token: appToken, role_id: roleId, member_id: memberId },
       params: { member_type: memberType },
-    });
+    } as any);
 
     if (result.code === 0) {
       return { ok: true };
@@ -1034,17 +1037,18 @@ export async function listBitableWorkflows(
     } as any);
 
     if (result.code === 0) {
-      const workflows = (result.data?.items || []).map((w: any) => ({
+      const data = result.data as any;
+      const workflows = (data?.workflows || data?.items || []).map((w: any) => ({
         workflowId: w.workflow_id,
-        workflowName: w.workflow_name || "",
-        enabled: w.enabled || false,
+        workflowName: w.title || w.workflow_name || "",
+        enabled: w.status === "active" || w.enabled || false,
       }));
 
       return {
         ok: true,
         data: {
           workflows,
-          pageToken: result.data?.page_token,
+          pageToken: data?.page_token,
         },
       };
     }

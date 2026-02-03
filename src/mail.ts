@@ -104,7 +104,7 @@ export async function sendMail(
         bcc: options.bcc?.map((t) => ({ mail_address: t.email, name: t.name })),
         body_html: options.bodyHtml,
         body_plain_text: options.bodyPlainText,
-        head_from: options.replyTo ? { mail_address: options.replyTo } : undefined,
+        head_from: options.replyTo ? { mail_address: options.replyTo } as any : undefined,
       },
     });
 
@@ -135,14 +135,14 @@ export async function getMail(
       path: { user_mailbox_id: userMailboxId, message_id: messageId },
     });
 
-    if (result.code === 0 && result.data) {
-      const m = result.data;
+    if (result.code === 0 && result.data?.message) {
+      const m = result.data.message as any;
       return {
         ok: true,
         data: {
           messageId: m.message_id || messageId,
           subject: m.subject,
-          from: m.from ? { email: m.from.mail_address || "", name: m.from.name } : undefined,
+          from: m.head_from ? { email: m.head_from.mail_address || "", name: m.head_from.name } : undefined,
           to: m.to?.map((t: any) => ({ email: t.mail_address, name: t.name })),
           cc: m.cc?.map((t: any) => ({ email: t.mail_address, name: t.name })),
           body: {
@@ -235,12 +235,14 @@ export async function getMailAttachmentUrl(
         message_id: messageId,
         attachment_id: attachmentId,
       },
-    });
+    } as any);
 
     if (result.code === 0) {
+      const data = result.data as any;
+      const url = data?.download_url || data?.download_urls?.[0]?.download_url || "";
       return {
         ok: true,
-        data: { url: result.data?.download_url || "" },
+        data: { url },
       };
     }
     return { ok: false, error: result.msg };
@@ -304,10 +306,11 @@ export async function createMailFolder(
     });
 
     if (result.code === 0) {
+      const data = result.data as any;
       return {
         ok: true,
         data: {
-          folderId: result.data?.folder_id || "",
+          folderId: data?.folder_id || data?.folder?.id || "",
           name,
           parentFolderId,
         },
@@ -397,7 +400,7 @@ export async function getMailGroup(
     });
 
     if (result.code === 0 && result.data) {
-      const g = result.data;
+      const g = result.data as any;
       return {
         ok: true,
         data: {
@@ -405,8 +408,8 @@ export async function getMailGroup(
           email: g.email || "",
           name: g.name,
           description: g.description,
-          memberCount: g.members_count ? parseInt(String(g.members_count), 10) : undefined,
-          permissionType: g.permission_type as any,
+          memberCount: g.members_count || g.direct_members_count ? parseInt(String(g.members_count || g.direct_members_count), 10) : undefined,
+          permissionType: g.permission_type || g.who_can_send_mail,
         },
       };
     }
@@ -583,7 +586,7 @@ export async function addMailGroupMember(
         email: member.email,
         user_id: member.userId,
         department_id: member.departmentId,
-        type: member.type,
+        type: member.type?.toUpperCase().replace("MAILGROUP", "MAIL_GROUP") as any,
       },
     });
 
@@ -674,7 +677,7 @@ export async function getPublicMailbox(
     });
 
     if (result.code === 0 && result.data) {
-      const p = result.data;
+      const p = result.data as any;
       return {
         ok: true,
         data: {
@@ -849,7 +852,7 @@ export async function addPublicMailboxMember(
       params: { user_id_type: "open_id" },
       data: {
         user_id: member.userId,
-        type: member.type || "user",
+        type: (member.type || "user").toUpperCase() as "USER",
       },
     });
 

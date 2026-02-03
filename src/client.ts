@@ -129,20 +129,16 @@ export async function sendImageMessage(
   const client = getFeishuClient(account);
 
   try {
-    // 上传图片
-    const imageBuffer = fs.readFileSync(imagePath);
+    // 上传图片 - 使用 ReadStream（Node.js 环境兼容性更好）
     const uploadResult = await client.im.v1.image.create({
       data: {
         image_type: "message",
-        image: new Blob([imageBuffer]),
+        image: fs.createReadStream(imagePath),
       },
     });
 
-    if (uploadResult.code !== 0) {
-      return { ok: false, error: uploadResult.msg };
-    }
-
-    const imageKey = uploadResult.data?.image_key;
+    // 新版 SDK 直接返回数据对象或 null
+    const imageKey = uploadResult?.image_key;
     if (!imageKey) {
       return { ok: false, error: "Failed to get image key" };
     }
@@ -157,10 +153,10 @@ export async function sendImageMessage(
       },
     });
 
-    if (result.code === 0) {
+    if (result?.code === 0) {
       return { ok: true, data: { messageId: result.data?.message_id || "" } };
     }
-    return { ok: false, error: result.msg };
+    return { ok: false, error: result?.msg || "Failed to send image message" };
   } catch (error) {
     return { ok: false, error: String(error) };
   }
@@ -178,23 +174,23 @@ export async function sendFileMessage(
   const client = getFeishuClient(account);
 
   try {
-    const fileBuffer = fs.readFileSync(filePath);
+    // 检查文件是否存在
+    if (!fs.existsSync(filePath)) {
+      return { ok: false, error: `File not found: ${filePath}` };
+    }
     const actualFileName = fileName || path.basename(filePath);
 
-    // 上传文件
+    // 上传文件 - 使用 ReadStream（Node.js 环境兼容性更好）
     const uploadResult = await client.im.v1.file.create({
       data: {
         file_type: "stream",
         file_name: actualFileName,
-        file: new Blob([fileBuffer]),
+        file: fs.createReadStream(filePath),
       },
     });
 
-    if (uploadResult.code !== 0) {
-      return { ok: false, error: uploadResult.msg };
-    }
-
-    const fileKey = uploadResult.data?.file_key;
+    // 新版 SDK 直接返回数据对象或 null
+    const fileKey = uploadResult?.file_key;
     if (!fileKey) {
       return { ok: false, error: "Failed to get file key" };
     }
@@ -209,10 +205,10 @@ export async function sendFileMessage(
       },
     });
 
-    if (result.code === 0) {
+    if (result?.code === 0) {
       return { ok: true, data: { messageId: result.data?.message_id || "" } };
     }
-    return { ok: false, error: result.msg };
+    return { ok: false, error: result?.msg || "Failed to send file message" };
   } catch (error) {
     return { ok: false, error: String(error) };
   }
@@ -374,7 +370,7 @@ export async function mergeForwardMessages(
     if (result.code === 0) {
       return {
         ok: true,
-        data: { messageId: result.data?.message_id || "" },
+        data: { messageId: result.data?.message?.message_id || "" },
       };
     }
     return { ok: false, error: result.msg };

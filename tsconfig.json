@@ -14,7 +14,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false
+    "noUnusedParameters": false,
+    "noEmitOnError": false,
+    "outDir": "./dist"
   },
   "include": ["*.ts", "src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]

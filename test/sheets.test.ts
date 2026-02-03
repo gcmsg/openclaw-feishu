@@ -144,10 +144,63 @@ describe("电子表格 API", () => {
   });
 
   describe("readRange", () => {
-    // 注：readRange 使用 fetch 直接调用 v2 API，需要集成测试来验证
-    it.skip("应该成功读取单元格范围（需要集成测试）", async () => {
-      // 此测试需要真实的飞书环境来验证
-      // 在单元测试中跳过，使用集成测试覆盖
+    it("应该成功读取单元格范围", async () => {
+      mockFetchAccessToken(mockFetch);
+      mockFetchResponse(mockFetch, {
+        valueRange: {
+          range: "Sheet1!A1:C3",
+          values: [
+            ["姓名", "年龄", "城市"],
+            ["张三", 25, "北京"],
+            ["李四", 30, "上海"],
+          ],
+        },
+      });
+
+      const result = await readRange(mockAccount, "sheet_12345", "Sheet1!A1:C3");
+
+      expect(result.ok).toBe(true);
+      expect(result.data?.range).toBe("Sheet1!A1:C3");
+      expect(result.data?.values).toHaveLength(3);
+      expect(result.data?.values[0]).toEqual(["姓名", "年龄", "城市"]);
+      expect(result.data?.values[1]).toEqual(["张三", 25, "北京"]);
+    });
+
+    it("应该处理空范围", async () => {
+      mockFetchAccessToken(mockFetch);
+      mockFetchResponse(mockFetch, {
+        valueRange: {
+          range: "Sheet1!A1:A1",
+          values: [],
+        },
+      });
+
+      const result = await readRange(mockAccount, "sheet_12345", "Sheet1!A1:A1");
+
+      expect(result.ok).toBe(true);
+      expect(result.data?.values).toEqual([]);
+    });
+
+    it("应该处理 API 错误", async () => {
+      mockFetchAccessToken(mockFetch);
+      mockFetch.mockResolvedValueOnce({
+        json: () => Promise.resolve({ code: 99991, msg: "表格不存在" }),
+      });
+
+      const result = await readRange(mockAccount, "invalid_token", "Sheet1!A1:C3");
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toBe("表格不存在");
+    });
+
+    it("应该处理网络错误", async () => {
+      mockFetchAccessToken(mockFetch);
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await readRange(mockAccount, "sheet_12345", "Sheet1!A1:C3");
+
+      expect(result.ok).toBe(false);
+      expect(result.error).toContain("Network error");
     });
   });
 
