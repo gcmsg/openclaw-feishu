@@ -111,6 +111,39 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
+### 🔄 Update to Latest Version
+
+To update an existing installation to the latest version:
+
+```bash
+# OpenClaw
+openclaw plugins update feishu
+
+# Clawdbot
+clawdbot plugins update feishu
+
+# Then restart gateway
+openclaw gateway restart  # or: clawdbot gateway restart
+```
+
+**Alternative method (reinstall):**
+
+If `plugins update` doesn't work, you can reinstall:
+
+```bash
+# Remove old version first
+rm -rf ~/.openclaw/extensions/feishu  # or: ~/.clawdbot/extensions/feishu
+
+# Reinstall
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# or: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+
+# Restart gateway
+openclaw gateway restart  # or: clawdbot gateway restart
+```
+
+> 💡 **Tip:** Your configuration (appId, appSecret) will be preserved during update.
+
 ### 🔧 Post-Install Configuration
 
 After installation, configure the plugin with these commands:
@@ -443,6 +476,39 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 # Clawdbot
 clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
+
+### 🔄 更新到最新版
+
+将已安装的插件更新到最新版本：
+
+```bash
+# OpenClaw
+openclaw plugins update feishu
+
+# Clawdbot
+clawdbot plugins update feishu
+
+# 然后重启 Gateway
+openclaw gateway restart  # 或: clawdbot gateway restart
+```
+
+**备选方法（重装）：**
+
+如果 `plugins update` 不生效，可以重新安装：
+
+```bash
+# 先删除旧版本
+rm -rf ~/.openclaw/extensions/feishu  # 或: ~/.clawdbot/extensions/feishu
+
+# 重新安装
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# 或: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+
+# 重启 Gateway
+openclaw gateway restart  # 或: clawdbot gateway restart
+```
+
+> 💡 **提示：** 更新时你的配置（appId、appSecret）会被保留。
 
 ### 🔧 安装后配置
 
