@@ -1237,7 +1237,7 @@ const feishuMessageActions: ChannelMessageActionAdapter = {
 
     switch (action) {
       case "send":
-        return sendTextMessage(account, ctx.target, ctx.message);
+        return sendSmartMessage(account, ctx.target, ctx.message);
 
       case "send_card":
         try {
