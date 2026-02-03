@@ -680,120 +680,21 @@ export async function sendPost(
 }
 
 /**
- * 检测是否为纯文本（只包含文字和标点符号）
- */
-/**
- * 解析 markdown 表格为行列数据
- */
-function parseMarkdownTable(text: string): { headers: string[]; rows: string[][] } | null {
-  const lines = text.trim().split("\n");
-  const tableLines: string[] = [];
-
-  for (const line of lines) {
-    if (/^\|.+\|$/.test(line.trim())) {
-      tableLines.push(line.trim());
-    }
-  }
-
-  if (tableLines.length < 2) return null;
-
-  // 解析表头
-  const headerLine = tableLines[0];
-  const headers = headerLine
-    .split("|")
-    .filter((cell) => cell.trim())
-    .map((cell) => cell.trim());
-
-  // 跳过分隔线，解析数据行
-  const rows: string[][] = [];
-  for (let i = 2; i < tableLines.length; i++) {
-    const cells = tableLines[i]
-      .split("|")
-      .filter((cell) => cell.trim() !== "")
-      .map((cell) => cell.trim());
-    if (cells.length > 0) {
-      rows.push(cells);
-    }
-  }
-
-  return { headers, rows };
-}
-
-/**
- * 构建飞书卡片（支持表格转 column_set）
+ * 构建飞书卡片
  */
 function buildFeishuCard(text: string): Record<string, any> {
-  const elements: any[] = [];
-
-  // 检测是否包含表格
-  const tableMatch = text.match(/(\|.+\|\n)+/);
-  if (tableMatch) {
-    const tableText = tableMatch[0];
-    const tableData = parseMarkdownTable(tableText);
-
-    if (tableData && tableData.headers.length > 0) {
-      // 表格前的内容
-      const beforeTable = text.slice(0, text.indexOf(tableText)).trim();
-      if (beforeTable) {
-        elements.push({
-          tag: "div",
-          text: { tag: "lark_md", content: beforeTable },
-        });
-      }
-
-      // 表头行（灰色背景）
-      elements.push({
-        tag: "column_set",
-        flex_mode: "none",
-        background_style: "grey",
-        columns: tableData.headers.map((header) => ({
-          tag: "column",
-          width: "weighted",
-          weight: 1,
-          elements: [{ tag: "div", text: { tag: "lark_md", content: `**${header}**` } }],
-        })),
-      });
-
-      // 数据行
-      for (const row of tableData.rows) {
-        elements.push({
-          tag: "column_set",
-          flex_mode: "none",
-          columns: row.map((cell) => ({
-            tag: "column",
-            width: "weighted",
-            weight: 1,
-            elements: [{ tag: "div", text: { tag: "lark_md", content: cell } }],
-          })),
-        });
-      }
-
-      // 表格后的内容
-      const afterTable = text.slice(text.indexOf(tableText) + tableText.length).trim();
-      if (afterTable) {
-        elements.push({
-          tag: "div",
-          text: { tag: "lark_md", content: afterTable },
-        });
-      }
-    }
-  }
-
-  // 如果没有表格或解析失败，直接用 lark_md
-  if (elements.length === 0) {
-    elements.push({
-      tag: "div",
-      text: { tag: "lark_md", content: text },
-    });
-  }
-
   return {
     config: { wide_screen_mode: true },
     header: {
       template: "blue",
       title: { tag: "plain_text", content: "📝" },
     },
-    elements,
+    elements: [
+      {
+        tag: "div",
+        text: { tag: "lark_md", content: text },
+      },
+    ],
   };
 }
 
