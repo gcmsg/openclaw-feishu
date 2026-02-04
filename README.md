@@ -106,27 +106,23 @@ For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [Gi
 ```bash
 # Recommended: Install from npm
 openclaw plugins install @zeneo/openclaw-feishu
-# or: clawdbot plugins install @zeneo/openclaw-feishu
 
 # Alternative: Install from GitHub
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
-# or: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
 ### 🔄 Update to Latest Version
 
 ```bash
 # If installed from npm (recommended)
-openclaw plugins update feishu
-# or: clawdbot plugins update feishu
+openclaw plugins update openclaw-feishu
 
 # If installed from GitHub, reinstall:
-rm -rf ~/.openclaw/extensions/feishu  # or: ~/.clawdbot/extensions/feishu
+rm -rf ~/.openclaw/extensions/feishu
 openclaw plugins install @zeneo/openclaw-feishu
-# or: clawdbot plugins install @zeneo/openclaw-feishu
 
 # Restart gateway after update
-openclaw gateway restart  # or: clawdbot gateway restart
+openclaw gateway restart
 ```
 
 > 💡 **Tip:** Your configuration (appId, appSecret in config file) will be preserved — only the plugin code is replaced.
@@ -137,29 +133,29 @@ After installation, configure the plugin with these commands:
 
 ```bash
 # Step 1: Add to allowlist (REQUIRED if plugins.allow is already set)
-clawdbot config set 'plugins.allow' '["feishu"]'
+openclaw config set 'plugins.allow' '["openclaw-feishu"]'
 
 # Or append to existing allowlist (e.g., if you have telegram):
-# clawdbot config set 'plugins.allow' '["telegram", "feishu"]'
+# openclaw config set 'plugins.allow' '["telegram", "openclaw-feishu"]'
 
 # Step 2: Configure credentials
-clawdbot config set channels.openclaw-feishu.appId "cli_your_app_id"
-clawdbot config set channels.openclaw-feishu.appSecret "your_app_secret"
-clawdbot config set channels.openclaw-feishu.enabled true
+openclaw config set channels.openclaw-feishu.appId "cli_your_app_id"
+openclaw config set channels.openclaw-feishu.appSecret "your_app_secret"
+openclaw config set channels.openclaw-feishu.enabled true
 
 # Step 3: Restart gateway
-clawdbot gateway restart
+openclaw gateway restart
 ```
 
 ### 🔒 Understanding the Allowlist
 
-| Scenario                                            | Plugin Loads?                           |
-| --------------------------------------------------- | --------------------------------------- |
-| `plugins.allow` not set or empty                    | ✅ Yes (all plugins enabled by default) |
-| `plugins.allow: ["telegram"]` (feishu not included) | ❌ No                                   |
-| `plugins.allow: ["telegram", "feishu"]`             | ✅ Yes                                  |
+| Scenario                                                    | Plugin Loads?                           |
+| ----------------------------------------------------------- | --------------------------------------- |
+| `plugins.allow` not set or empty                            | ✅ Yes (all plugins enabled by default) |
+| `plugins.allow: ["telegram"]` (openclaw-feishu not included)| ❌ No                                   |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`            | ✅ Yes                                  |
 
-> 💡 **Tip:** Check your current allowlist with `clawdbot config get plugins.allow`
+> 💡 **Tip:** Check your current allowlist with `openclaw config get plugins.allow`
 
 ### 💡 Pro Tip: Add Feishu Skill
 
@@ -318,24 +314,20 @@ After completing the above configuration, choose one of these methods:
 **Option A: Interactive Setup (Recommended)**
 
 ```bash
-# Clawdbot - interactive wizard
-clawdbot feishu setup
+# Interactive wizard
+openclaw feishu setup
 ```
 
 **Option B: Onboard Command**
 
 ```bash
-# OpenClaw
 openclaw onboard feishu
-
-# Clawdbot
-clawdbot onboard feishu
 ```
 
 **Option C: Non-interactive Setup**
 
 ```bash
-clawdbot feishu setup --app-id YOUR_APP_ID --app-secret YOUR_APP_SECRET --non-interactive
+openclaw feishu setup --app-id YOUR_APP_ID --app-secret YOUR_APP_SECRET --non-interactive
 ```
 
 Enter your **App ID** and **App Secret** when prompted (for Option A or B).
@@ -460,27 +452,23 @@ openclaw onboard
 ```bash
 # 推荐：从 npm 安装
 openclaw plugins install @zeneo/openclaw-feishu
-# 或: clawdbot plugins install @zeneo/openclaw-feishu
 
 # 备选：从 GitHub 安装
 openclaw plugins install https://github.com/gcmsg/openclaw-feishu
-# 或: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
 ### 🔄 更新到最新版
 
 ```bash
 # 如果通过 npm 安装（推荐）
-openclaw plugins update feishu
-# 或: clawdbot plugins update feishu
+openclaw plugins update openclaw-feishu
 
 # 如果通过 GitHub 安装，需要重装：
-rm -rf ~/.openclaw/extensions/feishu  # 或: ~/.clawdbot/extensions/feishu
+rm -rf ~/.openclaw/extensions/feishu
 openclaw plugins install @zeneo/openclaw-feishu
-# 或: clawdbot plugins install @zeneo/openclaw-feishu
 
 # 更新后重启 Gateway
-openclaw gateway restart  # 或: clawdbot gateway restart
+openclaw gateway restart
 ```
 
 > 💡 **提示：** 配置文件中的设置（appId、appSecret）会被保留，只替换插件代码。
@@ -491,29 +479,29 @@ openclaw gateway restart  # 或: clawdbot gateway restart
 
 ```bash
 # 第一步：添加到白名单（如果 plugins.allow 已设置则必须）
-clawdbot config set 'plugins.allow' '["feishu"]'
+openclaw config set 'plugins.allow' '["openclaw-feishu"]'
 
 # 或追加到现有白名单（比如已有 telegram）：
-# clawdbot config set 'plugins.allow' '["telegram", "feishu"]'
+# openclaw config set 'plugins.allow' '["telegram", "openclaw-feishu"]'
 
 # 第二步：配置凭证
-clawdbot config set channels.openclaw-feishu.appId "cli_你的应用ID"
-clawdbot config set channels.openclaw-feishu.appSecret "你的应用密钥"
-clawdbot config set channels.openclaw-feishu.enabled true
+openclaw config set channels.openclaw-feishu.appId "cli_你的应用ID"
+openclaw config set channels.openclaw-feishu.appSecret "你的应用密钥"
+openclaw config set channels.openclaw-feishu.enabled true
 
 # 第三步：重启 Gateway
-clawdbot gateway restart
+openclaw gateway restart
 ```
 
 ### 🔒 理解白名单机制
 
-| 场景                                         | 插件是否加载？            |
-| -------------------------------------------- | ------------------------- |
-| `plugins.allow` 未设置或为空                 | ✅ 是（所有插件默认启用） |
-| `plugins.allow: ["telegram"]`（不含 feishu） | ❌ 否                     |
-| `plugins.allow: ["telegram", "feishu"]`      | ✅ 是                     |
+| 场景                                                   | 插件是否加载？            |
+| ------------------------------------------------------ | ------------------------- |
+| `plugins.allow` 未设置或为空                           | ✅ 是（所有插件默认启用） |
+| `plugins.allow: ["telegram"]`（不含 openclaw-feishu）  | ❌ 否                     |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`       | ✅ 是                     |
 
-> 💡 **提示：** 用 `clawdbot config get plugins.allow` 查看当前白名单
+> 💡 **提示：** 用 `openclaw config get plugins.allow` 查看当前白名单
 
 ### 💡 小技巧：添加飞书 Skill
 
@@ -672,24 +660,20 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 **方式 A：交互式配置（推荐）**
 
 ```bash
-# Clawdbot - 交互式向导
-clawdbot feishu setup
+# 交互式向导
+openclaw feishu setup
 ```
 
 **方式 B：Onboard 命令**
 
 ```bash
-# OpenClaw
 openclaw onboard feishu
-
-# Clawdbot
-clawdbot onboard feishu
 ```
 
 **方式 C：非交互式配置**
 
 ```bash
-clawdbot feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-interactive
+openclaw feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-interactive
 ```
 
 按提示输入 **App ID** 和 **App Secret**（方式 A 或 B）。
