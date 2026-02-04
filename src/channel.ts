@@ -2740,8 +2740,48 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
             dispatcherOptions: {
               deliver: async (payload) => {
                 const fs = await import("fs");
+                const path = await import("path");
                 const text = payload.text ?? "";
-                fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] deliver called, len=${text.length}\n`);
+                const mediaUrls: string[] =
+                  payload.mediaUrls ?? (payload.mediaUrl ? [payload.mediaUrl] : []);
+                fs.appendFileSync(
+                  "/tmp/feishu_debug.log",
+                  `[${new Date().toISOString()}] deliver called, len=${text.length}, mediaUrls=${JSON.stringify(mediaUrls)}\n`
+                );
+
+                // 发送媒体文件
+                for (let i = 0; i < mediaUrls.length; i++) {
+                  const mediaUrl = mediaUrls[i];
+                  // 只有本地文件路径才发送为媒体
+                  if (mediaUrl && !mediaUrl.startsWith("http")) {
+                    const ext = (path.extname(mediaUrl) || "").toLowerCase().slice(1);
+                    const isImage = ["jpg", "jpeg", "png", "gif", "webp", "bmp"].includes(ext);
+
+                    if (isImage) {
+                      logger.info(`发送图片: ${mediaUrl}`);
+                      const result = await sendImageMessage(account, message.chatId, mediaUrl);
+                      if (!result.ok) {
+                        logger.error(`发送图片失败: ${result.error}`);
+                      }
+                    } else {
+                      logger.info(`发送文件: ${mediaUrl}`);
+                      const result = await sendFileMessage(account, message.chatId, mediaUrl);
+                      if (!result.ok) {
+                        logger.error(`发送文件失败: ${result.error}`);
+                      }
+                    }
+                  } else if (mediaUrl?.startsWith("http")) {
+                    // HTTP URL - 作为链接发送
+                    const linkText = i === 0 && text ? `${text}\n${mediaUrl}` : mediaUrl;
+                    await sendSmartMessage(account, message.chatId, linkText);
+                    if (i === 0) {
+                      // 已经发送了文本，清空以免重复
+                      return;
+                    }
+                  }
+                }
+
+                // 发送文本（如果有媒体已发送，只发送纯文本；否则用智能发送）
                 if (text) {
                   await sendSmartMessage(account, message.chatId, text);
                 }
