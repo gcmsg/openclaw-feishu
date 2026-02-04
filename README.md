@@ -1089,7 +1089,7 @@ Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json
 {
   "plugins": {
     "entries": {
-      "feishu": {
+      "openclaw-feishu": {
         "enabled": true,
         "config": {
           "appId": "your_app_id",
@@ -1101,12 +1101,12 @@ Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json
       "openclaw-feishu": {
         "source": "npm",
         "installPath": "/path/to/.openclaw/extensions/feishu",
-        "version": "3.0.3"
+        "version": "3.0.5"
       }
     }
   },
   "channels": {
-    "feishu": {
+    "openclaw-feishu": {
       "enabled": true,
       "appId": "your_app_id",
       "appSecret": "your_app_secret"
