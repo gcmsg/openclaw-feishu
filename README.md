@@ -458,32 +458,32 @@ openclaw onboard
 ### 📦 快速安装
 
 ```bash
-# OpenClaw（最新版）
-openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# 推荐：从 npm 安装
+openclaw plugins install @zeneo/openclaw-feishu
+# 或: clawdbot plugins install @zeneo/openclaw-feishu
 
-# Clawdbot
-clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
+# 备选：从 GitHub 安装
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+# 或: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
 ```
 
 ### 🔄 更新到最新版
 
-将已安装的插件更新到最新版本：
-
 ```bash
-# 第一步：删除旧版本
+# 如果通过 npm 安装（推荐）
+openclaw plugins update feishu
+# 或: clawdbot plugins update feishu
+
+# 如果通过 GitHub 安装，需要重装：
 rm -rf ~/.openclaw/extensions/feishu  # 或: ~/.clawdbot/extensions/feishu
+openclaw plugins install @zeneo/openclaw-feishu
+# 或: clawdbot plugins install @zeneo/openclaw-feishu
 
-# 第二步：从 GitHub 重新安装
-openclaw plugins install https://github.com/gcmsg/openclaw-feishu
-# 或: clawdbot plugins install https://github.com/gcmsg/openclaw-feishu
-
-# 第三步：重启 Gateway
+# 更新后重启 Gateway
 openclaw gateway restart  # 或: clawdbot gateway restart
 ```
 
 > 💡 **提示：** 配置文件中的设置（appId、appSecret）会被保留，只替换插件代码。
->
-> ⚠️ **注意：** `plugins update` 命令仅支持通过 npm 安装的插件。由于本插件通过 GitHub archive 安装，请使用上述重装方法更新。
 
 ### 🔧 安装后配置
 
@@ -1114,10 +1114,10 @@ Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json
       }
     },
     "installs": {
-      "feishu": {
-        "source": "archive",
+      "openclaw-feishu": {
+        "source": "npm",
         "installPath": "/path/to/.openclaw/extensions/feishu",
-        "version": "2.9.0"
+        "version": "3.0.3"
       }
     }
   },
