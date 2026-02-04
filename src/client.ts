@@ -707,12 +707,12 @@ function parseMarkdownTable(tableText: string): { headers: string[]; rows: strin
 }
 
 /**
- * 将表格转换为 column_set 布局（带分隔线）
+ * 将表格转换为 column_set 布局
  */
 function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[] {
   const elements: any[] = [];
 
-  // 表头行（灰色背景）
+  // 表头行（灰色背景 + 加粗）
   elements.push({
     tag: "column_set",
     flex_mode: "none",
@@ -725,16 +725,11 @@ function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[]
     })),
   });
 
-  // 表头下方分隔线
-  elements.push({ tag: "hr" });
-
-  // 数据行（奇偶行不同背景）
-  for (let i = 0; i < table.rows.length; i++) {
-    const row = table.rows[i];
+  // 数据行（统一默认背景，保持对齐）
+  for (const row of table.rows) {
     elements.push({
       tag: "column_set",
       flex_mode: "none",
-      background_style: i % 2 === 1 ? "grey" : "default",
       columns: row.map((cell) => ({
         tag: "column",
         width: "weighted",
@@ -743,9 +738,6 @@ function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[]
       })),
     });
   }
-
-  // 表格底部分隔线
-  elements.push({ tag: "hr" });
 
   return elements;
 }
