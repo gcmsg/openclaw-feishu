@@ -118,7 +118,7 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 openclaw plugins update openclaw-feishu
 
 # If installed from GitHub, reinstall:
-rm -rf ~/.openclaw/extensions/feishu
+rm -rf ~/.openclaw/extensions/openclaw-feishu
 openclaw plugins install @zeneo/openclaw-feishu
 
 # Restart gateway after update
@@ -464,7 +464,7 @@ openclaw plugins install https://github.com/gcmsg/openclaw-feishu
 openclaw plugins update openclaw-feishu
 
 # 如果通过 GitHub 安装，需要重装：
-rm -rf ~/.openclaw/extensions/feishu
+rm -rf ~/.openclaw/extensions/openclaw-feishu
 openclaw plugins install @zeneo/openclaw-feishu
 
 # 更新后重启 Gateway
@@ -1002,14 +1002,14 @@ Remove or comment out the feishu-related sections:
 {
   "plugins": {
     "entries": {
-      // "feishu": { ... }  ← Remove this
+      // "openclaw-feishu": { ... }  ← Remove this
     },
     "installs": {
-      // "feishu": { ... }  ← Remove this
+      // "openclaw-feishu": { ... }  ← Remove this
     }
   },
   "channels": {
-    // "feishu": { ... }  ← Remove this
+    // "openclaw-feishu": { ... }  ← Remove this
   }
 }
 ```
@@ -1030,10 +1030,10 @@ clawdbot gateway restart
 
 ```bash
 # OpenClaw
-rm -rf ~/.openclaw/extensions/feishu
+rm -rf ~/.openclaw/extensions/openclaw-feishu
 
 # Clawdbot
-rm -rf ~/.clawdbot/extensions/feishu
+rm -rf ~/.clawdbot/extensions/openclaw-feishu
 ```
 
 Then edit config to remove plugin references (see Option 2).
@@ -1081,27 +1081,23 @@ If you see a syntax error, the JSON is malformed.
 
 2. **Manual fix / 手动修复：**
 
-Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json`) and ensure the `plugins` section looks like this:
+Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json`) and ensure the config looks like this:
 
-打开配置文件，确保 `plugins` 部分格式如下：
+打开配置文件，确保配置格式如下：
 
 ```json
 {
   "plugins": {
     "entries": {
       "openclaw-feishu": {
-        "enabled": true,
-        "config": {
-          "appId": "your_app_id",
-          "appSecret": "your_app_secret"
-        }
+        "enabled": true
       }
     },
     "installs": {
       "openclaw-feishu": {
         "source": "npm",
-        "installPath": "/path/to/.openclaw/extensions/feishu",
-        "version": "3.0.5"
+        "installPath": "/path/to/.openclaw/extensions/openclaw-feishu",
+        "version": "3.0.8"
       }
     }
   },
@@ -1114,6 +1110,10 @@ Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json
   }
 }
 ```
+
+> ⚠️ **Important:** `appId` and `appSecret` should ONLY be in `channels.openclaw-feishu`, NOT in `plugins.entries.openclaw-feishu.config`.
+>
+> ⚠️ **重要：** `appId` 和 `appSecret` 只应放在 `channels.openclaw-feishu` 下，不要放在 `plugins.entries.openclaw-feishu.config` 中。
 
 3. **Validate after fix / 修复后验证：**
 
