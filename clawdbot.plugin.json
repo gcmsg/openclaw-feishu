@@ -3,30 +3,5 @@
   "name": "Feishu",
   "version": "3.0.0",
   "description": "飞书通道插件 - 支持消息、云文档、AI能力",
-  "channels": ["openclaw-feishu"],
-  "configSchema": {
-    "type": "object",
-    "properties": {
-      "appId": {
-        "type": "string",
-        "description": "飞书应用 App ID"
-      },
-      "appSecret": {
-        "type": "string",
-        "description": "飞书应用 App Secret"
-      }
-    },
-    "required": ["appId", "appSecret"],
-    "additionalProperties": false
-  },
-  "uiHints": {
-    "appId": {
-      "label": "App ID",
-      "placeholder": "cli_xxxxxxxx"
-    },
-    "appSecret": {
-      "label": "App Secret",
-      "sensitive": true
-    }
-  }
+  "channels": ["openclaw-feishu"]
 }
