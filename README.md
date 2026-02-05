@@ -240,23 +240,7 @@ Follow this step-by-step guide to create your Feishu bot application from scratc
 
 ---
 
-#### 📡 Step 4: Configure Event Subscriptions (Important!)
-
-1. Click **"Development Settings"** → **"Events & Callbacks"** in the left menu
-2. Ensure **"Subscription Method"** is set to **"Long Connection"**
-3. Click **"Add Event"** and add the following events:
-
-| Event Name         | Event ID                       | Purpose                                      |
-| ------------------ | ------------------------------ | -------------------------------------------- |
-| Receive Message    | `im.message.receive_v1`        | Receive messages from users                  |
-| Message Read       | `im.message.message_read_v1`   | Get message read status (optional)           |
-| Chat Member Change | `im.chat.member.user.added_v1` | Notify when bot is added to group (optional) |
-
-> 💡 **You must at least add "Receive Message" event**, or the bot won't receive any messages!
-
----
-
-#### 🔐 Step 5: Configure Permissions
+#### 🔐 Step 4: Configure Permissions
 
 1. Click **"Development Settings"** → **"Permissions & Scopes"** in the left menu
 2. Click **"Add Permission"**
@@ -290,7 +274,7 @@ Follow this step-by-step guide to create your Feishu bot application from scratc
 
 ---
 
-#### 🚀 Step 6: Publish Application
+#### 🚀 Step 5: Publish Application
 
 1. Click **"Version Management"** in the left menu
 2. Click **"Create Version"**
@@ -307,9 +291,9 @@ Follow this step-by-step guide to create your Feishu bot application from scratc
 
 ---
 
-#### ✅ Step 7: Configure Plugin
+#### ✅ Step 6: Install & Configure Plugin
 
-After completing the above configuration, choose one of these methods:
+After publishing the app, install and configure the plugin. **This will establish the long connection.**
 
 **Option A: Interactive Setup (Recommended)**
 
@@ -332,9 +316,38 @@ openclaw feishu setup --app-id YOUR_APP_ID --app-secret YOUR_APP_SECRET --non-in
 
 Enter your **App ID** and **App Secret** when prompted (for Option A or B).
 
+After configuration, restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+> 💡 **Note**: The plugin will automatically establish a long connection with Feishu servers after restart.
+
 ---
 
-#### 🎉 Verify Success
+#### 📡 Step 7: Configure Event Subscriptions
+
+> ⚠️ **Important**: This step must be done **AFTER** the plugin is configured and running, because Feishu requires an active long connection before you can configure event subscriptions.
+
+1. Go back to [Feishu Open Platform](https://open.feishu.cn/app)
+2. Enter your app, click **"Development Settings"** → **"Events & Callbacks"** in the left menu
+3. Ensure **"Subscription Method"** is set to **"Long Connection"**
+4. Click **"Add Event"** and add the following events:
+
+| Event Name         | Event ID                       | Purpose                                      |
+| ------------------ | ------------------------------ | -------------------------------------------- |
+| Receive Message    | `im.message.receive_v1`        | Receive messages from users                  |
+| Message Read       | `im.message.message_read_v1`   | Get message read status (optional)           |
+| Chat Member Change | `im.chat.member.user.added_v1` | Notify when bot is added to group (optional) |
+
+> 💡 **You must at least add "Receive Message" event**, or the bot won't receive any messages!
+
+5. After adding events, you need to **publish a new version** for the changes to take effect.
+
+---
+
+#### 🎉 Step 8: Verify Success
 
 1. Search for your bot name in Feishu
 2. Send a message
@@ -342,7 +355,8 @@ Enter your **App ID** and **App Secret** when prompted (for Option A or B).
 
 **Troubleshooting:**
 
-- ❌ **Not receiving messages**: Check if "Receive Message" event is added
+- ❌ **Can't add events**: Make sure the plugin is running and long connection is established
+- ❌ **Not receiving messages**: Check if "Receive Message" event is added and new version is published
 - ❌ **No permission**: Check if permissions are added and version is published
 - ❌ **Long connection disconnects**: Check if message receive method is "Long Connection"
 
@@ -586,23 +600,7 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 
 ---
 
-#### 📡 第四步：配置事件订阅（重要！）
-
-1. 在左侧菜单点击 **「开发配置」** → **「事件与回调」**
-2. 确认 **「订阅方式」** 选择了 **「使用长连接接收事件」**
-3. 点击 **「添加事件」**，搜索并添加以下事件：
-
-| 事件名称   | 事件标识                       | 用途                           |
-| ---------- | ------------------------------ | ------------------------------ |
-| 接收消息   | `im.message.receive_v1`        | 接收用户发送的消息             |
-| 消息已读   | `im.message.message_read_v1`   | 获取消息已读状态（可选）       |
-| 群成员变更 | `im.chat.member.user.added_v1` | 机器人被拉入群聊时通知（可选） |
-
-> 💡 **至少要添加「接收消息」事件**，否则机器人收不到任何消息！
-
----
-
-#### 🔐 第五步：配置权限
+#### 🔐 第四步：配置权限
 
 1. 在左侧菜单点击 **「开发配置」** → **「权限管理」**
 2. 点击 **「添加权限」**
@@ -636,7 +634,7 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 
 ---
 
-#### 🚀 第六步：发布应用
+#### 🚀 第五步：发布应用
 
 1. 在左侧菜单点击 **「版本管理与发布」**
 2. 点击 **「创建版本」**
@@ -653,9 +651,9 @@ AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="x
 
 ---
 
-#### ✅ 第七步：配置插件
+#### ✅ 第六步：安装并配置插件
 
-完成上述配置后，选择以下任一方式配置：
+发布应用后，安装并配置插件。**这一步会自动建立长连接。**
 
 **方式 A：交互式配置（推荐）**
 
@@ -678,9 +676,38 @@ openclaw feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-
 
 按提示输入 **App ID** 和 **App Secret**（方式 A 或 B）。
 
+配置完成后，重启 Gateway：
+
+```bash
+openclaw gateway restart
+```
+
+> 💡 **说明**：插件启动后会自动与飞书服务器建立长连接。
+
 ---
 
-#### 🎉 验证是否成功
+#### 📡 第七步：配置事件订阅
+
+> ⚠️ **重要**：这一步**必须在插件配置并运行之后**进行，因为飞书开放平台要求先建立长连接才能配置事件订阅。
+
+1. 回到 [飞书开放平台](https://open.feishu.cn/app)
+2. 进入你的应用，在左侧菜单点击 **「开发配置」** → **「事件与回调」**
+3. 确认 **「订阅方式」** 选择了 **「使用长连接接收事件」**
+4. 点击 **「添加事件」**，搜索并添加以下事件：
+
+| 事件名称   | 事件标识                       | 用途                           |
+| ---------- | ------------------------------ | ------------------------------ |
+| 接收消息   | `im.message.receive_v1`        | 接收用户发送的消息             |
+| 消息已读   | `im.message.message_read_v1`   | 获取消息已读状态（可选）       |
+| 群成员变更 | `im.chat.member.user.added_v1` | 机器人被拉入群聊时通知（可选） |
+
+> 💡 **至少要添加「接收消息」事件**，否则机器人收不到任何消息！
+
+5. 添加事件后，需要**创建新版本并发布**才能生效。
+
+---
+
+#### 🎉 第八步：验证是否成功
 
 1. 在飞书中搜索你的机器人名称
 2. 发送一条消息
@@ -688,7 +715,8 @@ openclaw feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-
 
 **常见问题排查：**
 
-- ❌ **收不到消息**：检查是否添加了「接收消息」事件
+- ❌ **无法添加事件**：确保插件已运行且长连接已建立
+- ❌ **收不到消息**：检查是否添加了「接收消息」事件，并发布了新版本
 - ❌ **没有权限**：检查权限是否已添加，版本是否已发布
 - ❌ **长连接断开**：检查消息接收方式是否选择了「长连接」
 
