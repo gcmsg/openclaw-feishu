@@ -3,5 +3,10 @@
   "name": "Feishu",
   "version": "3.0.0",
   "description": "飞书通道插件 - 支持消息、云文档、AI能力",
-  "channels": ["openclaw-feishu"]
+  "channels": ["openclaw-feishu"],
+  "configSchema": {
+    "type": "object",
+    "properties": {},
+    "additionalProperties": true
+  }
 }
