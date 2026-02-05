@@ -1,6 +1,6 @@
 {
   "name": "@zeneo/openclaw-feishu",
-  "version": "3.0.11",
+  "version": "3.0.12",
   "description": "飞书通道插件 - 支持消息、云文档、AI能力 | Feishu channel plugin with docs, AI capabilities",
   "type": "module",
   "main": "index.ts",
