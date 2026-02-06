@@ -6,6 +6,7 @@ import * as lark from "@larksuiteoapi/node-sdk";
 import * as fs from "fs";
 import * as path from "path";
 import type { ResolvedFeishuAccount, ApiResult } from "./types.js";
+import { processAsciiArt } from "./ascii-art.js";
 
 // 客户端缓存
 const clientCache = new Map<string, lark.Client>();
@@ -925,7 +926,7 @@ function buildCodeBlockElement(code: string): any {
 function buildFeishuCard(text: string): Record<string, any> {
   // 1. 先提取代码块
   const { text: textWithoutCode, codeBlocks } = extractCodeBlocks(text);
-  
+
   const elements: any[] = [];
 
   // 2. 处理文本中的代码块占位符、表格和普通文本
@@ -934,7 +935,7 @@ function buildFeishuCard(text: string): Record<string, any> {
     const placeholderRegex = new RegExp(`${CODE_BLOCK_PLACEHOLDER}_(\\d+)`, "g");
     let lastIdx = 0;
     let placeholderMatch;
-    
+
     while ((placeholderMatch = placeholderRegex.exec(segment)) !== null) {
       // 占位符前的文本
       const beforePlaceholder = segment.slice(lastIdx, placeholderMatch.index).trim();
@@ -942,16 +943,16 @@ function buildFeishuCard(text: string): Record<string, any> {
         const processed = preprocessMarkdown(beforePlaceholder);
         elements.push({ tag: "div", text: { tag: "lark_md", content: processed } });
       }
-      
+
       // 代码块
       const codeIndex = parseInt(placeholderMatch[1], 10);
       if (codeBlocks[codeIndex]) {
         elements.push(buildCodeBlockElement(codeBlocks[codeIndex]));
       }
-      
+
       lastIdx = placeholderMatch.index + placeholderMatch[0].length;
     }
-    
+
     // 占位符后的文本
     const afterPlaceholder = segment.slice(lastIdx).trim();
     if (afterPlaceholder) {
@@ -1007,6 +1008,7 @@ function buildFeishuCard(text: string): Record<string, any> {
 
 /**
  * 智能发送消息
+ * - ASCII art 代码块 → 转图片发送
  * - 纯文字+标点 → text 消息
  * - 其他所有格式（Markdown）→ 飞书卡片（表格自动转 column_set）
  */
@@ -1016,9 +1018,44 @@ export async function sendSmartMessage(
   text: string,
   options?: { forceText?: boolean; forceCard?: boolean }
 ): Promise<ApiResult<{ messageId: string }>> {
+  const fsModule = await import("fs");
+  fsModule.appendFileSync(
+    "/tmp/feishu_debug.log",
+    `[${new Date().toISOString()}] sendSmartMessage len=${text.length}, preview=${text.slice(0, 80).replace(/\n/g, "\\n")}\n`
+  );
+
+  // 检测并处理 ASCII art
+  const { hasArt, cleanText, imagePaths } = await processAsciiArt(text);
+
+  if (hasArt) {
+    console.info(`[sendSmartMessage] -> detected ${imagePaths.length} ASCII art block(s)`);
+
+    // 先发送图片
+    for (const imagePath of imagePaths) {
+      const imgResult = await sendImageMessage(account, chatId, imagePath);
+      if (!imgResult.ok) {
+        console.error("[sendSmartMessage] Failed to send ASCII art image:", imgResult.error);
+      }
+      // 清理临时文件
+      try {
+        fsModule.unlinkSync(imagePath);
+      } catch {
+        // ignore
+      }
+    }
+
+    // 如果还有剩余文本，继续发送
+    const trimmedClean = cleanText.trim();
+    if (!trimmedClean || trimmedClean === "[ASCII art 已转为图片显示]") {
+      // 只有 ASCII art，图片已发送，返回成功
+      return { ok: true, data: { messageId: "" } };
+    }
+
+    // 发送剩余文本
+    text = cleanText;
+  }
+
   const hasMd = hasMarkdown(text);
-  const fs = await import("fs");
-  fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] sendSmartMessage hasMd=${hasMd}, len=${text.length}, preview=${text.slice(0, 80).replace(/\n/g, "\\n")}\n`);
 
   // 强制使用指定格式
   if (options?.forceText) {

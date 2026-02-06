@@ -124,7 +124,9 @@ export function registerFeishuCli(ctx: CliContext) {
           console.info("\n请运行以下命令完成配置:\n");
           console.info(`clawdbot config set channels.openclaw-feishu.enabled true`);
           console.info(`clawdbot config set channels.openclaw-feishu.appId "${options.appId}"`);
-          console.info(`clawdbot config set channels.openclaw-feishu.appSecret "${options.appSecret}"`);
+          console.info(
+            `clawdbot config set channels.openclaw-feishu.appSecret "${options.appSecret}"`
+          );
           if (needsAllowlistUpdate(config)) {
             const currentAllow = getPluginsAllow(config);
             console.info(

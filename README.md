@@ -149,11 +149,11 @@ openclaw gateway restart
 
 ### 🔒 Understanding the Allowlist
 
-| Scenario                                                    | Plugin Loads?                           |
-| ----------------------------------------------------------- | --------------------------------------- |
-| `plugins.allow` not set or empty                            | ✅ Yes (all plugins enabled by default) |
-| `plugins.allow: ["telegram"]` (openclaw-feishu not included)| ❌ No                                   |
-| `plugins.allow: ["telegram", "openclaw-feishu"]`            | ✅ Yes                                  |
+| Scenario                                                     | Plugin Loads?                           |
+| ------------------------------------------------------------ | --------------------------------------- |
+| `plugins.allow` not set or empty                             | ✅ Yes (all plugins enabled by default) |
+| `plugins.allow: ["telegram"]` (openclaw-feishu not included) | ❌ No                                   |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`             | ✅ Yes                                  |
 
 > 💡 **Tip:** Check your current allowlist with `openclaw config get plugins.allow`
 
@@ -509,11 +509,11 @@ openclaw gateway restart
 
 ### 🔒 理解白名单机制
 
-| 场景                                                   | 插件是否加载？            |
-| ------------------------------------------------------ | ------------------------- |
-| `plugins.allow` 未设置或为空                           | ✅ 是（所有插件默认启用） |
-| `plugins.allow: ["telegram"]`（不含 openclaw-feishu）  | ❌ 否                     |
-| `plugins.allow: ["telegram", "openclaw-feishu"]`       | ✅ 是                     |
+| 场景                                                  | 插件是否加载？            |
+| ----------------------------------------------------- | ------------------------- |
+| `plugins.allow` 未设置或为空                          | ✅ 是（所有插件默认启用） |
+| `plugins.allow: ["telegram"]`（不含 openclaw-feishu） | ❌ 否                     |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`      | ✅ 是                     |
 
 > 💡 **提示：** 用 `openclaw config get plugins.allow` 查看当前白名单
 

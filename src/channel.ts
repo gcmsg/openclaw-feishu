@@ -2493,7 +2493,10 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
 
     sendText: async (ctx) => {
       const fs = await import("fs");
-      fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] outbound.sendText called, to=${ctx.to}, len=${ctx.text?.length}\n`);
+      fs.appendFileSync(
+        "/tmp/feishu_debug.log",
+        `[${new Date().toISOString()}] outbound.sendText called, to=${ctx.to}, len=${ctx.text?.length}\n`
+      );
       const account = ctx.account as ResolvedFeishuAccount;
       const result = await sendSmartMessage(account, ctx.to, ctx.text);
       return { ok: result.ok, error: result.error ? new Error(result.error) : undefined };
@@ -2533,7 +2536,10 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
         abortSignal: ctx.abortSignal,
         onMessage: async (message) => {
           const fs = await import("fs");
-          fs.appendFileSync("/tmp/feishu_debug.log", `[${new Date().toISOString()}] onMessage called, msgId=${message.messageId}\n`);
+          fs.appendFileSync(
+            "/tmp/feishu_debug.log",
+            `[${new Date().toISOString()}] onMessage called, msgId=${message.messageId}\n`
+          );
           const logger = {
             info: (msg: string) => console.info(`[feishu-plus:${account.accountId}] ${msg}`),
             error: (msg: string) => console.error(`[feishu-plus:${account.accountId}] ${msg}`),
