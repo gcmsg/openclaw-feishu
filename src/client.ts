@@ -748,16 +748,118 @@ function tableToColumnSet(table: { headers: string[]; rows: string[][] }): any[]
 const CODE_BLOCK_PLACEHOLDER = "___CODE_BLOCK_PLACEHOLDER___";
 
 /**
+ * 检测文本是否为 ASCII art（需要等宽字体显示的图形）
+ * 特征：包含大量边框字符、连续的符号、对齐的结构
+ */
+function isAsciiArt(text: string): boolean {
+  const lines = text.split("\n");
+  if (lines.length < 3) return false;
+
+  // ASCII art 常用字符
+  const asciiArtChars = /[│─┌┐└┘├┤┬┴┼╭╮╯╰|+\-=_\\\/><^v]/;
+  const boxDrawingChars = /[│─┌┐└┘├┤┬┴┼╭╮╯╰]/;
+
+  let linesWithAsciiChars = 0;
+  let linesWithBoxDrawing = 0;
+
+  for (const line of lines) {
+    if (asciiArtChars.test(line)) linesWithAsciiChars++;
+    if (boxDrawingChars.test(line)) linesWithBoxDrawing++;
+  }
+
+  // 如果超过 50% 的行包含 ASCII art 字符，认为是 ASCII art
+  const ratio = linesWithAsciiChars / lines.length;
+  return ratio > 0.5 || linesWithBoxDrawing >= 3;
+}
+
+/**
+ * 检测并包装 ASCII art 为代码块
+ */
+function wrapAsciiArtInCodeBlocks(text: string): string {
+  // 如果已经有代码块，不处理
+  if (/```[\s\S]*```/.test(text)) return text;
+
+  const lines = text.split("\n");
+  const result: string[] = [];
+  let asciiArtBuffer: string[] = [];
+  let inAsciiArt = false;
+
+  const flushAsciiArt = () => {
+    if (asciiArtBuffer.length > 0) {
+      result.push("```");
+      result.push(...asciiArtBuffer);
+      result.push("```");
+      asciiArtBuffer = [];
+    }
+    inAsciiArt = false;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const nextLines = lines.slice(i, i + 5).join("\n");
+
+    // 检测当前行及后续几行是否构成 ASCII art
+    const looksLikeAsciiArt =
+      /[│─┌┐└┘├┤┬┴┼╭╮╯╰]/.test(line) || // 包含边框字符
+      (/^[\s|+\-=_\\\/><^v]+$/.test(line) && line.length > 3); // 纯符号行
+
+    if (looksLikeAsciiArt) {
+      if (!inAsciiArt) {
+        // 检查是否是 ASCII art 的开始
+        if (isAsciiArt(nextLines)) {
+          inAsciiArt = true;
+        }
+      }
+    }
+
+    if (inAsciiArt) {
+      asciiArtBuffer.push(line);
+      // 检查是否结束（空行或非 ASCII art 行）
+      const isEndOfAsciiArt =
+        line.trim() === "" ||
+        (!/[│─┌┐└┘├┤┬┴┼╭╮╯╰|+\-=_\\\/><^v]/.test(line) && asciiArtBuffer.length > 2);
+
+      if (isEndOfAsciiArt && asciiArtBuffer.length > 2) {
+        // 移除最后的空行
+        if (asciiArtBuffer[asciiArtBuffer.length - 1].trim() === "") {
+          asciiArtBuffer.pop();
+          result.push("```");
+          result.push(...asciiArtBuffer);
+          result.push("```");
+          result.push(line); // 把空行加回去
+          asciiArtBuffer = [];
+          inAsciiArt = false;
+          continue;
+        }
+      }
+    } else {
+      result.push(line);
+    }
+  }
+
+  // 处理末尾的 ASCII art
+  flushAsciiArt();
+
+  return result.join("\n");
+}
+
+/**
  * 提取代码块，返回处理后的文本和代码块数组
  */
 function extractCodeBlocks(text: string): { text: string; codeBlocks: string[] } {
+  // 先检测并包装 ASCII art
+  const textWithAsciiWrapped = wrapAsciiArtInCodeBlocks(text);
+
   const codeBlocks: string[] = [];
-  const processed = text.replace(/```([\w]*)\n([\s\S]*?)```/g, (_match, lang, code) => {
-    const trimmed = code.trim();
-    const langLabel = lang ? `📄 ${lang.toUpperCase()}` : "📄 CODE";
-    codeBlocks.push(`${langLabel}\n${trimmed}`);
-    return `\n${CODE_BLOCK_PLACEHOLDER}_${codeBlocks.length - 1}\n`;
-  });
+  const processed = textWithAsciiWrapped.replace(
+    /```([\w]*)\n([\s\S]*?)```/g,
+    (_match, lang, code) => {
+      const trimmed = code.trim();
+      const langLabel = lang ? `📄 ${lang.toUpperCase()}` : "";
+      codeBlocks.push(langLabel ? `${langLabel}\n${trimmed}` : trimmed);
+      return `\n${CODE_BLOCK_PLACEHOLDER}_${codeBlocks.length - 1}\n`;
+    }
+  );
   return { text: processed, codeBlocks };
 }
 
@@ -793,26 +895,27 @@ function preprocessMarkdown(text: string): string {
 }
 
 /**
- * 构建代码块元素（灰色背景）
+ * 构建代码块元素
+ * 使用 lark_md 的代码块语法，飞书会渲染为等宽字体
  */
 function buildCodeBlockElement(code: string): any {
+  // 提取语言标签（如果有）
+  const lines = code.split("\n");
+  let lang = "";
+  let content = code;
+
+  // 检查第一行是否是语言标签（如 "📄 PYTHON"）
+  if (lines[0].startsWith("📄 ")) {
+    lang = lines[0].replace("📄 ", "").toLowerCase();
+    content = lines.slice(1).join("\n");
+  }
+
+  // 使用 lark_md 的代码块格式，飞书会渲染为等宽字体
+  const codeBlockContent = "```" + lang + "\n" + content + "\n```";
+
   return {
-    tag: "column_set",
-    flex_mode: "none",
-    background_style: "grey",
-    columns: [
-      {
-        tag: "column",
-        width: "weighted",
-        weight: 1,
-        elements: [
-          {
-            tag: "div",
-            text: { tag: "plain_text", content: code },
-          },
-        ],
-      },
-    ],
+    tag: "div",
+    text: { tag: "lark_md", content: codeBlockContent },
   };
 }
 
