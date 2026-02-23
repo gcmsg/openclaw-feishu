@@ -146,10 +146,10 @@ export function startGateway(options: GatewayOptions): lark.WSClient {
             if (parsed.recognition) {
               feishuMessage.audioRecognition = parsed.recognition;
             }
-          } else if (feishuMessage.messageType === "media") {
-            // 视频消息
-            feishuMessage.imageKey = parsed.image_key; // 封面
-            feishuMessage.fileKey = parsed.file_key; // 视频
+          } else if (feishuMessage.messageType === "video") {
+            // 视频消息 - 优先使用 file_key（视频文件），image_key 是缩略图
+            feishuMessage.fileKey = parsed.file_key; // 视频文件（优先）
+            feishuMessage.imageKey = parsed.image_key; // 缩略图
             feishuMessage.fileName = parsed.file_name;
           } else if (feishuMessage.messageType === "sticker") {
             // 表情包

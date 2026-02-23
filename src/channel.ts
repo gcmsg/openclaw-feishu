@@ -2638,9 +2638,39 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               }
               break;
 
-            case "media":
-              bodyText = "[视频消息 - 暂不支持]";
-              logger.info("收到视频消息（暂不支持）");
+            case "video":
+              // 视频消息 - 优先使用 fileKey（视频文件）而非 imageKey（缩略图）
+              if (message.fileKey) {
+                logger.info(`收到视频消息: ${message.fileKey}`);
+                try {
+                  const videoResult = await downloadMessageFile(
+                    account,
+                    message.messageId,
+                    message.fileKey
+                  );
+                  if (videoResult.ok && videoResult.data) {
+                    const ext = message.fileName?.split(".").pop() || "mp4";
+                    const filePath = await saveMediaToTemp(
+                      videoResult.data.buffer,
+                      ext,
+                      "feishu_video"
+                    );
+                    mediaUrls.push(filePath);
+                    mediaTypes.push("video/mp4");
+                    bodyText = "[视频]";
+                    logger.info(`视频已下载: ${filePath}`);
+                  } else {
+                    logger.error(`下载视频失败: ${videoResult.error}`);
+                    bodyText = "[视频下载失败]";
+                  }
+                } catch (err) {
+                  logger.error(`下载视频异常: ${err}`);
+                  bodyText = "[视频]";
+                }
+              } else {
+                bodyText = "[视频]";
+                logger.info("收到视频消息（无 fileKey）");
+              }
               break;
 
             case "sticker":
