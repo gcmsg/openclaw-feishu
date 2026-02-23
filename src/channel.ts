@@ -2531,6 +2531,13 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       const account = ctx.account;
       const cfg = ctx.cfg;
 
+      // Keep channel alive until aborted (required for OpenClaw 2026.2+)
+      const channelAlive = new Promise<void>((resolve) => {
+        if (ctx.abortSignal) {
+          ctx.abortSignal.addEventListener("abort", () => resolve(), { once: true });
+        }
+      });
+
       startGateway({
         account,
         abortSignal: ctx.abortSignal,
@@ -2830,6 +2837,9 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
           error: (msg) => console.error(`[feishu:${account.accountId}] ${msg}`),
         },
       });
+
+      // Wait until channel is aborted (keeps channel alive in OpenClaw 2026.2+)
+      await channelAlive;
     },
   },
 };
