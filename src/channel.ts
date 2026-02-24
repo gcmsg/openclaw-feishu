@@ -287,14 +287,8 @@ import {
   getSupportedLanguages,
   type LanguageCode,
 } from "./ai.js";
-import { startGateway, type CardActionData } from "./gateway.js";
-import {
-  buildMainMenuCard,
-  buildModelListCard,
-  buildResetConfirmCard,
-  buildHelpCard,
-  buildToastResponse,
-} from "./menu.js";
+import { startGateway } from "./gateway.js";
+import { buildMainMenuCard, buildModelListCard, buildHelpCard } from "./menu.js";
 import { getFeishuRuntime } from "./runtime.js";
 import * as fs from "fs";
 import * as path from "path";
@@ -2537,7 +2531,6 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
       const runtime = getFeishuRuntime();
       const account = ctx.account;
       const cfg = ctx.cfg;
-
       // Keep channel alive until aborted (required for OpenClaw 2026.2+)
       const channelAlive = new Promise<void>((resolve) => {
         if (ctx.abortSignal) {
@@ -2862,69 +2855,6 @@ export const feishuPlugin: ChannelPlugin<ResolvedFeishuAccount> = {
               },
             },
           });
-        },
-        onCardAction: async (action: CardActionData) => {
-          const cardLogger = {
-            info: (msg: string) => console.info(`[feishu-menu:${account.accountId}] ${msg}`),
-            error: (msg: string) => console.error(`[feishu-menu:${account.accountId}] ${msg}`),
-          };
-          cardLogger.info(`卡片回调: cmd=${action.cmd}, openId=${action.openId}`);
-
-          const { cmd, chatId, openId } = action;
-
-          // 菜单导航命令（直接发卡片）
-          if (cmd === "/menu") {
-            if (chatId) await sendCardMessage(account, chatId, buildMainMenuCard());
-            return buildToastResponse("已显示主菜单");
-          }
-          if (cmd === "/model") {
-            if (chatId) await sendCardMessage(account, chatId, buildModelListCard());
-            return buildToastResponse("请选择模型");
-          }
-          if (cmd === "/help") {
-            if (chatId) await sendCardMessage(account, chatId, buildHelpCard());
-            return buildToastResponse("已显示帮助");
-          }
-          if (cmd === "/cancel_reset") {
-            return buildToastResponse("已取消");
-          }
-          if (cmd === "/reset_confirm") {
-            // 确认重置
-          }
-
-          // 其他命令：构造 MsgContext 走 SDK 框架处理（/status, /reasoning, /reset, /model xxx 等）
-          if (chatId && openId) {
-            const msgCtx: MsgContext = {
-              From: openId,
-              Body: cmd,
-              AccountId: account.accountId,
-              Provider: "feishu",
-              Surface: "feishu",
-              SessionKey: `feishu:${account.accountId}:${chatId}`,
-              To: chatId,
-              ChatType: "direct", // 卡片回调默认视为 direct
-            };
-            setImmediate(async () => {
-              try {
-                await runtime.channel.reply.dispatchReplyWithBufferedBlockDispatcher({
-                  ctx: msgCtx,
-                  cfg,
-                  dispatcherOptions: {
-                    deliver: async (payload) => {
-                      const text = payload.text ?? "";
-                      if (text) {
-                        await sendSmartMessage(account, chatId, text);
-                      }
-                    },
-                  },
-                });
-              } catch (err) {
-                cardLogger.error(`卡片命令执行失败: ${err}`);
-              }
-            });
-          }
-
-          return buildToastResponse(`正在执行 ${cmd}…`, "success");
         },
         logger: {
           info: (msg) => console.info(`[feishu:${account.accountId}] ${msg}`),

@@ -18,6 +18,10 @@ export interface FeishuChannelConfig {
   allowFrom?: string[];
   /** 群组配置 */
   groups?: Record<string, { requireMention?: boolean }>;
+  /** 飞书卡片回调 Verification Token（开发者后台 → 事件与回调 → 加密策略） */
+  verificationToken?: string;
+  /** 卡片回调本地监听端口，默认 9991 */
+  cardCallbackPort?: number;
 }
 
 /**
