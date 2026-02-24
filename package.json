@@ -1,0 +1,80 @@
+{
+  "name": "@zeneo/openclaw-feishu",
+  "version": "3.0.16",
+  "description": "飞书通道插件 - 支持消息、云文档、AI能力 | Feishu channel plugin with docs, AI capabilities",
+  "type": "module",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,json,md}\"",
+    "prepack": "npm run build"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "clawdbot": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "keywords": [
+    "openclaw",
+    "clawdbot",
+    "moltbot",
+    "feishu",
+    "lark",
+    "bot",
+    "document",
+    "drive",
+    "wiki",
+    "search",
+    "ai",
+    "ocr",
+    "translation",
+    "plugin"
+  ],
+  "author": "Nina <nina@clawd.bot>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gcmsg/openclaw-feishu"
+  },
+  "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.58.0",
+    "@sinclair/typebox": "^0.34.0",
+    "canvas": "^3.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.0",
+    "prettier": "^3.4.0",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^2.0.0"
+  },
+  "peerDependencies": {
+    "clawdbot": ">=2026.1.0",
+    "openclaw": ">=2026.1.0"
+  },
+  "peerDependenciesMeta": {
+    "openclaw": {
+      "optional": true
+    },
+    "clawdbot": {
+      "optional": true
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

@@ -1,0 +1,1070 @@
+# OpenClaw Feishu Plugin / 飞书通道插件
+
+[English](#english) | [中文](#中文)
+
+> ✅ **Compatible with:** OpenClaw, Clawdbot, Moltbot
+>
+> ✅ **兼容版本：** OpenClaw、Clawdbot、Moltbot
+
+---
+
+## English
+
+A comprehensive Feishu (Lark) channel plugin for OpenClaw with support for messaging, cloud documents, spreadsheets, databases, calendar, and tasks.
+
+### ✨ Features
+
+| Category      | Features                                                                            |
+| ------------- | ----------------------------------------------------------------------------------- |
+| **Messaging** | Text, Rich Text, Cards, Images, Files, Voice, Quote, Forward, Urgent                |
+| **Chat**      | Create/manage groups, Members, Managers, Tabs, Top notice, Announcement             |
+| **Documents** | Create, Read, Update, Delete blocks, Insert at position, Markdown support           |
+| **Bitable**   | Apps/tables, Fields, Records, Views, Roles, Members, Automation                     |
+| **Sheets**    | Create/read/write cells, Row/column operations, Styles, Merge, Sort, Filter, Freeze |
+| **Calendar**  | Events, Attendees, Free/busy, Subscribe, ACL permissions                            |
+| **Tasks**     | Tasks, Lists, Reminders, Members, Dependencies, Attachments                         |
+| **Wiki**      | Spaces, Nodes (pages), Members management, Move/copy nodes                          |
+| **Search**    | Messages, Documents, Drive files, Universal search                                  |
+| **AI**        | OCR (image text recognition), Speech-to-Text, Translation, Language detection       |
+| **Mail**      | Send/read emails, Folders, Mail groups, Public mailboxes, Members management        |
+| **Contact**   | Users, Departments, User groups, Members, Batch operations, Search                  |
+| **Approval**  | Create/query approvals, Approve/reject/transfer tasks, Comments, CC, Add sign       |
+| **Lingo**     | Entity CRUD, Search, Match, Highlight, Classifications, Repos, Drafts               |
+
+### ⚠️ Before You Install / 安装前必读
+
+> **Important:** Back up your config file before installing any plugin!
+>
+> **重要：** 安装任何插件前，请先备份配置文件！
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json ~/.clawdbot/clawdbot.json.bak
+```
+
+If something goes wrong after installation, see [Recovery Guide](#-recovery-guide--恢复指南) below.
+
+如果安装后出现问题，请参阅下方的[恢复指南](#-recovery-guide--恢复指南)。
+
+---
+
+### 🚀 Prerequisites: Install OpenClaw
+
+Before installing this plugin, you need to have OpenClaw (or Clawdbot) installed.
+
+#### Option 1: Quick Install (Recommended)
+
+```bash
+# Install OpenClaw globally via npm
+npm install -g openclaw
+
+# Verify installation
+openclaw --version
+```
+
+#### Option 2: Using npx (No Install)
+
+```bash
+# Run directly without installing
+npx openclaw onboard
+```
+
+#### Option 3: From Source
+
+```bash
+# Clone the repository
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
+
+# Install dependencies
+pnpm install
+
+# Build
+pnpm build
+
+# Link globally
+npm link
+```
+
+#### First-time Setup
+
+After installation, run the onboard wizard to configure your first channel:
+
+```bash
+openclaw onboard
+```
+
+For more details, see [OpenClaw Documentation](https://docs.openclaw.bot) or [GitHub Repository](https://github.com/openclaw/openclaw).
+
+---
+
+### 📦 Quick Install
+
+```bash
+# Recommended: Install from npm
+openclaw plugins install @zeneo/openclaw-feishu
+
+# Alternative: Install from GitHub
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+```
+
+### 🔄 Update to Latest Version
+
+```bash
+# If installed from npm (recommended)
+openclaw plugins update openclaw-feishu
+
+# If installed from GitHub, reinstall:
+rm -rf ~/.openclaw/extensions/openclaw-feishu
+openclaw plugins install @zeneo/openclaw-feishu
+
+# Restart gateway after update
+openclaw gateway restart
+```
+
+> 💡 **Tip:** Your configuration (appId, appSecret in config file) will be preserved — only the plugin code is replaced.
+
+### 🔧 Post-Install Configuration
+
+After installation, configure the plugin with these commands:
+
+```bash
+# Step 1: Add to allowlist (REQUIRED if plugins.allow is already set)
+openclaw config set 'plugins.allow' '["openclaw-feishu"]'
+
+# Or append to existing allowlist (e.g., if you have telegram):
+# openclaw config set 'plugins.allow' '["telegram", "openclaw-feishu"]'
+
+# Step 2: Configure credentials
+openclaw config set channels.openclaw-feishu.appId "cli_your_app_id"
+openclaw config set channels.openclaw-feishu.appSecret "your_app_secret"
+openclaw config set channels.openclaw-feishu.enabled true
+
+# Step 3: Restart gateway
+openclaw gateway restart
+```
+
+### 🔒 Understanding the Allowlist
+
+| Scenario                                                     | Plugin Loads?                           |
+| ------------------------------------------------------------ | --------------------------------------- |
+| `plugins.allow` not set or empty                             | ✅ Yes (all plugins enabled by default) |
+| `plugins.allow: ["telegram"]` (openclaw-feishu not included) | ❌ No                                   |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`             | ✅ Yes                                  |
+
+> 💡 **Tip:** Check your current allowlist with `openclaw config get plugins.allow`
+
+### 💡 Pro Tip: Add Feishu Skill
+
+After installation, tell your AI assistant to add Feishu capabilities as a skill for easier use:
+
+> "Add the complete Feishu API capabilities as a skill so you can help me with Feishu operations."
+
+Or simply say:
+
+> "Learn all Feishu tool actions and remember them."
+
+This helps your assistant understand 200+ Feishu operations including documents, bitable, calendar, tasks, approvals, and more!
+
+### 🛠️ Agent Tool Architecture
+
+This plugin provides a dedicated **`feishu` agent tool** for Feishu-specific operations (cards, documents, bitable, etc.).
+
+**Why a separate tool?**
+
+The core `message` tool only supports standard messaging actions (`send`, `react`, `delete`, etc.). Feishu's rich features (card messages, cloud documents, bitable, calendar, etc.) require a dedicated tool with its own action schema.
+
+**How it works:**
+
+```
+message tool  →  Basic messaging (send text, react)
+feishu tool   →  Feishu-specific (send_card, doc_create, bitable_records, etc.)
+```
+
+**After installation**, the `feishu` tool is automatically available to AI agents. No additional configuration needed.
+
+**Example usage in AI conversation:**
+
+```
+User: 发一个卡片消息到群里
+AI: [calls feishu tool with action="send_card", target="chat_id", card={...}]
+
+User: 创建一个文档
+AI: [calls feishu tool with action="doc_create", title="新文档"]
+
+User: 查询多维表格的记录
+AI: [calls feishu tool with action="bitable_records", appToken="xxx", tableId="xxx"]
+```
+
+### ⚙️ Configuration
+
+Follow this step-by-step guide to create your Feishu bot application from scratch.
+
+---
+
+#### 📝 Step 1: Create Application
+
+1. Go to [Feishu Open Platform](https://open.feishu.cn/app)
+2. Click **"Create Custom App"** in the top right
+3. Fill in the application info:
+   - **App Name**: Name your bot (e.g., Nina, My Assistant)
+   - **Description**: Brief description of your app
+   - **App Icon**: Upload an icon (optional)
+4. Click **"Create"** to finish
+
+---
+
+#### 🔑 Step 2: Get Credentials
+
+1. Enter the app you just created
+2. Click **"Credentials & Basic Info"** in the left menu
+3. Note down:
+   - **App ID** (unique app identifier)
+   - **App Secret** (click "Show" to view, keep it secret!)
+
+---
+
+#### 🤖 Step 3: Add Bot Capability
+
+1. Click **"App Capabilities"** → **"Add Capability"** in the left menu
+2. Find **"Bot"** and click **"Add"**
+3. Configure bot info:
+   - **Bot Name**: Name users see in chats
+   - **Bot Description**: Bot functionality description
+4. **Message Receive Method**: Select **"Long Connection"** (Important!)
+   - ✅ Long Connection: No public server needed, good for personal use
+   - ❌ Webhook: Requires a public server to receive callbacks
+
+---
+
+#### 🔐 Step 4: Configure Permissions
+
+1. Click **"Development Settings"** → **"Permissions & Scopes"** in the left menu
+2. Click **"Add Permission"**
+3. Search and select permissions based on needed features:
+
+**Basic Features (Required):**
+| Permission Name | Permission ID | Description |
+|-----------------|---------------|-------------|
+| Send and receive messages | `im:message` | Basic permission for messaging |
+| Read chat info | `im:chat:readonly` | Read group information |
+| Manage chat | `im:chat` | Manage group chats |
+
+**Advanced Features (As Needed):**
+| Feature | Permission ID |
+|---------|---------------|
+| Documents | `docx:document`, `docx:document:readonly` |
+| Drive | `drive:drive`, `drive:drive:readonly` |
+| Bitable | `bitable:app` |
+| Sheets | `sheets:spreadsheet` |
+| Calendar | `calendar:calendar`, `calendar:calendar:readonly` |
+| Tasks | `task:task`, `task:task:readonly` |
+| Wiki | `wiki:wiki`, `wiki:wiki:readonly` |
+| Contacts | `contact:user.base:readonly`, `contact:department.base:readonly` |
+| Speech to Text | `im:message:speech_to_text` |
+| AI OCR | `optical_char_recognition:image` |
+| AI Translation | `translation:text` |
+| Search Messages | `search:message` |
+| Search Docs | `suite:docs_search` |
+
+> 💡 **Tip**: Start with basic permissions, add more as needed.
+
+---
+
+#### 🚀 Step 5: Publish Application
+
+1. Click **"Version Management"** in the left menu
+2. Click **"Create Version"**
+3. Fill in version info:
+   - **Version Number**: e.g., `1.0.0`
+   - **Release Notes**: Describe this release
+   - **Availability**: Choose who can use it
+     - **All Members**: Everyone in the organization
+     - **Specific Scope**: Only selected departments/users
+4. Click **"Save"**, then click **"Submit for Review"**
+5. Wait for admin approval (if you're admin, approve it directly)
+
+> ⚠️ **Important**: Every time you modify permissions, you need to create a new version and republish!
+
+---
+
+#### ✅ Step 6: Install & Configure Plugin
+
+After publishing the app, install and configure the plugin. **This will establish the long connection.**
+
+**Option A: Interactive Setup (Recommended)**
+
+```bash
+# Interactive wizard
+openclaw feishu setup
+```
+
+**Option B: Onboard Command**
+
+```bash
+openclaw onboard feishu
+```
+
+**Option C: Non-interactive Setup**
+
+```bash
+openclaw feishu setup --app-id YOUR_APP_ID --app-secret YOUR_APP_SECRET --non-interactive
+```
+
+Enter your **App ID** and **App Secret** when prompted (for Option A or B).
+
+After configuration, restart the gateway:
+
+```bash
+openclaw gateway restart
+```
+
+> 💡 **Note**: The plugin will automatically establish a long connection with Feishu servers after restart.
+
+---
+
+#### 📡 Step 7: Configure Event Subscriptions
+
+> ⚠️ **Important**: This step must be done **AFTER** the plugin is configured and running, because Feishu requires an active long connection before you can configure event subscriptions.
+
+1. Go back to [Feishu Open Platform](https://open.feishu.cn/app)
+2. Enter your app, click **"Development Settings"** → **"Events & Callbacks"** in the left menu
+3. Ensure **"Subscription Method"** is set to **"Long Connection"**
+4. Click **"Add Event"** and add the following events:
+
+| Event Name         | Event ID                       | Purpose                                      |
+| ------------------ | ------------------------------ | -------------------------------------------- |
+| Receive Message    | `im.message.receive_v1`        | Receive messages from users                  |
+| Message Read       | `im.message.message_read_v1`   | Get message read status (optional)           |
+| Chat Member Change | `im.chat.member.user.added_v1` | Notify when bot is added to group (optional) |
+
+> 💡 **You must at least add "Receive Message" event**, or the bot won't receive any messages!
+
+5. After adding events, you need to **publish a new version** for the changes to take effect.
+
+---
+
+#### 🎉 Step 8: Verify Success
+
+1. Search for your bot name in Feishu
+2. Send a message
+3. If the bot responds, congratulations!
+
+**Troubleshooting:**
+
+- ❌ **Can't add events**: Make sure the plugin is running and long connection is established
+- ❌ **Not receiving messages**: Check if "Receive Message" event is added and new version is published
+- ❌ **No permission**: Check if permissions are added and version is published
+- ❌ **Long connection disconnects**: Check if message receive method is "Long Connection"
+
+---
+
+#### Required Permissions
+
+| Feature   | Permissions                                                                   |
+| --------- | ----------------------------------------------------------------------------- |
+| Messaging | `im:message`, `im:chat`                                                       |
+| Voice     | `im:message:speech_to_text`                                                   |
+| Documents | `docx:document`                                                               |
+| Wiki      | `wiki:wiki`                                                                   |
+| Search    | `search:message`, `suite:docs_search`                                         |
+| AI        | `optical_char_recognition:image`, `speech_to_text:speech`, `translation:text` |
+| Drive     | `drive:drive`                                                                 |
+| Bitable   | `bitable:app`                                                                 |
+| Sheets    | `sheets:spreadsheet`                                                          |
+| Calendar  | `calendar:calendar`                                                           |
+| Tasks     | `task:task`                                                                   |
+
+---
+
+## 中文
+
+OpenClaw 飞书通道插件，支持消息收发、云文档、多维表格、电子表格、日历、任务等全面功能。
+
+### ✨ 功能特性
+
+| 类别         | 功能                                                    |
+| ------------ | ------------------------------------------------------- |
+| **消息**     | 文本、富文本、卡片、图片、文件、语音转文字、引用回复    |
+| **云文档**   | 创建、读取、更新、删除块、指定位置插入、Markdown 支持   |
+| **多维表格** | 创建应用/数据表、字段管理、记录 CRUD、批量操作          |
+| **电子表格** | 创建/读写单元格、行列操作、样式、合并、排序、筛选、冻结 |
+| **日历**     | 创建日程、列出/搜索日程、参与者管理、忙闲查询           |
+| **任务**     | 创建/完成任务、任务列表、提醒                           |
+
+### ⚠️ 安装前必读
+
+> **重要：** 安装任何插件前，请先备份配置文件！
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json ~/.openclaw/openclaw.json.bak
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json ~/.clawdbot/clawdbot.json.bak
+```
+
+如果安装后出现问题，请参阅下方的[恢复指南](#-recovery-guide--恢复指南)。
+
+---
+
+### 🚀 前置条件：安装 OpenClaw
+
+在安装本插件之前，你需要先安装 OpenClaw（或 Clawdbot）。
+
+#### 方式一：快速安装（推荐）
+
+```bash
+# 通过 npm 全局安装 OpenClaw
+npm install -g openclaw
+
+# 验证安装
+openclaw --version
+```
+
+#### 方式二：使用 npx（无需安装）
+
+```bash
+# 直接运行，无需安装
+npx openclaw onboard
+```
+
+#### 方式三：从源码安装
+
+```bash
+# 克隆仓库
+git clone https://github.com/openclaw/openclaw.git
+cd openclaw
+
+# 安装依赖
+pnpm install
+
+# 构建
+pnpm build
+
+# 全局链接
+npm link
+```
+
+#### 首次配置
+
+安装完成后，运行 onboard 向导配置你的第一个通道：
+
+```bash
+openclaw onboard
+```
+
+更多详情请参阅 [OpenClaw 文档](https://docs.openclaw.bot) 或 [GitHub 仓库](https://github.com/openclaw/openclaw)。
+
+---
+
+### 📦 快速安装
+
+```bash
+# 推荐：从 npm 安装
+openclaw plugins install @zeneo/openclaw-feishu
+
+# 备选：从 GitHub 安装
+openclaw plugins install https://github.com/gcmsg/openclaw-feishu
+```
+
+### 🔄 更新到最新版
+
+```bash
+# 如果通过 npm 安装（推荐）
+openclaw plugins update openclaw-feishu
+
+# 如果通过 GitHub 安装，需要重装：
+rm -rf ~/.openclaw/extensions/openclaw-feishu
+openclaw plugins install @zeneo/openclaw-feishu
+
+# 更新后重启 Gateway
+openclaw gateway restart
+```
+
+> 💡 **提示：** 配置文件中的设置（appId、appSecret）会被保留，只替换插件代码。
+
+### 🔧 安装后配置
+
+安装后，使用以下命令配置插件：
+
+```bash
+# 第一步：添加到白名单（如果 plugins.allow 已设置则必须）
+openclaw config set 'plugins.allow' '["openclaw-feishu"]'
+
+# 或追加到现有白名单（比如已有 telegram）：
+# openclaw config set 'plugins.allow' '["telegram", "openclaw-feishu"]'
+
+# 第二步：配置凭证
+openclaw config set channels.openclaw-feishu.appId "cli_你的应用ID"
+openclaw config set channels.openclaw-feishu.appSecret "你的应用密钥"
+openclaw config set channels.openclaw-feishu.enabled true
+
+# 第三步：重启 Gateway
+openclaw gateway restart
+```
+
+### 🔒 理解白名单机制
+
+| 场景                                                  | 插件是否加载？            |
+| ----------------------------------------------------- | ------------------------- |
+| `plugins.allow` 未设置或为空                          | ✅ 是（所有插件默认启用） |
+| `plugins.allow: ["telegram"]`（不含 openclaw-feishu） | ❌ 否                     |
+| `plugins.allow: ["telegram", "openclaw-feishu"]`      | ✅ 是                     |
+
+> 💡 **提示：** 用 `openclaw config get plugins.allow` 查看当前白名单
+
+### 💡 小技巧：添加飞书 Skill
+
+安装完成后，告诉你的 AI 助手添加飞书能力作为 skill，方便日后使用：
+
+> "把飞书的全部 API 能力添加为 skill，这样你就能帮我处理飞书相关的操作了。"
+
+或者简单说：
+
+> "学习并记住所有飞书工具的操作。"
+
+这样助手就能理解 200+ 种飞书操作，包括云文档、多维表格、日历、任务、审批等！
+
+### 🛠️ Agent 工具架构
+
+本插件提供独立的 **`feishu` Agent 工具**，用于飞书特有的功能（卡片消息、云文档、多维表格等）。
+
+**为什么需要独立工具？**
+
+核心 `message` 工具只支持标准消息操作（`send`、`react`、`delete` 等）。飞书丰富的功能（卡片消息、云文档、多维表格、日历等）需要专用工具和独立的 action schema。
+
+**工作原理：**
+
+```
+message 工具  →  基础消息（发送文本、表情回复）
+feishu 工具   →  飞书专属（send_card、doc_create、bitable_records 等 200+ 操作）
+```
+
+**安装后**，`feishu` 工具自动对 AI 助手可用，无需额外配置。
+
+**AI 对话中的使用示例：**
+
+```
+用户: 发一个卡片消息到群里
+AI: [调用 feishu 工具，action="send_card", target="chat_id", card={...}]
+
+用户: 创建一个文档
+AI: [调用 feishu 工具，action="doc_create", title="新文档"]
+
+用户: 查询多维表格的记录
+AI: [调用 feishu 工具，action="bitable_records", appToken="xxx", tableId="xxx"]
+```
+
+### ⚙️ 配置步骤
+
+下面是完整的手把手教程，指导你从零开始创建飞书机器人应用。
+
+---
+
+#### 📝 第一步：创建应用
+
+1. 打开 [飞书开放平台](https://open.feishu.cn/app)
+2. 点击右上角 **「创建企业自建应用」**
+3. 填写应用信息：
+   - **应用名称**：给你的机器人起个名字（如：Nina、我的助手）
+   - **应用描述**：简单描述应用用途
+   - **应用图标**：上传一个图标（可选）
+4. 点击 **「创建」** 完成
+
+---
+
+#### 🔑 第二步：获取凭证
+
+1. 进入刚创建的应用
+2. 在左侧菜单点击 **「凭证与基础信息」**
+3. 记录下：
+   - **App ID**（应用唯一标识）
+   - **App Secret**（点击「显示」查看，注意保密！）
+
+---
+
+#### 🤖 第三步：添加机器人能力
+
+1. 在左侧菜单点击 **「应用能力」** → **「添加应用能力」**
+2. 找到 **「机器人」**，点击 **「添加」**
+3. 配置机器人信息：
+   - **机器人名称**：用户在聊天中看到的名字
+   - **机器人描述**：机器人功能说明
+4. **消息接收方式**：选择 **「使用长连接接收消息」**（重要！）
+   - ✅ 长连接模式：无需公网服务器，适合个人使用
+   - ❌ Webhook 模式：需要公网服务器接收回调
+
+---
+
+#### 🔐 第四步：配置权限
+
+1. 在左侧菜单点击 **「开发配置」** → **「权限管理」**
+2. 点击 **「添加权限」**
+3. 根据需要的功能，搜索并勾选对应权限：
+
+**基础功能（必选）：**
+| 权限名称 | 权限标识 | 说明 |
+|---------|---------|------|
+| 获取与发送单聊、群组消息 | `im:message` | 收发消息的基础权限 |
+| 获取群组信息 | `im:chat:readonly` | 读取群信息 |
+| 获取与更新群组信息 | `im:chat` | 管理群聊 |
+
+**进阶功能（按需选择）：**
+| 功能 | 权限标识 |
+|------|---------|
+| 云文档 | `docx:document`、`docx:document:readonly` |
+| 云空间/网盘 | `drive:drive`、`drive:drive:readonly` |
+| 多维表格 | `bitable:app` |
+| 电子表格 | `sheets:spreadsheet` |
+| 日历 | `calendar:calendar`、`calendar:calendar:readonly` |
+| 任务 | `task:task`、`task:task:readonly` |
+| 知识库 | `wiki:wiki`、`wiki:wiki:readonly` |
+| 通讯录 | `contact:user.base:readonly`、`contact:department.base:readonly` |
+| 语音转文字 | `im:message:speech_to_text` |
+| AI OCR | `optical_char_recognition:image` |
+| AI 翻译 | `translation:text` |
+| 搜索消息 | `search:message` |
+| 搜索文档 | `suite:docs_search` |
+
+> 💡 **建议**：先添加基础权限，后续用到什么功能再补充对应权限。
+
+---
+
+#### 🚀 第五步：发布应用
+
+1. 在左侧菜单点击 **「版本管理与发布」**
+2. 点击 **「创建版本」**
+3. 填写版本信息：
+   - **版本号**：如 `1.0.0`
+   - **更新说明**：描述本次发布内容
+   - **可用范围**：选择哪些人可以使用
+     - **全部成员**：企业内所有人都能使用
+     - **指定范围**：只有选中的部门/人员能使用
+4. 点击 **「保存」**，然后点击 **「申请发布」**
+5. 等待管理员审核（如果你是管理员，可以在管理后台直接通过）
+
+> ⚠️ **重要**：每次修改权限后，都需要创建新版本并重新发布！
+
+---
+
+#### ✅ 第六步：安装并配置插件
+
+发布应用后，安装并配置插件。**这一步会自动建立长连接。**
+
+**方式 A：交互式配置（推荐）**
+
+```bash
+# 交互式向导
+openclaw feishu setup
+```
+
+**方式 B：Onboard 命令**
+
+```bash
+openclaw onboard feishu
+```
+
+**方式 C：非交互式配置**
+
+```bash
+openclaw feishu setup --app-id 你的APP_ID --app-secret 你的APP_SECRET --non-interactive
+```
+
+按提示输入 **App ID** 和 **App Secret**（方式 A 或 B）。
+
+配置完成后，重启 Gateway：
+
+```bash
+openclaw gateway restart
+```
+
+> 💡 **说明**：插件启动后会自动与飞书服务器建立长连接。
+
+---
+
+#### 📡 第七步：配置事件订阅
+
+> ⚠️ **重要**：这一步**必须在插件配置并运行之后**进行，因为飞书开放平台要求先建立长连接才能配置事件订阅。
+
+1. 回到 [飞书开放平台](https://open.feishu.cn/app)
+2. 进入你的应用，在左侧菜单点击 **「开发配置」** → **「事件与回调」**
+3. 确认 **「订阅方式」** 选择了 **「使用长连接接收事件」**
+4. 点击 **「添加事件」**，搜索并添加以下事件：
+
+| 事件名称   | 事件标识                       | 用途                           |
+| ---------- | ------------------------------ | ------------------------------ |
+| 接收消息   | `im.message.receive_v1`        | 接收用户发送的消息             |
+| 消息已读   | `im.message.message_read_v1`   | 获取消息已读状态（可选）       |
+| 群成员变更 | `im.chat.member.user.added_v1` | 机器人被拉入群聊时通知（可选） |
+
+> 💡 **至少要添加「接收消息」事件**，否则机器人收不到任何消息！
+
+5. 添加事件后，需要**创建新版本并发布**才能生效。
+
+---
+
+#### 🎉 第八步：验证是否成功
+
+1. 在飞书中搜索你的机器人名称
+2. 发送一条消息
+3. 如果机器人有回复，恭喜配置成功！
+
+**常见问题排查：**
+
+- ❌ **无法添加事件**：确保插件已运行且长连接已建立
+- ❌ **收不到消息**：检查是否添加了「接收消息」事件，并发布了新版本
+- ❌ **没有权限**：检查权限是否已添加，版本是否已发布
+- ❌ **长连接断开**：检查消息接收方式是否选择了「长连接」
+
+---
+
+#### 所需权限
+
+| 功能       | 权限                        |
+| ---------- | --------------------------- |
+| 消息       | `im:message`, `im:chat`     |
+| 语音转文字 | `im:message:speech_to_text` |
+| 云文档     | `docx:document`             |
+| 云空间     | `drive:drive`               |
+| 多维表格   | `bitable:app`               |
+| 电子表格   | `sheets:spreadsheet`        |
+| 日历       | `calendar:calendar`         |
+| 任务       | `task:task`                 |
+
+---
+
+## 🏗️ Project Structure / 项目结构
+
+```
+openclaw-feishu/
+├── index.ts              # Plugin entry / 插件入口
+├── openclaw.plugin.json  # Plugin manifest (OpenClaw) / 插件配置
+├── clawdbot.plugin.json  # Plugin manifest (Clawdbot) / 插件配置（兼容）
+├── src/
+│   ├── channel.ts        # Channel definition / 通道定义
+│   ├── agent-tools.ts    # Feishu agent tool / 飞书 Agent 工具
+│   ├── client.ts         # Messaging API / 消息 API
+│   ├── document.ts       # Document API / 云文档 API
+│   ├── bitable.ts        # Bitable API / 多维表格 API
+│   ├── sheets.ts         # Sheets API / 电子表格 API
+│   ├── calendar.ts       # Calendar API / 日历 API
+│   ├── task.ts           # Task API / 任务 API
+│   ├── wiki.ts           # Wiki API / 知识库 API
+│   ├── search.ts         # Search API / 搜索 API
+│   ├── ai.ts             # AI API / AI 能力 API
+│   ├── space.ts          # Drive API / 云空间 API
+│   ├── gateway.ts        # WebSocket gateway / 长连接网关
+│   ├── markdown.ts       # Markdown converter / Markdown 转换
+│   ├── compat.ts         # SDK compatibility / SDK 兼容层
+│   ├── runtime.ts        # Runtime / 运行时
+│   └── types.ts          # Type definitions / 类型定义
+├── test/                 # Unit tests / 单元测试
+│   ├── setup.ts          # Test setup / 测试配置
+│   ├── client.test.ts
+│   ├── document.test.ts
+│   ├── bitable.test.ts
+│   ├── sheets.test.ts
+│   ├── calendar.test.ts
+│   ├── task.test.ts
+│   ├── wiki.test.ts
+│   ├── search.test.ts
+│   └── ai.test.ts
+└── docs/
+    └── SDK_CAPABILITIES.md  # SDK analysis / SDK 能力分析
+```
+
+---
+
+## 🧪 Testing / 测试
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm test -- --coverage
+
+# Run specific test file
+npm test -- test/calendar.test.ts
+```
+
+**Test Coverage:**
+
+- 110+ test cases
+- Client, Document, Bitable, Sheets, Calendar, Task modules
+
+---
+
+## 🔄 Compatibility / 兼容性
+
+| Version  | CLI Command | Status       |
+| -------- | ----------- | ------------ |
+| OpenClaw | `openclaw`  | ✅ Latest    |
+| Clawdbot | `clawdbot`  | ✅ Supported |
+| Moltbot  | `moltbot`   | ✅ Supported |
+
+---
+
+## 🔧 Troubleshooting / 故障排查
+
+### 🔄 Recovery Guide / 恢复指南
+
+If OpenClaw/Clawdbot won't start after installing this plugin, follow these steps to recover:
+
+如果安装本插件后 OpenClaw/Clawdbot 无法启动，请按以下步骤恢复：
+
+#### Option 1: Restore from backup / 方案一：从备份恢复
+
+```bash
+# OpenClaw
+cp ~/.openclaw/openclaw.json.bak ~/.openclaw/openclaw.json
+openclaw gateway restart
+
+# Clawdbot
+cp ~/.clawdbot/clawdbot.json.bak ~/.clawdbot/clawdbot.json
+clawdbot gateway restart
+```
+
+#### Option 2: Remove plugin entries manually / 方案二：手动移除插件配置
+
+If you don't have a backup, edit the config file directly:
+
+如果没有备份，直接编辑配置文件：
+
+```bash
+# OpenClaw
+nano ~/.openclaw/openclaw.json
+
+# Clawdbot
+nano ~/.clawdbot/clawdbot.json
+```
+
+Remove or comment out the feishu-related sections:
+
+删除或注释掉 feishu 相关的部分：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      // "openclaw-feishu": { ... }  ← Remove this
+    },
+    "installs": {
+      // "openclaw-feishu": { ... }  ← Remove this
+    }
+  },
+  "channels": {
+    // "openclaw-feishu": { ... }  ← Remove this
+  }
+}
+```
+
+Then restart:
+
+然后重启：
+
+```bash
+# OpenClaw
+openclaw gateway restart
+
+# Clawdbot
+clawdbot gateway restart
+```
+
+#### Option 3: Delete plugin files / 方案三：删除插件文件
+
+```bash
+# OpenClaw
+rm -rf ~/.openclaw/extensions/openclaw-feishu
+
+# Clawdbot
+rm -rf ~/.clawdbot/extensions/openclaw-feishu
+```
+
+Then edit config to remove plugin references (see Option 2).
+
+然后编辑配置文件移除插件引用（参见方案二）。
+
+#### Option 4: Factory reset (last resort) / 方案四：恢复出厂（最后手段）
+
+⚠️ **Warning:** This will reset ALL your settings!
+
+⚠️ **警告：** 这将重置所有设置！
+
+```bash
+# OpenClaw - backup first, then reset
+mv ~/.openclaw ~/.openclaw.broken
+openclaw onboard
+
+# Clawdbot - backup first, then reset
+mv ~/.clawdbot ~/.clawdbot.broken
+clawdbot onboard
+```
+
+---
+
+### ❌ Gateway Won't Start After Install / 安装后无法启动
+
+**Symptom:** After running `plugins install`, OpenClaw/Clawdbot fails to start with a config error.
+
+**症状：** 运行 `plugins install` 后，OpenClaw/Clawdbot 无法启动，提示配置错误。
+
+**Solution / 解决方案：**
+
+1. **Check config file syntax / 检查配置文件语法：**
+
+```bash
+# OpenClaw
+node -e "JSON.parse(require('fs').readFileSync('$HOME/.openclaw/openclaw.json'))"
+
+# Clawdbot
+node -e "JSON.parse(require('fs').readFileSync('$HOME/.clawdbot/clawdbot.json'))"
+```
+
+If you see a syntax error, the JSON is malformed.
+如果看到语法错误，说明 JSON 格式有问题。
+
+2. **Manual fix / 手动修复：**
+
+Open your config file (`~/.openclaw/openclaw.json` or `~/.clawdbot/clawdbot.json`) and ensure the config looks like this:
+
+打开配置文件，确保配置格式如下：
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "openclaw-feishu": {
+        "enabled": true
+      }
+    },
+    "installs": {
+      "openclaw-feishu": {
+        "source": "npm",
+        "installPath": "/path/to/.openclaw/extensions/openclaw-feishu",
+        "version": "3.0.8"
+      }
+    }
+  },
+  "channels": {
+    "openclaw-feishu": {
+      "enabled": true,
+      "appId": "your_app_id",
+      "appSecret": "your_app_secret"
+    }
+  }
+}
+```
+
+> ⚠️ **Important:** `appId` and `appSecret` should ONLY be in `channels.openclaw-feishu`, NOT in `plugins.entries.openclaw-feishu.config`.
+>
+> ⚠️ **重要：** `appId` 和 `appSecret` 只应放在 `channels.openclaw-feishu` 下，不要放在 `plugins.entries.openclaw-feishu.config` 中。
+
+3. **Validate after fix / 修复后验证：**
+
+```bash
+# OpenClaw
+openclaw status
+
+# Clawdbot
+clawdbot status
+```
+
+---
+
+### ❌ "No messages received" / 收不到消息
+
+**Checklist / 检查清单：**
+
+1. ✅ Added `im.message.receive_v1` event subscription?
+2. ✅ Using "Long Connection" mode (not Webhook)?
+3. ✅ Published a new version after adding permissions?
+4. ✅ Bot is added to the chat (for group messages)?
+
+5. ✅ 是否添加了 `im.message.receive_v1` 事件订阅？
+6. ✅ 是否选择了「长连接」模式（不是 Webhook）？
+7. ✅ 添加权限后是否发布了新版本？
+8. ✅ 机器人是否被添加到群聊中（群消息的情况）？
+
+---
+
+### ❌ Permission Denied Errors / 权限错误
+
+**Symptom:** API calls fail with 403 or "no permission".
+
+**症状：** API 调用返回 403 或「无权限」错误。
+
+**Solution / 解决方案：**
+
+1. Check which permissions are needed for the API (see table above)
+2. Add missing permissions in Feishu Open Platform
+3. **Create a new version and publish it** (permissions don't take effect until published!)
+
+4. 检查该 API 需要哪些权限（见上方权限表）
+5. 在飞书开放平台添加缺少的权限
+6. **创建新版本并发布**（权限修改后必须发布才能生效！）
+
+---
+
+### ❌ Long Connection Keeps Disconnecting / 长连接频繁断开
+
+**Possible causes / 可能原因：**
+
+1. Network instability / 网络不稳定
+2. Server resources exhausted / 服务器资源不足
+3. Multiple instances running / 多个实例同时运行
+
+**Solution / 解决方案：**
+
+```bash
+# Check if multiple gateway processes are running
+# 检查是否有多个 gateway 进程在运行
+ps aux | grep -E "(openclaw|clawdbot)" | grep gateway
+
+# Kill duplicates and restart
+# 杀掉重复进程并重启
+openclaw gateway stop && openclaw gateway start
+# or
+clawdbot gateway stop && clawdbot gateway start
+```
+
+---
+
+### 💡 Debug Mode / 调试模式
+
+Enable debug logging to see detailed API calls:
+
+启用调试日志查看详细 API 调用：
+
+```bash
+# OpenClaw
+openclaw gateway start --log-level debug
+
+# Clawdbot
+clawdbot gateway start --log-level debug
+```
+
+---
+
+### 📞 Still Stuck? / 仍然有问题？
+
+- Open an issue: https://github.com/gcmsg/openclaw-feishu/issues
+- Community: https://discord.com/invite/clawd
+
+---
+
+## 📄 License
+
+MIT
+
+---
+
+## 🤝 Contributing / 贡献
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
+
+Issues and PRs are welcome!
